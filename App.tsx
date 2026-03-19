@@ -2,10 +2,13 @@ import React from 'react';
 import { SafeAreaView, Text, StyleSheet, ActivityIndicator } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { AuthProvider, useAuth } from './src/contexts/AuthContext';
+import { EventProvider, useEvent } from './src/contexts/EventContext';
 import LoginScreen from './src/screens/LoginScreen';
+import PhotoFeedScreen from './src/screens/PhotoFeedScreen';
 
 function MainNavigator() {
   const { user, loading } = useAuth();
+  const { currentEvent, setCurrentEvent } = useEvent();
 
   if (loading) {
     return (
@@ -19,12 +22,22 @@ function MainNavigator() {
     return <LoginScreen />;
   }
 
-  // Once authenticated, show the main app
+  // If user has joined an event, show photo feed
+  if (currentEvent) {
+    return <PhotoFeedScreen />;
+  }
+
+  // Otherwise, show join/event creation screen (simplified for now)
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar style="auto" />
       <Text style={styles.text}>Welcome, {user.displayName || 'User'}!</Text>
-      <Text style={styles.subtext}>PictureShare Main App - Coming Soon</Text>
+      <Text style={styles.subtext}>
+        {currentEvent
+          ? `Viewing: ${currentEvent.title || currentEvent.code}`
+          : 'No active event. Scan QR or create event.'}
+      </Text>
+      <Text style={styles.placeholder}>Event Join Screen would go here</Text>
     </SafeAreaView>
   );
 }
@@ -32,7 +45,9 @@ function MainNavigator() {
 export default function App() {
   return (
     <AuthProvider>
-      <MainNavigator />
+      <EventProvider>
+        <MainNavigator />
+      </EventProvider>
     </AuthProvider>
   );
 }

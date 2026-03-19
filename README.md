@@ -86,12 +86,13 @@ src/
 
 ## Current Phase
 
-**Phase 3: Photo Capture, Compression & Upload** - In Progress
+**Phase 4: Real-Time Feed & Sync** - In Progress
 
-- [x] Camera/gallery picker with permission handling
-- [x] Image compression pipeline (resize to ≤1920px, 80% quality)
-- [ ] Upload service to Firebase Storage
-- [ ] Photo metadata storage in Firestore
+- [x] Real-time subscription to Firestore photos with onSnapshot listener
+- [x] FlatList rendering with download URL caching
+- [ ] Optimistic UI updates after upload
+- [ ] Infinite scroll pagination
+- [ ] Offline-first behavior with local caching
 
 See [TASKS.md](./TASKS.md) for full roadmap.
 

@@ -1,103 +1,176 @@
-import React from 'react';
-import { View, Text, StyleSheet, FlatList, Image, TouchableOpacity } from 'react-native';
+import React, { useState, useEffect, useCallback } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  FlatList,
+  Image,
+  TouchableOpacity,
+  ActivityIndicator,
+  Alert,
+} from 'react-native';
+import { getDownloadURL, ref } from 'firebase/storage';
+import { storage } from '../services/firebase';
+import { subscribeToPhotos } from '../services/photoService';
+import { useEvent } from '../contexts/EventContext';
+import type { Photo } from '../types';
 
-/**
- * Photo Feed Screen Wireframe
- * Shows real-time photo feed with infinite scroll and interactions
- */
-interface Photo {
-  id: string;
-  uri: string;
-  uploaderName: string;
-  createdAt: Date;
-  likes: number;
-  comments: number;
+interface PhotoFeedScreenProps {
+  eventId?: string; // Optional - will use context if not provided
 }
 
-const PhotoFeedScreen: React.FC = () => {
-  // Mock data for wireframe
-  const mockPhotos: Photo[] = [
-    {
-      id: '1',
-      uri: 'photo1.jpg',
-      uploaderName: 'Alice',
-      createdAt: new Date(),
-      likes: 12,
-      comments: 3,
-    },
-    {
-      id: '2',
-      uri: 'photo2.jpg',
-      uploaderName: 'Bob',
-      createdAt: new Date(),
-      likes: 8,
-      comments: 1,
-    },
-    {
-      id: '3',
-      uri: 'photo3.jpg',
-      uploaderName: 'Carol',
-      createdAt: new Date(),
-      likes: 15,
-      comments: 5,
-    },
-  ];
+interface PhotoWithUri extends Photo {
+  uri?: string;
+}
 
-  const renderPhoto = ({ item }: { item: Photo }) => (
+const PhotoFeedScreen: React.FC<PhotoFeedScreenProps> = ({ eventId: propEventId }) => {
+  const { currentEvent } = useEvent();
+  const effectiveEventId = propEventId || currentEvent?.id;
+  const [photos, setPhotos] = useState<PhotoWithUri[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // Fetch download URLs for photos
+  const fetchPhotoUris = async (photosWithoutUri: Photo[]): Promise<PhotoWithUri[]> => {
+    const photosWithUris = await Promise.all(
+      photosWithoutUri.map(async (photo) => {
+        try {
+          const uri = await getDownloadURL(ref(storage, photo.storagePath));
+          return { ...photo, uri };
+        } catch (err) {
+          console.error(`Error getting download URL for photo ${photo.id}:`, err);
+          return photo;
+        }
+      })
+    );
+    return photosWithUris;
+  };
+
+  useEffect(() => {
+    const currentId = effectiveEventId;
+    if (!currentId) {
+      setLoading(false);
+      setError('No event selected. Join an event to view photos.');
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+
+    // Subscribe to real-time photo updates
+    const unsubscribe = subscribeToPhotos(currentId, async (photosData) => {
+      try {
+        // Fetch download URLs for each photo
+        const photosWithUris = await fetchPhotoUris(photosData);
+        setPhotos(photosWithUris);
+        setLoading(false);
+      } catch (err) {
+        console.error('Error processing photos:', err);
+        setError('Failed to load photos');
+        setLoading(false);
+      }
+    });
+
+    // Cleanup subscription on unmount
+    return () => unsubscribe();
+  }, [effectiveEventId]);
+
+  const renderPhoto = ({ item }: { item: PhotoWithUri }) => (
     <View style={styles.photoCard}>
       {/* Photo Image */}
-      <View style={styles.photoPlaceholder}>
-        <Text style={styles.photoLabel}>Photo Content</Text>
-        <Text style={styles.uploaderName}>{item.uploaderName}</Text>
+      {item.uri ? (
+        <Image source={{ uri: item.uri }} style={styles.photoImage} resizeMode="cover" />
+      ) : (
+        <View style={styles.photoPlaceholder}>
+          <Text style={styles.photoLabel}>Loading image...</Text>
+        </View>
+      )}
+
+      {/* Photo Info */}
+      <View style={styles.photoInfo}>
+        <Text style={styles.uploaderText}>Uploader: {item.uploaderId.substring(0, 8)}...</Text>
+        <Text style={styles.timestamp}>
+          {item.createdAt instanceof Date ? item.createdAt.toLocaleTimeString() : 'Just now'}
+        </Text>
       </View>
 
-      {/* Photo Actions */}
+      {/* Photo Actions - Placeholder for future features */}
       <View style={styles.photoActions}>
-        <TouchableOpacity style={styles.actionButton}>
+        <TouchableOpacity
+          style={styles.actionButton}
+          onPress={() => Alert.alert('Info', 'Likes feature coming in Phase 5')}
+        >
           <Text style={styles.actionIcon}>❤️</Text>
-          <Text style={styles.actionText}>{item.likes} likes</Text>
+          <Text style={styles.actionText}>Like</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.actionButton}>
+        <TouchableOpacity
+          style={styles.actionButton}
+          onPress={() => Alert.alert('Info', 'Comments feature coming in Phase 5')}
+        >
           <Text style={styles.actionIcon}>💬</Text>
-          <Text style={styles.actionText}>{item.comments} comments</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.actionButton}>
-          <Text style={styles.actionIcon}>✏️</Text>
           <Text style={styles.actionText}>Comment</Text>
         </TouchableOpacity>
       </View>
-
-      {/* Timestamp */}
-      <Text style={styles.timestamp}>2 hours ago</Text>
     </View>
   );
+
+  const renderEmptyState = () => (
+    <View style={styles.emptyContainer}>
+      <Text style={styles.emptyIcon}>📷</Text>
+      <Text style={styles.emptyTitle}>No photos yet</Text>
+      <Text style={styles.emptyMessage}>Be the first to share a photo in this event!</Text>
+    </View>
+  );
+
+  const renderLoadingState = () => (
+    <View style={styles.loadingContainer}>
+      <ActivityIndicator size="large" color="#007AFF" />
+      <Text style={styles.loadingText}>Loading photos...</Text>
+    </View>
+  );
+
+  const renderErrorState = () => (
+    <View style={styles.errorContainer}>
+      <Text style={styles.errorIcon}>⚠️</Text>
+      <Text style={styles.errorTitle}>Error loading photos</Text>
+      <Text style={styles.errorMessage}>{error}</Text>
+      <TouchableOpacity style={styles.retryButton} onPress={() => window.location.reload()}>
+        <Text style={styles.retryButtonText}>Retry</Text>
+      </TouchableOpacity>
+    </View>
+  );
+
+  if (loading && photos.length === 0) {
+    return renderLoadingState();
+  }
+
+  if (error && photos.length === 0) {
+    return renderErrorState();
+  }
 
   return (
     <View style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>Event Photos</Text>
-        <TouchableOpacity style={styles.uploadButton}>
-          <Text style={styles.uploadButtonText}>+</Text>
+        <TouchableOpacity onPress={() => window.history.back()}>
+          <Text style={styles.backButton}>← Back</Text>
         </TouchableOpacity>
+        <Text style={styles.headerTitle}>Event Photos</Text>
+        <View style={styles.placeholderButton} />
       </View>
 
       {/* Photo Feed */}
-      <FlatList
-        data={mockPhotos}
-        renderItem={renderPhoto}
-        keyExtractor={(item) => item.id}
-        contentContainerStyle={styles.feed}
-        onEndReached={() => console.log('Load more...')}
-        onEndReachedThreshold={0.5}
-        ListFooterComponent={<Text style={styles.loading}>Loading more...</Text>}
-      />
-
-      {/* Upload Indicator */}
-      <View style={styles.uploadIndicator}>
-        <Text style={styles.uploadIndicatorText}>Uploading...</Text>
-        <View style={styles.progressBar} />
-      </View>
+      {photos.length === 0 ? (
+        renderEmptyState()
+      ) : (
+        <FlatList
+          data={photos}
+          renderItem={renderPhoto}
+          keyExtractor={(item) => item.id}
+          contentContainerStyle={styles.feed}
+          showsVerticalScrollIndicator={false}
+        />
+      )}
     </View>
   );
 };
@@ -116,22 +189,16 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: '#e0e0e0',
   },
+  backButton: {
+    fontSize: 16,
+    color: '#007AFF',
+  },
   headerTitle: {
     fontSize: 20,
     fontWeight: 'bold',
   },
-  uploadButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: '#007AFF',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  uploadButtonText: {
-    color: '#fff',
-    fontSize: 24,
-    fontWeight: 'bold',
+  placeholderButton: {
+    width: 60,
   },
   feed: {
     padding: 10,
@@ -144,6 +211,10 @@ const styles = StyleSheet.create({
     borderColor: '#e0e0e0',
     overflow: 'hidden',
   },
+  photoImage: {
+    width: '100%',
+    height: 300,
+  },
   photoPlaceholder: {
     height: 300,
     backgroundColor: '#f0f0f0',
@@ -153,11 +224,20 @@ const styles = StyleSheet.create({
   photoLabel: {
     fontSize: 18,
     color: '#999',
-    marginBottom: 10,
   },
-  uploaderName: {
+  photoInfo: {
+    padding: 12,
+    borderTopWidth: 1,
+    borderTopColor: '#f5f5f5',
+  },
+  uploaderText: {
     fontSize: 14,
     color: '#666',
+    marginBottom: 4,
+  },
+  timestamp: {
+    fontSize: 12,
+    color: '#999',
   },
   photoActions: {
     flexDirection: 'row',
@@ -178,38 +258,67 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#666',
   },
-  timestamp: {
-    paddingHorizontal: 15,
-    paddingBottom: 10,
-    fontSize: 12,
-    color: '#999',
-  },
-  loading: {
-    textAlign: 'center',
-    padding: 20,
-    color: '#999',
-  },
-  uploadIndicator: {
-    position: 'absolute',
-    bottom: 20,
-    left: 20,
-    right: 20,
-    backgroundColor: 'rgba(0, 122, 255, 0.9)',
-    padding: 12,
-    borderRadius: 8,
-    flexDirection: 'row',
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
     alignItems: 'center',
-    justifyContent: 'space-between',
   },
-  uploadIndicatorText: {
+  loadingText: {
+    marginTop: 15,
+    fontSize: 16,
+    color: '#666',
+  },
+  errorContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 40,
+  },
+  errorIcon: {
+    fontSize: 60,
+    marginBottom: 15,
+  },
+  errorTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginBottom: 10,
+  },
+  errorMessage: {
+    fontSize: 16,
+    color: '#666',
+    textAlign: 'center',
+    marginBottom: 20,
+  },
+  retryButton: {
+    backgroundColor: '#007AFF',
+    paddingHorizontal: 30,
+    paddingVertical: 12,
+    borderRadius: 8,
+  },
+  retryButtonText: {
     color: '#fff',
-    fontSize: 14,
+    fontSize: 16,
+    fontWeight: '600',
   },
-  progressBar: {
-    width: 100,
-    height: 4,
-    backgroundColor: 'rgba(255, 255, 255, 0.3)',
-    borderRadius: 2,
+  emptyContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 40,
+  },
+  emptyIcon: {
+    fontSize: 80,
+    marginBottom: 20,
+  },
+  emptyTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 10,
+  },
+  emptyMessage: {
+    fontSize: 16,
+    color: '#666',
+    textAlign: 'center',
   },
 });
 

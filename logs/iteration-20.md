@@ -641,3 +641,233 @@ Index: /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/servi
 +}
 
 [0m
+[0m# [0mTodos
+[x] Implement real-time photo listener in photoService
+[ ] Update PhotoFeedScreen to use real-time listener with eventId prop
+[ ] Create simple EventContext for current event tracking
+[ ] Update App.tsx to pass eventId via context
+[ ] Update README.md with current progress
+[ ] Mark task as complete in TASKS.md
+[0m
+Great! Now let me update PhotoFeedScreen to use this subscription. I'll mark the first todo as complete and update the screen:
+[0m← [0mEdit src/screens/PhotoFeedScreen.tsx
+Index: /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/screens/PhotoFeedScreen.tsx
+===================================================================
+--- /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/screens/PhotoFeedScreen.tsx
++++ /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/screens/PhotoFeedScreen.tsx
+@@ -1,18 +1,23 @@
+-import React from 'react';
+-import { View, Text, StyleSheet, FlatList, Image, TouchableOpacity } from 'react-native';
++import React, { useState, useEffect, useCallback } from 'react';
++import {
++  View,
++  Text,
++  StyleSheet,
++  FlatList,
++  Image,
++  TouchableOpacity,
++  ActivityIndicator,
++  Alert,
++} from 'react-native';
++import { getDownloadURL, ref } from 'firebase/storage';
++import { storage } from '../services/firebase';
++import { subscribeToPhotos } from '../services/photoService';
++import type { Photo } from '../types';
+ 
+-/**
+- * Photo Feed Screen Wireframe
+- * Shows real-time photo feed with infinite scroll and interactions
+- */
+-interface Photo {
+-  id: string;
+-  uri: string;
+-  uploaderName: string;
+-  createdAt: Date;
+-  likes: number;
+-  comments: number;
++interface PhotoFeedScreenProps {
++  eventId: string;
++  onBack?: () => void;
+ }
+ 
+ const PhotoFeedScreen: React.FC = () => {
+   // Mock data for wireframe
+
+[0m
+Let me read the file again to see the full structure and then do a comprehensive rewrite:
+[0m→ [0mRead src/screens/PhotoFeedScreen.tsx
+Now I'll rewrite the entire PhotoFeedScreen to implement real-time订阅:
+[0m
+[0m← [0mWrite src/screens/PhotoFeedScreen.tsx
+Wrote file successfully.
+[0m
+[0m# [0mTodos
+[x] Implement real-time photo listener in photoService
+[x] Update PhotoFeedScreen to use real-time listener with eventId prop
+[ ] Create simple EventContext for current event tracking
+[ ] Update App.tsx to provide EventContext
+[ ] Update PhotoFeedScreen to use EventContext
+[ ] Update README.md with current progress
+[ ] Mark task as complete in TASKS.md
+[0m
+Now let me create an EventContext to track the current event:
+[0m← [0mWrite src/contexts/EventContext.tsx
+Wrote file successfully.
+[0m
+Now let me update PhotoFeedScreen to use the EventContext:
+[0m← [0mEdit src/screens/PhotoFeedScreen.tsx
+Index: /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/screens/PhotoFeedScreen.tsx
+===================================================================
+--- /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/screens/PhotoFeedScreen.tsx
++++ /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/screens/PhotoFeedScreen.tsx
+@@ -11,12 +11,13 @@
+ } from 'react-native';
+ import { getDownloadURL, ref } from 'firebase/storage';
+ import { storage } from '../services/firebase';
+ import { subscribeToPhotos } from '../services/photoService';
++import { useEvent } from '../contexts/EventContext';
+ import type { Photo } from '../types';
+ 
+ interface PhotoFeedScreenProps {
+-  eventId: string;
++  eventId?: string; // Optional - will use context if not provided
+ }
+ 
+ interface PhotoWithUri extends Photo {
+   uri?: string;
+
+[0m
+[0m✗ [0medit failed
+[91m[1mError: [0mCould not find oldString in the file. It must match exactly, including whitespace, indentation, and line endings.
+Now update the component to use context:
+[0m→ [0mRead src/screens/PhotoFeedScreen.tsx
+Let me read the current file:
+I need to fix the PhotoFeedScreen to use the effectiveEventId from context. Let me update it:
+[0m
+[0m← [0mEdit src/screens/PhotoFeedScreen.tsx
+Index: /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/screens/PhotoFeedScreen.tsx
+===================================================================
+--- /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/screens/PhotoFeedScreen.tsx
++++ /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/screens/PhotoFeedScreen.tsx
+@@ -22,9 +22,11 @@
+ interface PhotoWithUri extends Photo {
+   uri?: string;
+ }
+ 
+-const PhotoFeedScreen: React.FC<PhotoFeedScreenProps> = ({ eventId }) => {
++const PhotoFeedScreen: React.FC<PhotoFeedScreenProps> = ({ eventId: propEventId }) => {
++  const { currentEvent } = useEvent();
++  const effectiveEventId = propEventId || currentEvent?.id;
+   const [photos, setPhotos] = useState<PhotoWithUri[]>([]);
+   const [loading, setLoading] = useState(true);
+   const [error, setError] = useState<string | null>(null);
+ 
+@@ -44,15 +46,20 @@
+     return photosWithUris;
+   };
+ 
+   useEffect(() => {
+-    if (!eventId) return;
++    const currentId = effectiveEventId;
++    if (!currentId) {
++      setLoading(false);
++      setError('No event selected. Join an event to view photos.');
++      return;
++    }
+ 
+     setLoading(true);
+     setError(null);
+ 
+     // Subscribe to real-time photo updates
+-    const unsubscribe = subscribeToPhotos(eventId, async (photosData) => {
++    const unsubscribe = subscribeToPhotos(currentId, async (photosData) => {
+       try {
+         // Fetch download URLs for each photo
+         const photosWithUris = await fetchPhotoUris(photosData);
+         setPhotos(photosWithUris);
+@@ -65,9 +72,9 @@
+     });
+ 
+     // Cleanup subscription on unmount
+     return () => unsubscribe();
+-  }, [eventId]);
++  }, [effectiveEventId]);
+ 
+   const renderPhoto = ({ item }: { item: PhotoWithUri }) => (
+     <View style={styles.photoCard}>
+       {/* Photo Image */}
+
+[0m
+[0m# [0mTodos
+[x] Implement real-time photo listener in photoService
+[x] Update PhotoFeedScreen to use real-time listener with eventId prop
+[x] Create simple EventContext for current event tracking
+[ ] Update App.tsx to provide EventContext and show PhotoFeedScreen
+[ ] Update EventJoinScreen to set current event
+[ ] Update README.md with current progress
+[ ] Mark task as complete in TASKS.md
+[0m
+Now let me update App.tsx to include EventProvider and show a simple navigation structure:
+[0m← [0mEdit App.tsx
+Index: /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/App.tsx
+===================================================================
+--- /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/App.tsx
++++ /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/App.tsx
+@@ -1,12 +1,15 @@
+ import React from 'react';
+ import { SafeAreaView, Text, StyleSheet, ActivityIndicator } from 'react-native';
+ import { StatusBar } from 'expo-status-bar';
+ import { AuthProvider, useAuth } from './src/contexts/AuthContext';
++import { EventProvider, useEvent } from './src/contexts/EventContext';
+ import LoginScreen from './src/screens/LoginScreen';
++import PhotoFeedScreen from './src/screens/PhotoFeedScreen';
+ 
+ function MainNavigator() {
+   const { user, loading } = useAuth();
++  const { currentEvent, setCurrentEvent } = useEvent();
+ 
+   if (loading) {
+     return (
+       <SafeAreaView style={styles.container}>
+@@ -18,22 +21,34 @@
+   if (!user) {
+     return <LoginScreen />;
+   }
+ 
+-  // Once authenticated, show the main app
++  // If user has joined an event, show photo feed
++  if (currentEvent) {
++    return <PhotoFeedScreen />;
++  }
++
++  // Otherwise, show join/event creation screen (simplified for now)
+   return (
+     <SafeAreaView style={styles.container}>
+       <StatusBar style="auto" />
+       <Text style={styles.text}>Welcome, {user.displayName || 'User'}!</Text>
+-      <Text style={styles.subtext}>PictureShare Main App - Coming Soon</Text>
++      <Text style={styles.subtext}>
++        {currentEvent
++          ? `Viewing: ${currentEvent.title || currentEvent.code}`
++          : 'No active event. Scan QR or create event.'}
++      </Text>
++      <Text style={styles.placeholder}>Event Join Screen would go here</Text>
+     </SafeAreaView>
+   );
+ }
+ 
+ export default function App() {
+   return (
+     <AuthProvider>
+-      <MainNavigator />
++      <EventProvider>
++        <MainNavigator />
++      </EventProvider>
+     </AuthProvider>
+   );
+ }
+ 
+
+[0m
+Let me read App.tsx:
+[0m→ [0mRead App.tsx

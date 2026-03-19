@@ -26,7 +26,7 @@ All participants scan a written code and pictures they sent will be accessible t
 
 ## Phase 4: Real-Time Feed & Sync
 
-- [ ] Subscribe to Firestore `photos` collection query `where eventId == current` with real-time listener; render in FlatList
+- [x] Subscribe to Firestore `photos` collection query `where eventId == current` with real-time listener; render in FlatList
 - [ ] Implement optimistic UI: add photo to feed immediately after upload, mark pending, finalize on server confirmation
 - [ ] Build infinite scroll pagination using Firestore cursor; load 20 initial photos, fetch more on scroll
 - [ ] Add offline-first behavior: cache photos locally with `expo-file-system`; retry failed uploads when back online
