@@ -17,19 +17,11 @@ import { useEvent } from '../contexts/EventContext';
 import { useNetwork } from '../contexts/NetworkContext';
 import { useAuth } from '../contexts/AuthContext';
 import { canDeletePhoto, deletePhotoWithPermission } from '../services/photoService';
-import {
-  toggleLike,
-  getLikeCount,
-  hasUserLiked,
-  subscribeToLikeCount,
-  subscribeToUserLike,
-} from '../services/likeService';
+import { toggleLike, subscribeToLikeCount, subscribeToUserLike } from '../services/likeService';
 import { subscribeToCommentCount } from '../services/commentService';
 import CommentsModal from '../components/CommentsModal';
 import ParticipantsList from '../components/ParticipantsList';
 import type { Photo } from '../types';
-
-type TabType = 'photos' | 'participants';
 
 interface PhotoFeedScreenProps {
   eventId?: string;
@@ -45,7 +37,6 @@ const PhotoFeedScreen: React.FC<PhotoFeedScreenProps> = ({ eventId: propEventId 
   const {
     photos: confirmedPhotos,
     pendingPhotos,
-    hasMore,
     loadingMore,
     initialLoading,
     error,
@@ -67,7 +58,6 @@ const PhotoFeedScreen: React.FC<PhotoFeedScreenProps> = ({ eventId: propEventId 
   // Track like counts and user like status
   const [likeCounts, setLikeCounts] = useState<Map<string, number>>(new Map());
   const [likedByUser, setLikedByUser] = useState<Map<string, boolean>>(new Map());
-  const [loadingLikes, setLoadingLikes] = useState<Set<string>>(new Set());
   const [pendingLikePhotos, setPendingLikePhotos] = useState<Set<string>>(new Set());
 
   // Track comment counts
@@ -78,7 +68,7 @@ const PhotoFeedScreen: React.FC<PhotoFeedScreenProps> = ({ eventId: propEventId 
   const [showCommentsModal, setShowCommentsModal] = useState(false);
 
   // Tab state: 'photos' or 'participants'
-  const [activeTab, setActiveTab] = useState<TabType>('photos');
+  const [activeTab, setActiveTab] = useState<'photos' | 'participants'>('photos');
 
   // Fetch URIs for newly added confirmed photos
   useEffect(() => {
