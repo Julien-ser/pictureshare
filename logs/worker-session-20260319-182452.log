@@ -430,3 +430,71 @@ src/types/index.ts
 index.ts
 [0m
 I'll create low-fidelity wireframe components that serve as layout templates for the four key screens. Let me create them as React Native components:
+Now I'll create wireframe components for each screen:
+[0m← [0mWrite src/screens/EventJoinScreen.tsx
+Wrote file successfully.
+[0m
+[0m← [0mWrite src/screens/PhotoFeedScreen.tsx
+Wrote file successfully.
+[0m
+[0m← [0mWrite src/screens/UploadInterface.tsx
+Wrote file successfully.
+[0m
+[0m← [0mWrite src/screens/ProfileScreen.tsx
+Wrote file successfully.
+[0m
+Now I'll update the screens index file to export these components:
+[0m→ [0mRead src/screens/index.ts
+[0m
+[0m← [0mEdit src/screens/index.ts
+Index: /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/screens/index.ts
+===================================================================
+--- /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/screens/index.ts
++++ /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/screens/index.ts
+@@ -1,2 +1,5 @@
+-// Screens will be exported here
+-export { default as HomeScreen } from './HomeScreen';
++// Screens
++export { default as EventJoinScreen } from './EventJoinScreen';
++export { default as PhotoFeedScreen } from './PhotoFeedScreen';
++export { default as UploadInterface } from './UploadInterface';
++export { default as ProfileScreen } from './ProfileScreen';
+
+[0m
+Now let me update TASKS.md and README.md to reflect completion:
+[0m← [0mEdit TASKS.md
+Index: /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/TASKS.md
+===================================================================
+--- /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/TASKS.md
++++ /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/TASKS.md
+@@ -6,9 +6,9 @@
+ ## Phase 1: Planning & Setup
+ 
+ - [x] Choose tech stack: React Native (Expo), Firebase (Auth/Firestore/Storage), react-native-camera, qrcode library; document in ADR
+ - [x] Initialize Expo project with TypeScript, configure ESLint/Prettier, and set up folder structure: components/, screens/, services/, utils/
+-- [ ] Create low-fidelity wireframes for: Event Join (QR scanner), Photo Feed, Upload Interface, Profile Screen
++- [x] Create low-fidelity wireframes for: Event Join (QR scanner), Photo Feed, Upload Interface, Profile Screen
+ - [ ] Set up Firebase project with security rules baseline, initialize local emulators for development
+ 
+ ## Phase 2: Authentication & Event Code System
+ 
+
+[0m
+[0m← [0mEdit README.md
+Index: /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/README.md
+===================================================================
+--- /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/README.md
++++ /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/README.md
+@@ -74,9 +74,9 @@
+ **Phase 1: Planning & Setup** - In Progress
+ 
+ - [x] Tech stack documented in ADR
+ - [x] Expo project initialization
+-- [ ] Wireframes
++- [x] Wireframes (EventJoinScreen, PhotoFeedScreen, UploadInterface, ProfileScreen)
+ - [ ] Firebase emulator setup
+ 
+ See [TASKS.md](./TASKS.md) for full roadmap.
+ 
+
+[0m

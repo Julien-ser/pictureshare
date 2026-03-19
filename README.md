@@ -75,7 +75,7 @@ src/
 
 - [x] Tech stack documented in ADR
 - [x] Expo project initialization
-- [ ] Wireframes
+- [x] Wireframes (EventJoinScreen, PhotoFeedScreen, UploadInterface, ProfileScreen)
 - [ ] Firebase emulator setup
 
 See [TASKS.md](./TASKS.md) for full roadmap.

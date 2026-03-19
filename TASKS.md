@@ -7,7 +7,7 @@ All participants scan a written code and pictures they sent will be accessible t
 
 - [x] Choose tech stack: React Native (Expo), Firebase (Auth/Firestore/Storage), react-native-camera, qrcode library; document in ADR
 - [x] Initialize Expo project with TypeScript, configure ESLint/Prettier, and set up folder structure: components/, screens/, services/, utils/
-- [ ] Create low-fidelity wireframes for: Event Join (QR scanner), Photo Feed, Upload Interface, Profile Screen
+- [x] Create low-fidelity wireframes for: Event Join (QR scanner), Photo Feed, Upload Interface, Profile Screen
 - [ ] Set up Firebase project with security rules baseline, initialize local emulators for development
 
 ## Phase 2: Authentication & Event Code System
