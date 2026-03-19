@@ -1225,3 +1225,190 @@ All participants scan a written code and pictures they sent will be accessible t
 ```
 
 **Completed at:** Thu Mar 19 07:26:48 PM EDT 2026
+[0m# [0mTodos
+[x] Create NetworkContext to monitor connectivity globally
+[x] Modify UploadInterface to add to offline queue on upload failure
+[x] Modify App.tsx to initialize offline queue and listen for network changes
+[x] Add UI indicator for offline status and pending uploads count
+[ ] Test offline-first behavior integration
+[ ] Update README.md with offline-first feature documentation
+[0m
+Let me run the lint check to ensure there are no syntax errors:
+[0m$ [0mnpm run lint
+> pictureshare@1.0.0 lint
+> eslint .
+
+
+/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/App.tsx
+   1:1   error    Definition for rule '@typescript-eslint/no-empty-object-type' was not found     @typescript-eslint/no-empty-object-type
+   1:1   error    Definition for rule '@typescript-eslint/no-wrapper-object-types' was not found  @typescript-eslint/no-wrapper-object-types
+  13:25  warning  'setCurrentEvent' is assigned a value but never used                            @typescript-eslint/no-unused-vars
+
+/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/components/QRCodeDisplay.tsx
+  1:1  error  Definition for rule '@typescript-eslint/no-empty-object-type' was not found     @typescript-eslint/no-empty-object-type
+  1:1  error  Definition for rule '@typescript-eslint/no-wrapper-object-types' was not found  @typescript-eslint/no-wrapper-object-types
+
+/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/components/index.ts
+  1:1  error  Definition for rule '@typescript-eslint/no-empty-object-type' was not found     @typescript-eslint/no-empty-object-type
+  1:1  error  Definition for rule '@typescript-eslint/no-wrapper-object-types' was not found  @typescript-eslint/no-wrapper-object-types
+
+/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/contexts/AuthContext.tsx
+  1:1  error  Definition for rule '@typescript-eslint/no-empty-object-type' was not found     @typescript-eslint/no-empty-object-type
+  1:1  error  Definition for rule '@typescript-eslint/no-wrapper-object-types' was not found  @typescript-eslint/no-wrapper-object-types
+
+/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/contexts/EventContext.tsx
+  1:1  error  Definition for rule '@typescript-eslint/no-empty-object-type' was not found     @typescript-eslint/no-empty-object-type
+  1:1  error  Definition for rule '@typescript-eslint/no-wrapper-object-types' was not found  @typescript-eslint/no-wrapper-object-types
+
+/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/contexts/NetworkContext.tsx
+  1:1  error  Definition for rule '@typescript-eslint/no-empty-object-type' was not found     @typescript-eslint/no-empty-object-type
+  1:1  error  Definition for rule '@typescript-eslint/no-wrapper-object-types' was not found  @typescript-eslint/no-wrapper-object-types
+
+/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/contexts/PhotoContext.tsx
+   1:1  error    Definition for rule '@typescript-eslint/no-empty-object-type' was not found     @typescript-eslint/no-empty-object-type
+   1:1  error    Definition for rule '@typescript-eslint/no-wrapper-object-types' was not found  @typescript-eslint/no-wrapper-object-types
+  12:3  warning  'collection' is defined but never used                                          @typescript-eslint/no-unused-vars
+  13:3  warning  'query' is defined but never used                                               @typescript-eslint/no-unused-vars
+  14:3  warning  'where' is defined but never used                                               @typescript-eslint/no-unused-vars
+  15:3  warning  'orderBy' is defined but never used                                             @typescript-eslint/no-unused-vars
+  16:3  warning  'limit' is defined but never used                                               @typescript-eslint/no-unused-vars
+  17:3  warning  'startAfter' is defined but never used                                          @typescript-eslint/no-unused-vars
+  18:3  warning  'getDocs' is defined but never used                                             @typescript-eslint/no-unused-vars
+  19:8  warning  'Query' is defined but never used                                               @typescript-eslint/no-unused-vars
+
+/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/screens/EventCreationScreen.tsx
+   1:1  error    Definition for rule '@typescript-eslint/no-empty-object-type' was not found                                         @typescript-eslint/no-empty-object-type
+   1:1  error    Definition for rule '@typescript-eslint/no-wrapper-object-types' was not found                                      @typescript-eslint/no-wrapper-object-types
+  36:6  warning  React Hook useEffect has a missing dependency: 'generateNewCode'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/screens/EventJoinScreen.tsx
+  1:1  error  Definition for rule '@typescript-eslint/no-empty-object-type' was not found     @typescript-eslint/no-empty-object-type
+  1:1  error  Definition for rule '@typescript-eslint/no-wrapper-object-types' was not found  @typescript-eslint/no-wrapper-object-types
+
+/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/screens/LoginScreen.tsx
+  1:1  error  Definition for rule '@typescript-eslint/no-empty-object-type' was not found     @typescript-eslint/no-empty-object-type
+  1:1  error  Definition for rule '@typescript-eslint/no-wrapper-object-types' was not found  @typescript-eslint/no-wrapper-object-types
+
+/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/screens/PhotoFeedScreen.tsx
+   1:1  error    Definition for rule '@typescript-eslint/no-empty-object-type' was not found                                      @typescript-eslint/no-empty-object-type
+   1:1  error    Definition for rule '@typescript-eslint/no-wrapper-object-types' was not found                                   @typescript-eslint/no-wrapper-object-types
+  32:5  warning  'hasMore' is assigned a value but never used                                                                     @typescript-eslint/no-unused-vars
+  39:9  warning  'effectiveEventId' is assigned a value but never used                                                            @typescript-eslint/no-unused-vars
+  75:6  warning  React Hook useEffect has a missing dependency: 'photoUrisMap'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/screens/ProfileScreen.tsx
+  1:1   error    Definition for rule '@typescript-eslint/no-empty-object-type' was not found     @typescript-eslint/no-empty-object-type
+  1:1   error    Definition for rule '@typescript-eslint/no-wrapper-object-types' was not found  @typescript-eslint/no-wrapper-object-types
+  2:64  warning  'Image' is defined but never used                                               @typescript-eslint/no-unused-vars
+
+/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/screens/UploadInterface.tsx
+  1:1  error  Definition for rule '@typescript-eslint/no-empty-object-type' was not found     @typescript-eslint/no-empty-object-type
+  1:1  error  Definition for rule '@typescript-eslint/no-wrapper-object-types' was not found  @typescript-eslint/no-wrapper-object-types
+
+/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/screens/index.ts
+  1:1  error  Definition for rule '@typescript-eslint/no-empty-object-type' was not found     @typescript-eslint/no-empty-object-type
+  1:1  error  Definition for rule '@typescript-eslint/no-wrapper-object-types' was not found  @typescript-eslint/no-wrapper-object-types
+
+/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/services/eventService.ts
+  1:1  error  Definition for rule '@typescript-eslint/no-empty-object-type' was not found     @typescript-eslint/no-empty-object-type
+  1:1  error  Definition for rule '@typescript-eslint/no-wrapper-object-types' was not found  @typescript-eslint/no-wrapper-object-types
+
+/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/services/firebase.ts
+   1:1   error    Definition for rule '@typescript-eslint/no-empty-object-type' was not found     @typescript-eslint/no-empty-object-type
+   1:1   error    Definition for rule '@typescript-eslint/no-wrapper-object-types' was not found  @typescript-eslint/no-wrapper-object-types
+  12:46  warning  'ref' is defined but never used                                                 @typescript-eslint/no-unused-vars
+
+/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/services/index.ts
+  1:1  error  Definition for rule '@typescript-eslint/no-empty-object-type' was not found     @typescript-eslint/no-empty-object-type
+  1:1  error  Definition for rule '@typescript-eslint/no-wrapper-object-types' was not found  @typescript-eslint/no-wrapper-object-types
+
+/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/services/offlineQueue.ts
+    1:1   error    Definition for rule '@typescript-eslint/no-empty-object-type' was not found     @typescript-eslint/no-empty-object-type
+    1:1   error    Definition for rule '@typescript-eslint/no-wrapper-object-types' was not found  @typescript-eslint/no-wrapper-object-types
+    6:7   warning  'OFFLINE_QUEUE_KEY' is assigned a value but never used                          @typescript-eslint/no-unused-vars
+  183:13  warning  'result' is assigned a value but never used                                     @typescript-eslint/no-unused-vars
+
+/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/services/photoService.ts
+  1:1  error    Definition for rule '@typescript-eslint/no-empty-object-type' was not found     @typescript-eslint/no-empty-object-type
+  1:1  error    Definition for rule '@typescript-eslint/no-wrapper-object-types' was not found  @typescript-eslint/no-wrapper-object-types
+  2:3  warning  'getStorage' is defined but never used                                          @typescript-eslint/no-unused-vars
+  5:3  warning  'getDownloadURL' is defined but never used                                      @typescript-eslint/no-unused-vars
+
+/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/types/index.ts
+  1:1  error  Definition for rule '@typescript-eslint/no-empty-object-type' was not found     @typescript-eslint/no-empty-object-type
+  1:1  error  Definition for rule '@typescript-eslint/no-wrapper-object-types' was not found  @typescript-eslint/no-wrapper-object-types
+
+/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/utils/codeGenerator.ts
+  1:1  error  Definition for rule '@typescript-eslint/no-empty-object-type' was not found     @typescript-eslint/no-empty-object-type
+  1:1  error  Definition for rule '@typescript-eslint/no-wrapper-object-types' was not found  @typescript-eslint/no-wrapper-object-types
+
+/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/utils/imagePicker.ts
+  1:1  error  Definition for rule '@typescript-eslint/no-empty-object-type' was not found     @typescript-eslint/no-empty-object-type
+  1:1  error  Definition for rule '@typescript-eslint/no-wrapper-object-types' was not found  @typescript-eslint/no-wrapper-object-types
+
+/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/utils/index.ts
+  1:1  error  Definition for rule '@typescript-eslint/no-empty-object-type' was not found     @typescript-eslint/no-empty-object-type
+  1:1  error  Definition for rule '@typescript-eslint/no-wrapper-object-types' was not found  @typescript-eslint/no-wrapper-object-types
+
+✖ 65 problems (46 errors, 19 warnings)
+[0m
+```
+
+## TASKS.md After Iteration
+
+```markdown
+# pictureshare
+
+**Mission:** App for event photo sharing
+All participants scan a written code and pictures they sent will be accessible to all in da group n vice versa
+
+## Phase 1: Planning & Setup
+
+- [x] Choose tech stack: React Native (Expo), Firebase (Auth/Firestore/Storage), react-native-camera, qrcode library; document in ADR
+- [x] Initialize Expo project with TypeScript, configure ESLint/Prettier, and set up folder structure: components/, screens/, services/, utils/
+- [x] Create low-fidelity wireframes for: Event Join (QR scanner), Photo Feed, Upload Interface, Profile Screen
+- [x] Set up Firebase project with security rules baseline, initialize local emulators for development
+
+## Phase 2: Authentication & Event Code System
+
+- [x] Implement Firebase Anonymous Auth + Google Sign-In as fallback; store user mapping locally
+- [x] Build event creation screen: generates 6-digit alphanumeric code, optional time/visibility settings
+- [x] Integrate `react-native-qrcode-svg` to display event QR code for sharing; encode deep link with event ID
+- [x] Develop QR scanner screen using `expo-camera`; validate code against Firestore and join user to event document's participants array
+
+## Phase 3: Photo Capture, Compression & Upload
+
+- [x] Build camera/gallery picker with `expo-image-picker`; request permissions and handle denials with explanatory UI
+- [x] Add image compression pipeline: use `expo-image-manipulator` to resize to ≤1920px, compress to 80% quality
+- [x] Implement upload service: upload compressed image to Firebase Storage path `/events/{eventId}/photos/{photoId}.jpg`
+- [x] Save photo metadata to Firestore collection `photos` with fields: eventId, uploaderId, storagePath, createdAt, thumbnailPath
+
+## Phase 4: Real-Time Feed & Sync
+
+- [x] Subscribe to Firestore `photos` collection query `where eventId == current` with real-time listener; render in FlatList
+- [x] Implement optimistic UI: add photo to feed immediately after upload, mark pending, finalize on server confirmation
+- [x] Build infinite scroll pagination using Firestore cursor; load 20 initial photos, fetch more on scroll
+- [ ] Add offline-first behavior: cache photos locally with `expo-file-system`; retry failed uploads when back online
+
+## Phase 5: Group Permissions & Interactions
+
+- [ ] Enable deletion: only photo owner or event creator can delete; remove from Storage and Firestore
+- [ ] Add likes: create `likes` subcollection under each photo; toggle like on press; update aggregated like count
+- [ ] Create lightweight comments: allow short text on photos; store in `comments` subcollection; real-time updates
+- [ ] Show participant list per event with avatars (from Google Auth) and photo count; differentiate current user
+
+## Phase 6: Testing, Polish & Launch
+
+- [ ] Write unit tests for utilities (code generation, image compression) and service wrappers using Jest
+- [ ] Create integration tests with Firebase Emulators: test event join flow, upload, and real-time feed
+- [ ] Perform closed beta: distribute via Expo Go, collect feedback on UX and performance
+- [ ] Deploy to app stores: configure EAS build, submit to Apple TestFlight and Google Play Internal; monitor Firebase Crashlytics
+      </parameter>
+      <parameter=filePath>
+      /home/julien/Desktop/Free-Wiggum-opencode/pictureshare_TASKS.md
+      </parameter>
+      </function>
+      </tool_call>
+```
+
+**Completed at:** Thu Mar 19 07:27:49 PM EDT 2026
