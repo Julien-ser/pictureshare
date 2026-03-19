@@ -17,7 +17,7 @@ import { addComment } from '../services/commentService';
 import { subscribeToComments } from '../services/commentService';
 import { type Unsubscribe } from 'firebase/firestore';
 import CommentItem from './CommentItem';
-import type { Comment as CommentType } from '../services/commentService';
+import type { Comment } from '../types';
 
 interface CommentsModalProps {
   visible: boolean;
