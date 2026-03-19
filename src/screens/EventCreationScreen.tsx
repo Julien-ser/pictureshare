@@ -13,6 +13,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { createEvent } from '../services/eventService';
 import { generateEventCode } from '../utils/codeGenerator';
 import type { Event } from '../types';
+import QRCodeDisplay from '../components/QRCodeDisplay';
 
 interface Props {
   onEventCreated?: (event: Event) => void;
@@ -26,6 +27,8 @@ const EventCreationScreen: React.FC<Props> = ({ onEventCreated }) => {
   const [isPublic, setIsPublic] = useState(true);
   const [loading, setLoading] = useState(false);
   const [generatingCode, setGeneratingCode] = useState(false);
+  const [currentEvent, setCurrentEvent] = useState<Event | null>(null);
+  const [showQRCode, setShowQRCode] = useState(false);
 
   // Generate initial code on mount
   useEffect(() => {
@@ -71,6 +74,10 @@ const EventCreationScreen: React.FC<Props> = ({ onEventCreated }) => {
         isPublic
       );
 
+      // Set current event and show QR code
+      setCurrentEvent(event);
+      setShowQRCode(true);
+
       Alert.alert('Success', `Event created! Code: ${event.code}`, [
         {
           text: 'OK',
@@ -78,11 +85,6 @@ const EventCreationScreen: React.FC<Props> = ({ onEventCreated }) => {
             if (onEventCreated) {
               onEventCreated(event);
             }
-            // Reset form
-            setTitle('');
-            setMaxDurationHours('');
-            setIsPublic(true);
-            generateNewCode();
           },
         },
       ]);
@@ -166,6 +168,45 @@ const EventCreationScreen: React.FC<Props> = ({ onEventCreated }) => {
           <Text style={styles.buttonText}>Create Event</Text>
         )}
       </TouchableOpacity>
+
+      {/* QR Code Display */}
+      {showQRCode && currentEvent && (
+        <View style={styles.qrSection}>
+          <View style={styles.qrHeader}>
+            <Text style={styles.qrTitle}>Event Created!</Text>
+            <TouchableOpacity
+              style={styles.closeButton}
+              onPress={() => {
+                setShowQRCode(false);
+                setCurrentEvent(null);
+              }}
+            >
+              <Text style={styles.closeButtonText}>✕</Text>
+            </TouchableOpacity>
+          </View>
+
+          <QRCodeDisplay eventCode={currentEvent.code} eventId={currentEvent.id} />
+
+          {currentEvent.title && <Text style={styles.eventTitle}>{currentEvent.title}</Text>}
+
+          <Text style={styles.shareInstructions}>
+            Share this QR code with participants. They can scan it to join your event.
+          </Text>
+
+          <TouchableOpacity
+            style={[styles.button, styles.createAnotherButton]}
+            onPress={() => {
+              setShowQRCode(false);
+              setCurrentEvent(null);
+              setTitle('');
+              setMaxDurationHours('');
+              generateNewCode();
+            }}
+          >
+            <Text style={styles.buttonText}>Create Another Event</Text>
+          </TouchableOpacity>
+        </View>
+      )}
     </ScrollView>
   );
 };

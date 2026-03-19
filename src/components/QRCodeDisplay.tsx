@@ -9,12 +9,10 @@ interface Props {
 }
 
 const QRCodeDisplay: React.FC<Props> = ({ eventCode, eventId, size = 200 }) => {
-  // Deep link format for the app
-  // Using the code format since that's what the join screen expects
-  const deepLink = `pictureshare://join?code=${eventCode}`;
-
-  // Alternative if we want to use eventId directly:
-  // const deepLink = eventId ? `pictureshare://event/${eventId}` : `pictureshare://join?code=${eventCode}`;
+  // Use eventId for deep link if available (preferred), fallback to eventCode
+  const deepLink = eventId
+    ? `pictureshare://event/${eventId}`
+    : `pictureshare://join?code=${eventCode}`;
 
   return (
     <View style={styles.container}>
