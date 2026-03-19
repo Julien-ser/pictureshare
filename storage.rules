@@ -1,0 +1,16 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    // Event photos: /events/{eventId}/photos/{photoId}.jpg
+    match /events/{eventId}/photos/{photoId}.jpg {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null;
+    }
+
+    // Event QR codes: /events/{eventId}/qrcode.png
+    match /events/{eventId}/qrcode.png {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && request.auth.uid == request.resource.data.creatorId;
+    }
+  }
+}
