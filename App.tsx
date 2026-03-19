@@ -4,6 +4,7 @@ import { StatusBar } from 'expo-status-bar';
 import { AuthProvider, useAuth } from './src/contexts/AuthContext';
 import { EventProvider, useEvent } from './src/contexts/EventContext';
 import { PhotoProvider } from './src/contexts/PhotoContext';
+import { NetworkProvider } from './src/contexts/NetworkContext';
 import LoginScreen from './src/screens/LoginScreen';
 import PhotoFeedScreen from './src/screens/PhotoFeedScreen';
 
@@ -43,7 +44,9 @@ export default function App() {
     <AuthProvider>
       <EventProvider>
         <PhotoProvider>
-          <MainNavigator />
+          <NetworkProvider>
+            <MainNavigator />
+          </NetworkProvider>
         </PhotoProvider>
       </EventProvider>
     </AuthProvider>

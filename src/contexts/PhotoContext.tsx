@@ -59,6 +59,7 @@ export function PhotoProvider({ children }: PhotoProviderProps) {
       setHasMore(true);
       setLastDoc(null);
       setError(null);
+      setInitialLoading(false);
       return;
     }
 
@@ -66,6 +67,7 @@ export function PhotoProvider({ children }: PhotoProviderProps) {
 
     const loadInitial = async () => {
       try {
+        setInitialLoading(true);
         setError(null);
         const { photos: initialPhotos, lastDoc: newLastDoc } = await loadInitialPhotos(eventId, 20);
 
@@ -73,6 +75,7 @@ export function PhotoProvider({ children }: PhotoProviderProps) {
           setPhotos(initialPhotos);
           setLastDoc(newLastDoc);
           setHasMore(newLastDoc !== null); // If we got a lastDoc, there might be more
+          setInitialLoading(false);
         }
       } catch (err) {
         console.error('Error loading initial photos:', err);
@@ -80,6 +83,7 @@ export function PhotoProvider({ children }: PhotoProviderProps) {
           setError('Failed to load photos');
           setPhotos([]);
           setHasMore(false);
+          setInitialLoading(false);
         }
       }
     };

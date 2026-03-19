@@ -9,21 +9,11 @@ import {
   ActivityIndicator,
   Alert,
 } from 'react-native';
-import {
-  collection,
-  query,
-  where,
-  orderBy,
-  onSnapshot,
-  getDocs,
-  startAfter,
-  limit,
-  type DocumentData,
-} from 'firebase/firestore';
 import { getDownloadURL, ref } from 'firebase/storage';
-import { db, storage } from '../services/firebase';
+import { storage } from '../services/firebase';
 import { usePhotos } from '../contexts/PhotoContext';
 import { useEvent } from '../contexts/EventContext';
+import { useNetwork } from '../contexts/NetworkContext';
 import type { Photo } from '../types';
 
 interface PhotoFeedScreenProps {
@@ -36,145 +26,69 @@ interface PhotoWithUri extends Photo {
 
 const PhotoFeedScreen: React.FC<PhotoFeedScreenProps> = ({ eventId: propEventId }) => {
   const { currentEvent } = useEvent();
-  const { pendingPhotos } = usePhotos();
+  const {
+    photos: confirmedPhotos,
+    pendingPhotos,
+    hasMore,
+    loadingMore,
+    initialLoading,
+    error,
+    loadMorePhotos,
+  } = usePhotos();
+  const { isOnline, pendingUploads } = useNetwork();
   const effectiveEventId = propEventId || currentEvent?.id;
 
-  // Pagination state for confirmed photos
-  const [confirmedPhotos, setConfirmedPhotos] = useState<PhotoWithUri[]>([]);
-  const [lastDoc, setLastDoc] = useState<DocumentData | null>(null);
-  const [hasMore, setHasMore] = useState(true);
-  const [loadingMore, setLoadingMore] = useState(false);
-  const [loadingInitial, setLoadingInitial] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  // Map to cache URIs for confirmed photos
+  const [photoUrisMap, setPhotoUrisMap] = useState<Map<string, string>>(new Map());
 
-  const fetchPhotoUris = async (photosList: Photo[]): Promise<PhotoWithUri[]> => {
-    return Promise.all(
-      photosList.map(async (photo) => {
+  // Fetch URIs for newly added confirmed photos
+  useEffect(() => {
+    const fetchUris = async () => {
+      // Find confirmed photos that don't have a cached URI yet
+      const newPhotos = confirmedPhotos.filter((p) => !photoUrisMap.has(p.id));
+      if (newPhotos.length === 0) return;
+
+      const uriPromises = newPhotos.map(async (photo) => {
         try {
           const uri = await getDownloadURL(ref(storage, photo.storagePath));
-          return { ...photo, uri };
+          return { id: photo.id, uri };
         } catch (err) {
           console.error(`Error getting download URL for photo ${photo.id}:`, err);
-          return { ...photo, uri: undefined };
+          return { id: photo.id, uri: undefined };
         }
-      })
-    );
-  };
-
-  // Initial subscription (first page with real-time updates)
-  useEffect(() => {
-    if (!effectiveEventId) {
-      setLoadingInitial(false);
-      setError('No event selected.');
-      return;
-    }
-
-    setLoadingInitial(true);
-    setError(null);
-
-    const q = query(
-      collection(db, 'photos'),
-      where('eventId', '==', effectiveEventId),
-      orderBy('createdAt', 'desc'),
-      limit(20)
-    );
-
-    const unsubscribe = onSnapshot(
-      q,
-      async (snapshot) => {
-        const photosData: Photo[] = snapshot.docs.map((doc) => {
-          const data = doc.data() as DocumentData;
-          return {
-            id: doc.id,
-            eventId: data.eventId,
-            uploaderId: data.uploaderId,
-            storagePath: data.storagePath,
-            thumbnailPath: data.thumbnailPath,
-            createdAt: data.createdAt?.toDate() || new Date(),
-            width: data.width,
-            height: data.height,
-          };
-        });
-
-        if (snapshot.docs.length > 0) {
-          setLastDoc(snapshot.docs[snapshot.docs.length - 1]);
-        } else {
-          setLastDoc(null);
-        }
-        setHasMore(snapshot.docs.length === 20);
-
-        try {
-          const photosWithUris = await fetchPhotoUris(photosData);
-          setConfirmedPhotos(photosWithUris);
-        } catch (e) {
-          console.error('Error fetching URIs:', e);
-        } finally {
-          setLoadingInitial(false);
-        }
-      },
-      (err) => {
-        console.error('Subscription error:', err);
-        setError('Failed to load photos');
-        setLoadingInitial(false);
-      }
-    );
-
-    return () => unsubscribe();
-  }, [effectiveEventId]);
-
-  // Load more photos (pagination)
-  const loadMore = async () => {
-    if (!lastDoc || loadingMore || !hasMore || !effectiveEventId) return;
-
-    setLoadingMore(true);
-    try {
-      const q = query(
-        collection(db, 'photos'),
-        where('eventId', '==', effectiveEventId),
-        orderBy('createdAt', 'desc'),
-        startAfter(lastDoc),
-        limit(20)
-      );
-
-      const snapshot = await getDocs(q);
-      const photosData: Photo[] = snapshot.docs.map((doc) => {
-        const data = doc.data() as DocumentData;
-        return {
-          id: doc.id,
-          eventId: data.eventId,
-          uploaderId: data.uploaderId,
-          storagePath: data.storagePath,
-          thumbnailPath: data.thumbnailPath,
-          createdAt: data.createdAt?.toDate() || new Date(),
-          width: data.width,
-          height: data.height,
-        };
       });
 
-      if (snapshot.docs.length > 0) {
-        setLastDoc(snapshot.docs[snapshot.docs.length - 1]);
-      } else {
-        setLastDoc(null);
-      }
-      setHasMore(snapshot.docs.length === 20);
+      const results = await Promise.all(uriPromises);
 
-      const newPhotos = await fetchPhotoUris(photosData);
-      setConfirmedPhotos((prev) => [...prev, ...newPhotos]);
-    } catch (err) {
-      console.error('Error loading more photos:', err);
-      setError('Failed to load more photos');
-    } finally {
-      setLoadingMore(false);
-    }
-  };
+      setPhotoUrisMap((prev) => {
+        const next = new Map(prev);
+        results.forEach(({ id, uri }) => {
+          if (uri) {
+            next.set(id, uri);
+          }
+        });
+        return next;
+      });
+    };
 
-  // Combine confirmed and pending photos, sorted by newest first
-  const pendingWithUri = useMemo(() => {
-    return pendingPhotos.filter((p) => p.localUri).map((p) => ({ ...p, uri: p.localUri }));
-  }, [pendingPhotos]);
+    fetchUris();
+  }, [confirmedPhotos]);
 
-  const allPhotos = useMemo(() => {
-    const combined = [...confirmedPhotos, ...pendingWithUri];
+  // Build combined photos list with URIs
+  const combinedPhotos = useMemo(() => {
+    const pendingWithUri: PhotoWithUri[] = pendingPhotos.map((p) => ({
+      ...p,
+      uri: p.localUri,
+    }));
+
+    const confirmedWithUri: PhotoWithUri[] = confirmedPhotos
+      .filter((p) => p.id !== undefined) // ensure id exists
+      .map((p) => ({
+        ...p,
+        uri: photoUrisMap.get(p.id),
+      }));
+
+    const combined = [...pendingWithUri, ...confirmedWithUri];
     combined.sort((a, b) => {
       const dateA =
         a.createdAt instanceof Date ? a.createdAt.getTime() : new Date(a.createdAt).getTime();
@@ -182,8 +96,9 @@ const PhotoFeedScreen: React.FC<PhotoFeedScreenProps> = ({ eventId: propEventId 
         b.createdAt instanceof Date ? b.createdAt.getTime() : new Date(b.createdAt).getTime();
       return dateB - dateA;
     });
+
     return combined;
-  }, [confirmedPhotos, pendingWithUri]);
+  }, [pendingPhotos, confirmedPhotos, photoUrisMap]);
 
   const pendingIds = useMemo(() => new Set(pendingPhotos.map((p) => p.id)), [pendingPhotos]);
 
@@ -236,16 +151,6 @@ const PhotoFeedScreen: React.FC<PhotoFeedScreenProps> = ({ eventId: propEventId 
     );
   };
 
-  const renderFooter = () => {
-    if (!loadingMore) return null;
-    return (
-      <View style={styles.footerLoader}>
-        <ActivityIndicator size="small" color="#007AFF" />
-        <Text style={styles.footerLoaderText}>Loading more...</Text>
-      </View>
-    );
-  };
-
   const renderEmptyState = () => (
     <View style={styles.emptyContainer}>
       <Text style={styles.emptyIcon}>📷</Text>
@@ -272,11 +177,21 @@ const PhotoFeedScreen: React.FC<PhotoFeedScreenProps> = ({ eventId: propEventId 
     </View>
   );
 
-  if (loadingInitial && allPhotos.length === 0) {
+  const renderFooter = () => {
+    if (!loadingMore) return null;
+    return (
+      <View style={styles.footerLoader}>
+        <ActivityIndicator size="small" color="#007AFF" />
+        <Text style={styles.footerLoaderText}>Loading more...</Text>
+      </View>
+    );
+  };
+
+  if (initialLoading && combinedPhotos.length === 0) {
     return renderLoadingState();
   }
 
-  if (error && allPhotos.length === 0) {
+  if (error && combinedPhotos.length === 0) {
     return renderErrorState();
   }
 
@@ -287,19 +202,30 @@ const PhotoFeedScreen: React.FC<PhotoFeedScreenProps> = ({ eventId: propEventId 
           <Text style={styles.backButton}>← Back</Text>
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Event Photos</Text>
-        <View style={styles.placeholderButton} />
+        <View style={styles.statusContainer}>
+          {!isOnline && (
+            <View style={[styles.statusBadge, styles.offlineBadge]}>
+              <Text style={styles.statusText}>Offline</Text>
+            </View>
+          )}
+          {pendingUploads > 0 && (
+            <View style={[styles.statusBadge, styles.pendingBadge]}>
+              <Text style={styles.statusText}>{pendingUploads} pending</Text>
+            </View>
+          )}
+        </View>
       </View>
 
-      {allPhotos.length === 0 ? (
+      {combinedPhotos.length === 0 ? (
         renderEmptyState()
       ) : (
         <FlatList
-          data={allPhotos}
+          data={combinedPhotos}
           renderItem={renderPhoto}
           keyExtractor={(item) => item.id}
           contentContainerStyle={styles.feed}
           showsVerticalScrollIndicator={false}
-          onEndReached={loadMore}
+          onEndReached={loadMorePhotos}
           onEndReachedThreshold={0.5}
           ListFooterComponent={renderFooter}
         />
@@ -321,7 +247,23 @@ const styles = StyleSheet.create({
   },
   backButton: { fontSize: 16, color: '#007AFF' },
   headerTitle: { fontSize: 20, fontWeight: 'bold' },
-  placeholderButton: { width: 60 },
+  statusContainer: { flexDirection: 'row', gap: 8 },
+  statusBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  offlineBadge: {
+    backgroundColor: '#FF3B30',
+  },
+  pendingBadge: {
+    backgroundColor: '#FF9500',
+  },
+  statusText: {
+    color: '#fff',
+    fontSize: 12,
+    fontWeight: '600',
+  },
   feed: { padding: 10 },
   photoCard: {
     backgroundColor: '#fff',
@@ -380,12 +322,9 @@ const styles = StyleSheet.create({
     paddingVertical: 20,
     justifyContent: 'center',
     alignItems: 'center',
+    flexDirection: 'row',
   },
-  footerLoaderText: {
-    marginTop: 8,
-    fontSize: 14,
-    color: '#666',
-  },
+  footerLoaderText: { marginLeft: 10, fontSize: 14, color: '#666' },
 });
 
 export default PhotoFeedScreen;

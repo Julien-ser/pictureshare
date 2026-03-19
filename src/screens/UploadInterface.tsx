@@ -11,8 +11,10 @@ import {
 } from 'react-native';
 import { pickImage, ImageResult, requestMediaPermissions } from '../utils/imagePicker';
 import { uploadAndSavePhoto, generatePhotoId } from '../services/photoService';
+import { addToOfflineQueue } from '../services/offlineQueue';
 import { auth } from '../services/firebase';
 import { usePhotos } from '../contexts/PhotoContext';
+import { useNetwork } from '../contexts/NetworkContext';
 import type { Photo } from '../types';
 
 /**
@@ -25,6 +27,7 @@ interface UploadInterfaceProps {
 
 const UploadInterface: React.FC<UploadInterfaceProps> = ({ eventId }) => {
   const { addPendingPhoto, removePendingPhoto } = usePhotos();
+  const { isOnline } = useNetwork();
   const [selectedImage, setSelectedImage] = useState<ImageResult | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
@@ -76,7 +79,7 @@ const UploadInterface: React.FC<UploadInterfaceProps> = ({ eventId }) => {
       width: selectedImage.width,
       height: selectedImage.height,
       createdAt: new Date(),
-      localUri: selectedImage.uri, // Use local URI for immediate display
+      localUri: selectedImage.uri, // Local URI for immediate display
     };
 
     // Add to pending state (optimistic UI)
@@ -86,7 +89,30 @@ const UploadInterface: React.FC<UploadInterfaceProps> = ({ eventId }) => {
     setUploadProgress(0);
 
     try {
-      // Start upload with progress callback, passing the photoId for consistency
+      // If offline, add to offline queue directly
+      if (!isOnline) {
+        console.log('Offline - adding upload to offline queue');
+        await addToOfflineQueue({
+          id: photoId,
+          eventId,
+          uploaderId: user.uid,
+          localImageUri: selectedImage.uri,
+          width: selectedImage.width,
+          height: selectedImage.height,
+          storagePath: pendingPhoto.storagePath,
+        });
+        Alert.alert(
+          'Offline Mode',
+          "Photo saved locally. It will upload automatically when you're back online.",
+          [{ text: 'OK' }]
+        );
+        setSelectedImage(null);
+        setUploadProgress(100);
+        setIsUploading(false);
+        return;
+      }
+
+      // Online - try to upload
       await uploadAndSavePhoto(eventId, user.uid, selectedImage, photoId, (progress) => {
         setUploadProgress(progress);
       });
@@ -105,13 +131,42 @@ const UploadInterface: React.FC<UploadInterfaceProps> = ({ eventId }) => {
       ]);
     } catch (error) {
       console.error('Upload error:', error);
-      // Remove pending photo on failure
-      removePendingPhoto(photoId);
-      Alert.alert('Upload Failed', 'Could not upload the photo. Please try again.');
+
+      // Network error or upload failed - add to offline queue for retry
+      if (isOnline) {
+        console.log('Upload failed while online - adding to offline queue for retry');
+        try {
+          await addToOfflineQueue({
+            id: photoId,
+            eventId,
+            uploaderId: user.uid,
+            localImageUri: selectedImage.uri,
+            width: selectedImage.width,
+            height: selectedImage.height,
+            storagePath: pendingPhoto.storagePath,
+          });
+          Alert.alert(
+            'Connection Issue',
+            'Upload failed. Photo will retry automatically when connection improves.',
+            [{ text: 'OK' }]
+          );
+        } catch (queueError) {
+          console.error('Failed to add to offline queue:', queueError);
+          Alert.alert(
+            'Upload Failed',
+            'Could not upload the photo and failed to save for retry. Please try again.'
+          );
+          removePendingPhoto(photoId);
+        }
+      } else {
+        // This shouldn't happen as we check isOnline above, but handle it
+        Alert.alert('Upload Failed', 'Could not upload the photo. Please try again.');
+        removePendingPhoto(photoId);
+      }
+
+      setSelectedImage(null);
       setIsUploading(false);
       setUploadProgress(0);
-    } finally {
-      setIsUploading(false);
     }
   };
 
