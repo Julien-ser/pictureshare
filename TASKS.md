@@ -21,8 +21,8 @@ All participants scan a written code and pictures they sent will be accessible t
 
 - [x] Build camera/gallery picker with `expo-image-picker`; request permissions and handle denials with explanatory UI
 - [x] Add image compression pipeline: use `expo-image-manipulator` to resize to ≤1920px, compress to 80% quality
-- [ ] Implement upload service: upload compressed image to Firebase Storage path `/events/{eventId}/photos/{photoId}.jpg`
-- [ ] Save photo metadata to Firestore collection `photos` with fields: eventId, uploaderId, storagePath, createdAt, thumbnailPath
+- [x] Implement upload service: upload compressed image to Firebase Storage path `/events/{eventId}/photos/{photoId}.jpg`
+- [x] Save photo metadata to Firestore collection `photos` with fields: eventId, uploaderId, storagePath, createdAt, thumbnailPath
 
 ## Phase 4: Real-Time Feed & Sync
 

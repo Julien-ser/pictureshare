@@ -10,12 +10,19 @@ import {
   Platform,
 } from 'react-native';
 import { pickImage, ImageResult, requestMediaPermissions } from '../utils/imagePicker';
+import { uploadAndSavePhoto } from '../services/photoService';
+import { auth } from '../services/firebase';
+import type { Photo } from '../types';
 
 /**
  * Upload Interface Screen
  * Photo picker, preview, and upload controls with permission handling
  */
-const UploadInterface: React.FC = () => {
+interface UploadInterfaceProps {
+  eventId: string;
+}
+
+const UploadInterface: React.FC<UploadInterfaceProps> = ({ eventId }) => {
   const [selectedImage, setSelectedImage] = useState<ImageResult | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
@@ -51,39 +58,51 @@ const UploadInterface: React.FC = () => {
       return;
     }
 
+    const user = auth.currentUser;
+    if (!user) {
+      Alert.alert('Authentication Required', 'Please sign in to upload photos.');
+      return;
+    }
+
     setIsUploading(true);
     setUploadProgress(0);
 
     try {
+      // Start upload
+      const uploadPromise = uploadAndSavePhoto(eventId, user.uid, selectedImage);
+
+      // Simulate progress increments until complete
       const interval = setInterval(() => {
         setUploadProgress((prev) => {
-          if (prev >= 100) {
+          if (prev >= 95) {
             clearInterval(interval);
-            return 100;
+            return prev;
           }
-          return prev + 25;
+          return prev + 5;
         });
-      }, 500);
+      }, 200);
 
-      setTimeout(() => {
-        clearInterval(interval);
-        setUploadProgress(100);
-        setIsUploading(false);
-        Alert.alert('Upload Complete', 'Your photo has been shared with the event group!', [
-          {
-            text: 'OK',
-            onPress: () => {
-              setSelectedImage(null);
-              setUploadProgress(0);
-            },
+      // Wait for upload to complete
+      await uploadPromise;
+      clearInterval(interval);
+      setUploadProgress(100);
+
+      Alert.alert('Upload Complete', 'Your photo has been shared with the event group!', [
+        {
+          text: 'OK',
+          onPress: () => {
+            setSelectedImage(null);
+            setUploadProgress(0);
           },
-        ]);
-      }, 2000);
+        },
+      ]);
     } catch (error) {
       console.error('Upload error:', error);
       Alert.alert('Upload Failed', 'Could not upload the photo. Please try again.');
       setIsUploading(false);
       setUploadProgress(0);
+    } finally {
+      setIsUploading(false);
     }
   };
 

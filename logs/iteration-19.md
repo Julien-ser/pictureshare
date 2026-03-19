@@ -522,3 +522,294 @@ Index: /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/servi
 
 [0m
 Now add storage emulator connection and import ref:
+[0m← [0mEdit src/services/firebase.ts
+Index: /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/services/firebase.ts
+===================================================================
+--- /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/services/firebase.ts
++++ /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/services/firebase.ts
+@@ -8,9 +8,9 @@
+   type Auth,
+   type User as FirebaseUser,
+ } from 'firebase/auth';
+ import { getFirestore, connectFirestoreEmulator } from 'firebase/firestore';
+-import { getStorage, connectStorageEmulator, type FirebaseStorage } from 'firebase/storage';
++import { getStorage, connectStorageEmulator, ref, type FirebaseStorage } from 'firebase/storage';
+ import { connectAuthEmulator } from 'firebase/auth';
+ import * as WebBrowser from 'expo-web-browser';
+ import { makeRedirectUri, AuthRequest } from 'expo-auth-session';
+ import * as Google from 'expo-auth-session/providers/google';
+
+[0m
+[0m← [0mEdit src/services/firebase.ts
+Index: /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/services/firebase.ts
+===================================================================
+--- /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/services/firebase.ts
++++ /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/services/firebase.ts
+@@ -39,8 +39,9 @@
+ // Use emulators in development
+ if (__DEV__) {
+   connectAuthEmulator(auth, 'http://localhost:9099');
+   connectFirestoreEmulator(db, 'localhost', 8080);
++  connectStorageEmulator(storage, 'localhost', 9199);
+ }
+ 
+ // Google provider for fallback auth
+ export const googleProvider = new GoogleAuthProvider();
+
+[0m
+Now create the photo service:
+[0m← [0mWrite src/services/photoService.ts
+Wrote file successfully.
+
+LSP errors detected in this file, please fix:
+<diagnostics file="/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/services/photoService.ts">
+ERROR [1:27] Module '"firebase/storage"' has no exported member 'uploadFile'.
+</diagnostics>
+[0m
+Let me fix the import to use `uploadBytes` instead:
+[0m← [0mEdit src/services/photoService.ts
+Index: /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/services/photoService.ts
+===================================================================
+--- /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/services/photoService.ts
++++ /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/services/photoService.ts
+@@ -1,5 +1,5 @@
+-import { getStorage, ref, uploadFile, deleteObject } from 'firebase/storage';
++import { getStorage, ref, uploadBytes, deleteObject } from 'firebase/storage';
+ import { collection, doc, setDoc, serverTimestamp, type DocumentData } from 'firebase/firestore';
+ import { storage, db } from './firebase';
+ import type { Photo } from '../types';
+ 
+
+[0m
+[0m← [0mEdit src/services/photoService.ts
+Index: /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/services/photoService.ts
+===================================================================
+--- /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/services/photoService.ts
++++ /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/services/photoService.ts
+@@ -28,16 +28,13 @@
+   // Create storage reference
+   const storagePath = `events/${eventId}/photos/${photoId}.jpg`;
+   const storageRef = ref(storage, storagePath);
+ 
+-  // Upload the file
+-  // Note: In React Native, we use uploadFile with a fetch blob or the uri directly
++  // Upload the file using uploadBytes (React Native compatible)
+   const response = await fetch(imageUri);
+   const blob = await response.blob();
+ 
+-  await uploadFile(storageRef, blob, {
+-    contentType: 'image/jpeg',
+-  });
++  await uploadBytes(storageRef, blob);
+ 
+   return storagePath;
+ } catch (error) {
+   console.error('Error uploading photo to storage:', error);
+
+[0m
+Now update the services index to export photoService:
+[0m← [0mEdit src/services/index.ts
+Index: /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/services/index.ts
+===================================================================
+--- /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/services/index.ts
++++ /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/services/index.ts
+@@ -1,2 +1,6 @@
+ // Firebase authentication service
+ export * from './firebase';
++// Event management service
++export * from './eventService';
++// Photo upload service
++export * from './photoService';
+
+[0m
+Now update UploadInterface.tsx to use the real upload service:
+[0m← [0mEdit src/screens/UploadInterface.tsx
+Index: /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/screens/UploadInterface.tsx
+===================================================================
+--- /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/screens/UploadInterface.tsx
++++ /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/screens/UploadInterface.tsx
+@@ -9,8 +9,11 @@
+   ActivityIndicator,
+   Platform,
+ } from 'react-native';
+ import { pickImage, ImageResult, requestMediaPermissions } from '../utils/imagePicker';
++import { uploadAndSavePhoto } from '../services/photoService';
++import { auth } from '../services/firebase';
++import type { Photo } from '../types';
+ 
+ /**
+  * Upload Interface Screen
+  * Photo picker, preview, and upload controls with permission handling
+
+[0m
+Now update the component to accept eventId prop and use real upload:
+[0m← [0mEdit src/screens/UploadInterface.tsx
+Index: /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/screens/UploadInterface.tsx
+===================================================================
+--- /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/screens/UploadInterface.tsx
++++ /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/screens/UploadInterface.tsx
+@@ -17,9 +17,13 @@
+ /**
+  * Upload Interface Screen
+  * Photo picker, preview, and upload controls with permission handling
+  */
+-const UploadInterface: React.FC = () => {
++interface UploadInterfaceProps {
++  eventId: string;
++}
++
++const UploadInterface: React.FC<UploadInterfaceProps> = ({ eventId }) => {
+   const [selectedImage, setSelectedImage] = useState<ImageResult | null>(null);
+   const [isUploading, setIsUploading] = useState(false);
+   const [uploadProgress, setUploadProgress] = useState(0);
+   const [permissionsChecked, setPermissionsChecked] = useState(false);
+@@ -53,41 +57,53 @@
+       Alert.alert('No Image', 'Please select an image first');
+       return;
+     }
+ 
++    const user = auth.currentUser;
++    if (!user) {
++      Alert.alert('Authentication Required', 'Please sign in to upload photos.');
++      return;
++    }
++
+     setIsUploading(true);
+     setUploadProgress(0);
+ 
+     try {
++      // Start upload
++      const uploadPromise = uploadAndSavePhoto(eventId, user.uid, selectedImage);
++
++      // Simulate progress increments until complete
+       const interval = setInterval(() => {
+         setUploadProgress((prev) => {
+-          if (prev >= 100) {
++          if (prev >= 95) {
+             clearInterval(interval);
+-            return 100;
++            return prev;
+           }
+-          return prev + 25;
++          return prev + 5;
+         });
+-      }, 500);
++      }, 200);
+ 
+-      setTimeout(() => {
+-        clearInterval(interval);
+-        setUploadProgress(100);
+-        setIsUploading(false);
+-        Alert.alert('Upload Complete', 'Your photo has been shared with the event group!', [
+-          {
+-            text: 'OK',
+-            onPress: () => {
+-              setSelectedImage(null);
+-              setUploadProgress(0);
+-            },
++      // Wait for upload to complete
++      await uploadPromise;
++      clearInterval(interval);
++      setUploadProgress(100);
++
++      Alert.alert('Upload Complete', 'Your photo has been shared with the event group!', [
++        {
++          text: 'OK',
++          onPress: () => {
++            setSelectedImage(null);
++            setUploadProgress(0);
+           },
+-        ]);
+-      }, 2000);
++        },
++      ]);
+     } catch (error) {
+       console.error('Upload error:', error);
+       Alert.alert('Upload Failed', 'Could not upload the photo. Please try again.');
+       setIsUploading(false);
+       setUploadProgress(0);
++    } finally {
++      setIsUploading(false);
+     }
+   };
+ 
+   return (
+
+[0m
+Let me fix the deletePhoto function to import and use deleteDoc properly:
+[0m✗ [0medit failed
+[91m[1mError: [0mCould not find oldString in the file. It must match exactly, including whitespace, indentation, and line endings.
+[0m
+[0m← [0mEdit src/services/photoService.ts
+Index: /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/services/photoService.ts
+===================================================================
+--- /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/services/photoService.ts
++++ /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/services/photoService.ts
+@@ -88,14 +88,12 @@
+   }
+ 
+   try {
+     // Delete from Firestore
+-    const photoRef = doc(db, PHOTOS_COLLECTION, photoId);
+-    // Note: In a real app you'd use deleteDoc, but it's not imported yet
+-    // For now, we'll just log
+-    console.log('Would delete Firestore document:', photoId);
++    await deleteDoc(doc(db, PHOTOS_COLLECTION, photoId));
+   } catch (error) {
+     console.error('Error deleting photo metadata:', error);
++    throw error;
+   }
+ }
+ 
+ /**
+
+[0m
+[0m→ [0mRead src/services/photoService.ts
+Let me read the file to fix the delete function properly:
+Let me fix the import to include deleteDoc:
+[0m
+[0m← [0mEdit src/services/photoService.ts
+Index: /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/services/photoService.ts
+===================================================================
+--- /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/services/photoService.ts
++++ /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/services/photoService.ts
+@@ -1,6 +1,13 @@
+ import { getStorage, ref, uploadBytes, deleteObject } from 'firebase/storage';
+-import { collection, doc, setDoc, serverTimestamp, type DocumentData } from 'firebase/firestore';
++import {
++  collection,
++  doc,
++  setDoc,
++  deleteDoc,
++  serverTimestamp,
++  type DocumentData,
++} from 'firebase/firestore';
+ import { storage, db } from './firebase';
+ import type { Photo } from '../types';
+ 
+ const PHOTOS_COLLECTION = 'photos';
+
+[0m
+[0m→ [0mRead TASKS.md
+Now let me update TASKS.md to mark the task as complete:
+[0m
+[0m← [0mEdit TASKS.md
+Index: /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/TASKS.md
+===================================================================
+--- /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/TASKS.md
++++ /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/TASKS.md
+@@ -20,10 +20,10 @@
+ ## Phase 3: Photo Capture, Compression & Upload
+ 
+ - [x] Build camera/gallery picker with `expo-image-picker`; request permissions and handle denials with explanatory UI
+ - [x] Add image compression pipeline: use `expo-image-manipulator` to resize to ≤1920px, compress to 80% quality
+-- [ ] Implement upload service: upload compressed image to Firebase Storage path `/events/{eventId}/photos/{photoId}.jpg`
+-- [ ] Save photo metadata to Firestore collection `photos` with fields: eventId, uploaderId, storagePath, createdAt, thumbnailPath
++- [x] Implement upload service: upload compressed image to Firebase Storage path `/events/{eventId}/photos/{photoId}.jpg`
++- [x] Save photo metadata to Firestore collection `photos` with fields: eventId, uploaderId, storagePath, createdAt, thumbnailPath
+ 
+ ## Phase 4: Real-Time Feed & Sync
+ 
+ - [ ] Subscribe to Firestore `photos` collection query `where eventId == current` with real-time listener; render in FlatList
+
+[0m
