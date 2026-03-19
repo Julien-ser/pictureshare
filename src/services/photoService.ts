@@ -8,6 +8,7 @@ import {
 import {
   collection,
   doc,
+  getDoc,
   setDoc,
   deleteDoc,
   serverTimestamp,
@@ -25,7 +26,7 @@ import {
   type Unsubscribe,
 } from 'firebase/firestore';
 import { storage, db } from './firebase';
-import type { Photo } from '../types';
+import type { Photo, Event } from '../types';
 
 const PHOTOS_COLLECTION = 'photos';
 
@@ -291,4 +292,77 @@ export async function loadInitialPhotos(
   batchSize: number = 20
 ): Promise<{ photos: Photo[]; lastDoc: QueryDocumentSnapshot<DocumentData> | null }> {
   return loadPhotosBatch(eventId, batchSize);
+}
+
+/**
+ * Checks if a user can delete a photo
+ * User can delete if they are the uploader OR the event creator
+ */
+export async function canDeletePhoto(
+  photoId: string,
+  userId: string,
+  eventId: string
+): Promise<boolean> {
+  try {
+    // Get the photo document
+    const photoRef = doc(db, PHOTOS_COLLECTION, photoId);
+    const photoDoc = await getDoc(photoRef);
+
+    if (!photoDoc.exists()) {
+      return false;
+    }
+
+    const photoData = photoDoc.data();
+
+    // Check if user is the uploader
+    if (photoData.uploaderId === userId) {
+      return true;
+    }
+
+    // Get the event to check if user is the creator
+    const eventRef = doc(db, 'events', eventId);
+    const eventDoc = await getDoc(eventRef);
+
+    if (eventDoc.exists()) {
+      const eventData = eventDoc.data() as Event;
+      if (eventData.createdBy === userId) {
+        return true;
+      }
+    }
+
+    return false;
+  } catch (error) {
+    console.error('Error checking delete permission:', error);
+    return false;
+  }
+}
+
+/**
+ * Deletes a photo with permission verification
+ */
+export async function deletePhotoWithPermission(
+  photoId: string,
+  eventId: string,
+  userId: string
+): Promise<void> {
+  // Check permission first
+  const canDelete = await canDeletePhoto(photoId, userId, eventId);
+
+  if (!canDelete) {
+    throw new Error('Unauthorized: You do not have permission to delete this photo');
+  }
+
+  // Get photo data to retrieve storage path
+  const photoRef = doc(db, PHOTOS_COLLECTION, photoId);
+  const photoDoc = await getDoc(photoRef);
+
+  if (!photoDoc.exists()) {
+    throw new Error('Photo not found');
+  }
+
+  const photoData = photoDoc.data() as Photo;
+  const storagePath = photoData.storagePath;
+
+  // Use existing deletePhoto function
+  await deletePhoto(eventId, photoId, storagePath);
 }
