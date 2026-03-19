@@ -89,7 +89,7 @@ src/
 **Phase 3: Photo Capture, Compression & Upload** - In Progress
 
 - [x] Camera/gallery picker with permission handling
-- [ ] Image compression pipeline (resize to ≤1920px, 80% quality)
+- [x] Image compression pipeline (resize to ≤1920px, 80% quality)
 - [ ] Upload service to Firebase Storage
 - [ ] Photo metadata storage in Firestore
 

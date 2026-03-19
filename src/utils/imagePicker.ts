@@ -1,4 +1,5 @@
 import * as ImagePicker from 'expo-image-picker';
+import * as ImageManipulator from 'expo-image-manipulator';
 import { Alert, Platform } from 'react-native';
 
 export interface ImageResult {
@@ -6,6 +7,56 @@ export interface ImageResult {
   width: number;
   height: number;
   base64?: string;
+}
+
+const MAX_DIMENSION = 1920;
+const COMPRESSION_QUALITY = 0.8;
+
+/**
+ * Compress and resize image to meet size requirements
+ * Resizes to max 1920px on longest side, compresses to 80% quality
+ */
+export async function compressImage(
+  imageUri: string,
+  width: number,
+  height: number
+): Promise<ImageResult> {
+  try {
+    // Calculate target dimensions maintaining aspect ratio
+    let targetWidth = width;
+    let targetHeight = height;
+
+    if (width > MAX_DIMENSION || height > MAX_DIMENSION) {
+      if (width >= height) {
+        targetWidth = MAX_DIMENSION;
+        targetHeight = Math.round((height * MAX_DIMENSION) / width);
+      } else {
+        targetHeight = MAX_DIMENSION;
+        targetWidth = Math.round((width * MAX_DIMENSION) / height);
+      }
+    }
+
+    // Perform compression and resizing
+    const manipulatedImage = await ImageManipulator.manipulateAsync(
+      imageUri,
+      [{ resize: { width: targetWidth, height: targetHeight } }],
+      {
+        compress: COMPRESSION_QUALITY,
+        format: ImageManipulator.SaveFormat.JPEG,
+        base64: false,
+      }
+    );
+
+    return {
+      uri: manipulatedImage.uri,
+      width: targetWidth,
+      height: targetHeight,
+    };
+  } catch (error) {
+    console.error('Error compressing image:', error);
+    // Return original if compression fails
+    return { uri: imageUri, width, height };
+  }
 }
 
 /**
@@ -71,11 +122,15 @@ export async function takePhoto(): Promise<ImageResult | null> {
       return null;
     }
 
-    return {
-      uri: result.assets[0].uri,
-      width: result.assets[0].width,
-      height: result.assets[0].height,
-    };
+    const originalImage = result.assets[0];
+    // Compress the image after capture
+    const compressed = await compressImage(
+      originalImage.uri,
+      originalImage.width,
+      originalImage.height
+    );
+
+    return compressed;
   } catch (error) {
     console.error('Error taking photo:', error);
     Alert.alert('Camera Error', 'Failed to take photo. Please try again.');
@@ -104,11 +159,15 @@ export async function pickFromGallery(): Promise<ImageResult | null> {
       return null;
     }
 
-    return {
-      uri: result.assets[0].uri,
-      width: result.assets[0].width,
-      height: result.assets[0].height,
-    };
+    const originalImage = result.assets[0];
+    // Compress the image after selection
+    const compressed = await compressImage(
+      originalImage.uri,
+      originalImage.width,
+      originalImage.height
+    );
+
+    return compressed;
   } catch (error) {
     console.error('Error picking image:', error);
     Alert.alert('Gallery Error', 'Failed to select photo. Please try again.');

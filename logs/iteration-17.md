@@ -1,7 +1,7 @@
-# Iteration 14 - pictureshare
+# Iteration 17 - pictureshare
 
-**Timestamp:** Thu Mar 19 06:58:44 PM EDT 2026
-**Task:** Build camera/gallery picker with `expo-image-picker`; request permissions and handle denials with explanatory UI
+**Timestamp:** Thu Mar 19 06:59:39 PM EDT 2026
+**Task:** Add image compression pipeline: use `expo-image-manipulator` to resize to ≤1920px, compress to 80% quality
 
 ## Prompt Sent
 
@@ -339,174 +339,15 @@ Switch back to `generic` when the specialist work is done.
 ---
 
 ### ⚠️ CRITICAL TOKEN CONSTRAINTS:
-- Iteration: 14 / 64k Token Budget
+- Iteration: 17 / 64k Token Budget
 - Attempt: 1 (previous attempts may have partial progress)
 - **Mandate:** Operate efficiently. Use partial edits, not full file rewrites when possible.
 - **Output:** Be concise and action-oriented.
 
 
-## CURRENT PROJECT STATE (Iteration 14)
+## CURRENT PROJECT STATE (Iteration 17)
 
 ```
-# pictureshare
-
-**Mission:** App for event photo sharing
-All participants scan a written code and pictures they sent will be accessible to all in da group n vice versa
-
-## Phase 1: Planning & Setup
-
-- [x] Choose tech stack: React Native (Expo), Firebase (Auth/Firestore/Storage), react-native-camera, qrcode library; document in ADR
-- [x] Initialize Expo project with TypeScript, configure ESLint/Prettier, and set up folder structure: components/, screens/, services/, utils/
-- [x] Create low-fidelity wireframes for: Event Join (QR scanner), Photo Feed, Upload Interface, Profile Screen
-- [x] Set up Firebase project with security rules baseline, initialize local emulators for development
-
-## Phase 2: Authentication & Event Code System
-
-- [x] Implement Firebase Anonymous Auth + Google Sign-In as fallback; store user mapping locally
-- [x] Build event creation screen: generates 6-digit alphanumeric code, optional time/visibility settings
-- [x] Integrate `react-native-qrcode-svg` to display event QR code for sharing; encode deep link with event ID
-- [x] Develop QR scanner screen using `expo-camera`; validate code against Firestore and join user to event document's participants array
-
-## Phase 3: Photo Capture, Compression & Upload
-
-- [ ] Build camera/gallery picker with `expo-image-picker`; request permissions and handle denials with explanatory UI
-- [ ] Add image compression pipeline: use `expo-image-manipulator` to resize to ≤1920px, compress to 80% quality
-- [ ] Implement upload service: upload compressed image to Firebase Storage path `/events/{eventId}/photos/{photoId}.jpg`
-- [ ] Save photo metadata to Firestore collection `photos` with fields: eventId, uploaderId, storagePath, createdAt, thumbnailPath
-
-## Phase 4: Real-Time Feed & Sync
-
-- [ ] Subscribe to Firestore `photos` collection query `where eventId == current` with real-time listener; render in FlatList
-- [ ] Implement optimistic UI: add photo to feed immediately after upload, mark pending, finalize on server confirmation
-- [ ] Build infinite scroll pagination using Firestore cursor; load 20 initial photos, fetch more on scroll
-- [ ] Add offline-first behavior: cache photos locally with `expo-file-system`; retry failed uploads when back online
-
-## Phase 5: Group Permissions & Interactions
-
-- [ ] Enable deletion: only photo owner or event creator can delete; remove from Storage and Firestore
-- [ ] Add likes: create `likes` subcollection under each photo; toggle like on press; update aggregated like count
-- [ ] Create lightweight comments: allow short text on photos; store in `comments` subcollection; real-time updates
-- [ ] Show participant list per event with avatars (from Google Auth) and photo count; differentiate current user
-
-## Phase 6: Testing, Polish & Launch
-
-- [ ] Write unit tests for utilities (code generation, image compression) and service wrappers using Jest
-- [ ] Create integration tests with Firebase Emulators: test event join flow, upload, and real-time feed
-- [ ] Perform closed beta: distribute via Expo Go, collect feedback on UX and performance
-- [ ] Deploy to app stores: configure EAS build, submit to Apple TestFlight and Google Play Internal; monitor Firebase Crashlytics
-      </parameter>
-      <parameter=filePath>
-      /home/julien/Desktop/Free-Wiggum-opencode/pictureshare_TASKS.md
-      </parameter>
-      </function>
-      </tool_call>
-```
-
-## NEXT TASK TO COMPLETE:
-Build camera/gallery picker with `expo-image-picker`; request permissions and handle denials with explanatory UI
-
-**Instructions:** Complete this task. Mark [x] in TASKS.md when done. Create, modify, or delete files as needed. Execute commands as needed. Also update README.md to match this project (name, setup instructions, current progress). No permission needed—just act.
-```
-
-## OpenCode Output
-
-```
-[0m
-> build · stepfun/step-3.5-flash:free
-[0m
-I'll help you build the camera/gallery picker with expo-image-picker and permissions handling. Let me first explore the codebase to understand the current structure.
-[0m→ [0mRead package.json
-[0m→ [0mRead TASKS.md
-[0m✱ [0mGlob "**/*.{ts,tsx,js,jsx}"[90m 20 matches[0m
-Let me check the existing image picker utility and upload interface to understand what's already implemented:
-[0m→ [0mRead src/utils/imagePicker.ts
-[0m→ [0mRead src/screens/UploadInterface.tsx
-[0m→ [0mRead README.md
-Good! I can see that the image picker functionality already exists with:
-- `src/utils/imagePicker.ts` with permission handling, camera, and gallery picker
-- `src/screens/UploadInterface.tsx` with UI for picking images
-
-However, the task is not marked as completed in TASKS.md. Let me verify if the implementation is complete and meets all requirements. The code looks good but let me check if there are any issues or enhancements needed.
-
-Let me examine the implementation more closely to ensure it fully satisfies the task requirements:
-
-1. ✅ Uses `expo-image-picker`
-2. ✅ Requests permissions (camera and media library)
-3. ✅ Handles denials with explanatory UI (alerts with clear messages)
-4. ✅ Has both camera and gallery picker options
-5. ✅ UploadInterface screen integrates the picker
-
-The implementation appears complete. Let me also check if there's anything in the README that needs updating about this feature:
-The implementation is already complete! The codebase already has:
-- ✅ `expo-image-picker` in dependencies
-- ✅ `imagePicker.ts` utility with comprehensive permission handling
-- ✅ Explanatory alerts for permission denials (separate messages for camera vs library)
-- ✅ Both camera and gallery picker functions
-- ✅ UploadInterface screen using these functions
-
-Let me mark this task as completed in TASKS.md and update the README to reflect progress:
-[0m
-[0m← [0mEdit TASKS.md
-Index: /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/TASKS.md
-===================================================================
---- /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/TASKS.md
-+++ /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/TASKS.md
-@@ -18,9 +18,9 @@
- - [x] Develop QR scanner screen using `expo-camera`; validate code against Firestore and join user to event document's participants array
- 
- ## Phase 3: Photo Capture, Compression & Upload
- 
--- [ ] Build camera/gallery picker with `expo-image-picker`; request permissions and handle denials with explanatory UI
-+- [x] Build camera/gallery picker with `expo-image-picker`; request permissions and handle denials with explanatory UI
- - [ ] Add image compression pipeline: use `expo-image-manipulator` to resize to ≤1920px, compress to 80% quality
- - [ ] Implement upload service: upload compressed image to Firebase Storage path `/events/{eventId}/photos/{photoId}.jpg`
- - [ ] Save photo metadata to Firestore collection `photos` with fields: eventId, uploaderId, storagePath, createdAt, thumbnailPath
- 
-
-[0m
-Now let me update the README to reflect that Phase 3 is now in progress:
-[0m← [0mEdit README.md
-Index: /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/README.md
-===================================================================
---- /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/README.md
-+++ /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/README.md
-@@ -85,15 +85,14 @@
- 6. Open pull request
- 
- ## Current Phase
- 
--**Phase 2: Authentication & Event Code System** - In Progress
-+**Phase 3: Photo Capture, Compression & Upload** - In Progress
- 
--- [x] Firebase Anonymous Auth + Google Sign-In (fallback)
--- [x] User mapping stored locally
--- [x] Event creation screen with 6-digit code generation, time/visibility settings
--- [x] QR code display for event sharing (deep link with event ID)
--- [x] QR scanner integration with event validation
-+- [x] Camera/gallery picker with permission handling
-+- [ ] Image compression pipeline (resize to ≤1920px, 80% quality)
-+- [ ] Upload service to Firebase Storage
-+- [ ] Photo metadata storage in Firestore
- 
- See [TASKS.md](./TASKS.md) for full roadmap.
- 
- ## Authentication
-
-[0m
-The camera/gallery picker with permissions handling is already fully implemented. I've marked the task as complete in TASKS.md and updated the README to reflect Phase 3 progress.
-
-Now I'll commit and push these documentation updates:
-[0m$ [0mgit add TASKS.md README.md && git commit -m "feat: complete camera/gallery picker with expo-image-picker and permissions handling" && git push origin main
-[main cd52281] feat: complete camera/gallery picker with expo-image-picker and permissions handling
- 2 files changed, 6 insertions(+), 7 deletions(-)
-To https://github.com/Julien-ser/pictureshare.git
-   feefbed..cd52281  main -> main
-[0m
-```
-
-## TASKS.md After Iteration
-
-```markdown
 # pictureshare
 
 **Mission:** App for event photo sharing
@@ -561,4 +402,289 @@ All participants scan a written code and pictures they sent will be accessible t
       </tool_call>
 ```
 
-**Completed at:** Thu Mar 19 06:59:35 PM EDT 2026
+## NEXT TASK TO COMPLETE:
+Add image compression pipeline: use `expo-image-manipulator` to resize to ≤1920px, compress to 80% quality
+
+**Instructions:** Complete this task. Mark [x] in TASKS.md when done. Create, modify, or delete files as needed. Execute commands as needed. Also update README.md to match this project (name, setup instructions, current progress). No permission needed—just act.
+```
+
+## OpenCode Output
+
+```
+[0m
+> build · stepfun/step-3.5-flash:free
+[0m
+I'll start by exploring the project structure to understand where the image compression should be implemented.
+[0m→ [0mRead package.json
+[0m→ [0mRead TASKS.md
+[0m✱ [0mGlob "**/*.{ts,tsx,js,jsx}"[90m 20 matches[0m
+I need to add `expo-image-manipulator` to the dependencies and create the compression pipeline. Let me first examine the current image handling code to understand where to integrate the compression.
+[0m→ [0mRead src/utils/imagePicker.ts
+[0m→ [0mRead src/screens/UploadInterface.tsx
+Now I'll implement the image compression pipeline. First, let me add the required dependency and then create the compression utility.
+[0m
+[0m$ [0mnpx expo install expo-image-manipulator
+› Installing 1 SDK 50.0.0 compatible native module using npm
+> npm install
+
+added 1 package, and audited 1553 packages in 6s
+
+223 packages are looking for funding
+  run `npm fund` for details
+
+27 vulnerabilities (7 low, 20 high)
+
+To address issues that do not require attention, run:
+  npm audit fix
+
+To address all issues (including breaking changes), run:
+  npm audit fix --force
+
+Run `npm audit` for details.
+[0m
+Now I'll update `imagePicker.ts` to add the compression function and integrate it into the image picking flow:
+[0m← [0mEdit src/utils/imagePicker.ts
+Index: /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/utils/imagePicker.ts
+===================================================================
+--- /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/utils/imagePicker.ts
++++ /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/utils/imagePicker.ts
+@@ -1,5 +1,6 @@
+ import * as ImagePicker from 'expo-image-picker';
++import * as ImageManipulator from 'expo-image-manipulator';
+ import { Alert, Platform } from 'react-native';
+ 
+ export interface ImageResult {
+   uri: string;
+@@ -7,9 +8,59 @@
+   height: number;
+   base64?: string;
+ }
+ 
++const MAX_DIMENSION = 1920;
++const COMPRESSION_QUALITY = 0.8;
++
+ /**
++ * Compress and resize image to meet size requirements
++ * Resizes to max 1920px on longest side, compresses to 80% quality
++ */
++export async function compressImage(
++  imageUri: string,
++  width: number,
++  height: number
++): Promise<ImageResult> {
++  try {
++    // Calculate target dimensions maintaining aspect ratio
++    let targetWidth = width;
++    let targetHeight = height;
++
++    if (width > MAX_DIMENSION || height > MAX_DIMENSION) {
++      if (width >= height) {
++        targetWidth = MAX_DIMENSION;
++        targetHeight = Math.round((height * MAX_DIMENSION) / width);
++      } else {
++        targetHeight = MAX_DIMENSION;
++        targetWidth = Math.round((width * MAX_DIMENSION) / height);
++      }
++    }
++
++    // Perform compression and resizing
++    const manipulatedImage = await ImageManipulator.manipulateAsync(
++      imageUri,
++      [{ resize: { width: targetWidth, height: targetHeight } }],
++      {
++        compress: COMPRESSION_QUALITY,
++        format: ImageManipulator.SaveFormat.JPEG,
++        base64: false,
++      }
++    );
++
++    return {
++      uri: manipulatedImage.uri,
++      width: targetWidth,
++      height: targetHeight,
++    };
++  } catch (error) {
++    console.error('Error compressing image:', error);
++    // Return original if compression fails
++    return { uri: imageUri, width, height };
++  }
++}
++
++/**
+  * Request camera and media library permissions
+  * Returns true if all permissions granted, false otherwise
+  */
+ export async function requestMediaPermissions(): Promise<boolean> {
+
+[0m
+Now I'll update the `takePhoto` and `pickFromGallery` functions to compress images before returning:
+[0m← [0mEdit src/utils/imagePicker.ts
+Index: /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/utils/imagePicker.ts
+===================================================================
+--- /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/utils/imagePicker.ts
++++ /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/utils/imagePicker.ts
+@@ -121,13 +121,17 @@
+   if (result.canceled) {
+     return null;
+   }
+ 
+-  return {
+-    uri: result.assets[0].uri,
+-    width: result.assets[0].width,
+-    height: result.assets[0].height,
+-  };
++  const originalImage = result.assets[0];
++  // Compress the image after capture
++  const compressed = await compressImage(
++    originalImage.uri,
++    originalImage.width,
++    originalImage.height
++  );
++
++  return compressed;
+ } catch (error) {
+   console.error('Error taking photo:', error);
+   Alert.alert('Camera Error', 'Failed to take photo. Please try again.');
+   return null;
+
+[0m
+[0m← [0mEdit src/utils/imagePicker.ts
+Index: /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/utils/imagePicker.ts
+===================================================================
+--- /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/utils/imagePicker.ts
++++ /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/utils/imagePicker.ts
+@@ -158,13 +158,17 @@
+   if (result.canceled) {
+     return null;
+   }
+ 
+-  return {
+-    uri: result.assets[0].uri,
+-    width: result.assets[0].width,
+-    height: result.assets[0].height,
+-  };
++  const originalImage = result.assets[0];
++  // Compress the image after selection
++  const compressed = await compressImage(
++    originalImage.uri,
++    originalImage.width,
++    originalImage.height
++  );
++
++  return compressed;
+ } catch (error) {
+   console.error('Error picking image:', error);
+   Alert.alert('Gallery Error', 'Failed to select photo. Please try again.');
+   return null;
+
+[0m
+Let me verify the complete `imagePicker.ts` file to ensure the compression is properly integrated:
+[0m→ [0mRead src/utils/imagePicker.ts
+Now I'll mark the task as complete in TASKS.md:
+[0m
+[0m← [0mEdit TASKS.md
+Index: /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/TASKS.md
+===================================================================
+--- /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/TASKS.md
++++ /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/TASKS.md
+@@ -19,9 +19,9 @@
+ 
+ ## Phase 3: Photo Capture, Compression & Upload
+ 
+ - [x] Build camera/gallery picker with `expo-image-picker`; request permissions and handle denials with explanatory UI
+-- [ ] Add image compression pipeline: use `expo-image-manipulator` to resize to ≤1920px, compress to 80% quality
++- [x] Add image compression pipeline: use `expo-image-manipulator` to resize to ≤1920px, compress to 80% quality
+ - [ ] Implement upload service: upload compressed image to Firebase Storage path `/events/{eventId}/photos/{photoId}.jpg`
+ - [ ] Save photo metadata to Firestore collection `photos` with fields: eventId, uploaderId, storagePath, createdAt, thumbnailPath
+ 
+ ## Phase 4: Real-Time Feed & Sync
+
+[0m
+[0m✱ [0mGlob "README.md"[90m 1 match[0m
+[0m✱ [0mGlob "**/*.test.{ts,tsx,js,jsx}"[90m 0 matches[0m
+[0m✱ [0mGlob "**/__tests__/**/*.{ts,tsx,js,jsx}"[90m 0 matches[0m
+Let me check if there's a README file that needs updating and see if there are any existing tests:
+Let me read the README to see if it needs updating:
+[0m→ [0mRead README.md
+I'll update the README to reflect the completed compression task:
+[0m
+[0m← [0mEdit README.md
+Index: /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/README.md
+===================================================================
+--- /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/README.md
++++ /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/README.md
+@@ -88,9 +88,9 @@
+ 
+ **Phase 3: Photo Capture, Compression & Upload** - In Progress
+ 
+ - [x] Camera/gallery picker with permission handling
+-- [ ] Image compression pipeline (resize to ≤1920px, 80% quality)
++- [x] Image compression pipeline (resize to ≤1920px, 80% quality)
+ - [ ] Upload service to Firebase Storage
+ - [ ] Photo metadata storage in Firestore
+ 
+ See [TASKS.md](./TASKS.md) for full roadmap.
+
+[0m
+[0m→ [0mRead package.json
+Let me verify the package.json includes the new dependency:
+```
+
+## TASKS.md After Iteration
+
+```markdown
+# pictureshare
+
+**Mission:** App for event photo sharing
+All participants scan a written code and pictures they sent will be accessible to all in da group n vice versa
+
+## Phase 1: Planning & Setup
+
+- [x] Choose tech stack: React Native (Expo), Firebase (Auth/Firestore/Storage), react-native-camera, qrcode library; document in ADR
+- [x] Initialize Expo project with TypeScript, configure ESLint/Prettier, and set up folder structure: components/, screens/, services/, utils/
+- [x] Create low-fidelity wireframes for: Event Join (QR scanner), Photo Feed, Upload Interface, Profile Screen
+- [x] Set up Firebase project with security rules baseline, initialize local emulators for development
+
+## Phase 2: Authentication & Event Code System
+
+- [x] Implement Firebase Anonymous Auth + Google Sign-In as fallback; store user mapping locally
+- [x] Build event creation screen: generates 6-digit alphanumeric code, optional time/visibility settings
+- [x] Integrate `react-native-qrcode-svg` to display event QR code for sharing; encode deep link with event ID
+- [x] Develop QR scanner screen using `expo-camera`; validate code against Firestore and join user to event document's participants array
+
+## Phase 3: Photo Capture, Compression & Upload
+
+- [x] Build camera/gallery picker with `expo-image-picker`; request permissions and handle denials with explanatory UI
+- [x] Add image compression pipeline: use `expo-image-manipulator` to resize to ≤1920px, compress to 80% quality
+- [ ] Implement upload service: upload compressed image to Firebase Storage path `/events/{eventId}/photos/{photoId}.jpg`
+- [ ] Save photo metadata to Firestore collection `photos` with fields: eventId, uploaderId, storagePath, createdAt, thumbnailPath
+
+## Phase 4: Real-Time Feed & Sync
+
+- [ ] Subscribe to Firestore `photos` collection query `where eventId == current` with real-time listener; render in FlatList
+- [ ] Implement optimistic UI: add photo to feed immediately after upload, mark pending, finalize on server confirmation
+- [ ] Build infinite scroll pagination using Firestore cursor; load 20 initial photos, fetch more on scroll
+- [ ] Add offline-first behavior: cache photos locally with `expo-file-system`; retry failed uploads when back online
+
+## Phase 5: Group Permissions & Interactions
+
+- [ ] Enable deletion: only photo owner or event creator can delete; remove from Storage and Firestore
+- [ ] Add likes: create `likes` subcollection under each photo; toggle like on press; update aggregated like count
+- [ ] Create lightweight comments: allow short text on photos; store in `comments` subcollection; real-time updates
+- [ ] Show participant list per event with avatars (from Google Auth) and photo count; differentiate current user
+
+## Phase 6: Testing, Polish & Launch
+
+- [ ] Write unit tests for utilities (code generation, image compression) and service wrappers using Jest
+- [ ] Create integration tests with Firebase Emulators: test event join flow, upload, and real-time feed
+- [ ] Perform closed beta: distribute via Expo Go, collect feedback on UX and performance
+- [ ] Deploy to app stores: configure EAS build, submit to Apple TestFlight and Google Play Internal; monitor Firebase Crashlytics
+      </parameter>
+      <parameter=filePath>
+      /home/julien/Desktop/Free-Wiggum-opencode/pictureshare_TASKS.md
+      </parameter>
+      </function>
+      </tool_call>
+```
+
+**Completed at:** Thu Mar 19 07:01:26 PM EDT 2026
