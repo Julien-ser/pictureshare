@@ -36,7 +36,7 @@ All participants scan a written code and pictures they sent will be accessible t
 - [x] Enable deletion: only photo owner or event creator can delete; remove from Storage and Firestore
 - [x] Add likes: create `likes` subcollection under each photo; toggle like on press; update aggregated like count
 - [x] Create lightweight comments: allow short text on photos; store in `comments` subcollection; real-time updates
-- [ ] Show participant list per event with avatars (from Google Auth) and photo count; differentiate current user
+- [x] Show participant list per event with avatars (from Google Auth) and photo count; differentiate current user
 
 ## Phase 6: Testing, Polish & Launch
 

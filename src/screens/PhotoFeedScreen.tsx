@@ -26,7 +26,10 @@ import {
 } from '../services/likeService';
 import { subscribeToCommentCount } from '../services/commentService';
 import CommentsModal from '../components/CommentsModal';
+import ParticipantsList from '../components/ParticipantsList';
 import type { Photo } from '../types';
+
+type TabType = 'photos' | 'participants';
 
 interface PhotoFeedScreenProps {
   eventId?: string;
@@ -73,6 +76,9 @@ const PhotoFeedScreen: React.FC<PhotoFeedScreenProps> = ({ eventId: propEventId 
   // Comments modal state
   const [selectedPhotoId, setSelectedPhotoId] = useState<string | null>(null);
   const [showCommentsModal, setShowCommentsModal] = useState(false);
+
+  // Tab state: 'photos' or 'participants'
+  const [activeTab, setActiveTab] = useState<TabType>('photos');
 
   // Fetch URIs for newly added confirmed photos
   useEffect(() => {
@@ -324,6 +330,41 @@ const PhotoFeedScreen: React.FC<PhotoFeedScreenProps> = ({ eventId: propEventId 
     setSelectedPhotoId(null);
   }, []);
 
+  // Render the photo feed content
+  const renderPhotoContent = () => {
+    if (initialLoading && combinedPhotos.length === 0) {
+      return renderLoadingState();
+    }
+
+    if (error && combinedPhotos.length === 0) {
+      return renderErrorState();
+    }
+
+    if (combinedPhotos.length === 0) {
+      return renderEmptyState();
+    }
+
+    return (
+      <>
+        <FlatList
+          data={combinedPhotos}
+          renderItem={renderPhoto}
+          keyExtractor={(item) => item.id}
+          contentContainerStyle={styles.feed}
+          showsVerticalScrollIndicator={false}
+          onEndReached={loadMorePhotos}
+          onEndReachedThreshold={0.5}
+          ListFooterComponent={renderFooter}
+        />
+        <CommentsModal
+          visible={showCommentsModal}
+          photoId={selectedPhotoId || ''}
+          onClose={handleCloseComments}
+        />
+      </>
+    );
+  };
+
   const renderPhoto = ({ item }: { item: PhotoWithUri }) => {
     const isPending = pendingIds.has(item.id);
     const canDelete = canUserDeletePhoto(item.id);
@@ -431,7 +472,9 @@ const PhotoFeedScreen: React.FC<PhotoFeedScreenProps> = ({ eventId: propEventId 
         <TouchableOpacity onPress={() => window.history.back()}>
           <Text style={styles.backButton}>← Back</Text>
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Event Photos</Text>
+        <Text style={styles.headerTitle}>
+          {activeTab === 'photos' ? 'Event Photos' : 'Participants'}
+        </Text>
         <View style={styles.statusContainer}>
           {!isOnline && (
             <View style={[styles.statusBadge, styles.offlineBadge]}>
@@ -446,25 +489,31 @@ const PhotoFeedScreen: React.FC<PhotoFeedScreenProps> = ({ eventId: propEventId 
         </View>
       </View>
 
-      {combinedPhotos.length === 0 ? (
-        renderEmptyState()
+      {/* Tab Navigation */}
+      <View style={styles.tabContainer}>
+        <TouchableOpacity
+          style={[styles.tab, activeTab === 'photos' && styles.activeTab]}
+          onPress={() => setActiveTab('photos')}
+        >
+          <Text style={[styles.tabText, activeTab === 'photos' && styles.activeTabText]}>
+            Photos
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.tab, activeTab === 'participants' && styles.activeTab]}
+          onPress={() => setActiveTab('participants')}
+        >
+          <Text style={[styles.tabText, activeTab === 'participants' && styles.activeTabText]}>
+            Participants
+          </Text>
+        </TouchableOpacity>
+      </View>
+
+      {activeTab === 'photos' ? (
+        renderPhotoContent()
       ) : (
-        <FlatList
-          data={combinedPhotos}
-          renderItem={renderPhoto}
-          keyExtractor={(item) => item.id}
-          contentContainerStyle={styles.feed}
-          showsVerticalScrollIndicator={false}
-          onEndReached={loadMorePhotos}
-          onEndReachedThreshold={0.5}
-          ListFooterComponent={renderFooter}
-        />
+        <ParticipantsList eventId={effectiveEventId || currentEvent?.id || ''} />
       )}
-      <CommentsModal
-        visible={showCommentsModal}
-        photoId={selectedPhotoId || ''}
-        onClose={handleCloseComments}
-      />
     </View>
   );
 };
@@ -564,6 +613,32 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
   },
   footerLoaderText: { marginLeft: 10, fontSize: 14, color: '#666' },
+  // Tab styles
+  tabContainer: {
+    flexDirection: 'row',
+    backgroundColor: '#fff',
+    borderBottomWidth: 1,
+    borderBottomColor: '#e0e0e0',
+  },
+  tab: {
+    flex: 1,
+    paddingVertical: 12,
+    alignItems: 'center',
+    borderBottomWidth: 2,
+    borderBottomColor: 'transparent',
+  },
+  activeTab: {
+    borderBottomColor: '#007AFF',
+  },
+  tabText: {
+    fontSize: 16,
+    fontWeight: '500',
+    color: '#666',
+  },
+  activeTabText: {
+    color: '#007AFF',
+    fontWeight: '600',
+  },
 });
 
 export default PhotoFeedScreen;

@@ -453,3 +453,402 @@ Index: /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/compo
 ===================================================================
 --- /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/components/ParticipantsList.tsx
 +++ /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/components/ParticipantsList.tsx
+@@ -266,12 +266,11 @@
+     fontWeight: 'bold',
+     marginBottom: 10,
+     color: '#333',
+   },
+-  emptyMessage: {
++  emptyText: {
+     fontSize: 16,
+     color: '#666',
+-    textAlign: 'center',
+   },
+ });
+ 
+ export default ParticipantsList;
+
+[0m
+[0m← [0mEdit src/components/ParticipantsList.tsx
+Index: /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/components/ParticipantsList.tsx
+===================================================================
+--- /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/components/ParticipantsList.tsx
++++ /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/components/ParticipantsList.tsx
+@@ -270,7 +270,12 @@
+   emptyText: {
+     fontSize: 16,
+     color: '#666',
+   },
++  emptyMessage: {
++    fontSize: 16,
++    color: '#666',
++    textAlign: 'center',
++  },
+ });
+ 
+ export default ParticipantsList;
+
+[0m
+Now let me update the components index.ts to export the new component:
+[0m→ [0mRead src/components/index.ts
+[0m
+[0m← [0mEdit src/components/index.ts
+Index: /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/components/index.ts
+===================================================================
+--- /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/components/index.ts
++++ /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/components/index.ts
+@@ -1,1 +1,2 @@
+ export { default as QRCodeDisplay } from './QRCodeDisplay';
++export { default as ParticipantsList } from './ParticipantsList';
+
+[0m
+Now let me update PhotoFeedScreen to add the participant list with tab navigation:
+[0m← [0mEdit src/screens/PhotoFeedScreen.tsx
+Index: /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/screens/PhotoFeedScreen.tsx
+===================================================================
+--- /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/screens/PhotoFeedScreen.tsx
++++ /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/screens/PhotoFeedScreen.tsx
+@@ -25,10 +25,13 @@
+   subscribeToUserLike,
+ } from '../services/likeService';
+ import { subscribeToCommentCount } from '../services/commentService';
+ import CommentsModal from '../components/CommentsModal';
++import ParticipantsList from '../components/ParticipantsList';
+ import type { Photo } from '../types';
+ 
++type TabType = 'photos' | 'participants';
++
+ interface PhotoFeedScreenProps {
+   eventId?: string;
+ }
+ 
+
+[0m
+[0m← [0mEdit src/screens/PhotoFeedScreen.tsx
+Index: /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/screens/PhotoFeedScreen.tsx
+===================================================================
+--- /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/screens/PhotoFeedScreen.tsx
++++ /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/screens/PhotoFeedScreen.tsx
+@@ -76,8 +76,11 @@
+ // Comments modal state
+ const [selectedPhotoId, setSelectedPhotoId] = useState<string | null>(null);
+ const [showCommentsModal, setShowCommentsModal] = useState(false);
+ 
++// Tab state: 'photos' or 'participants'
++const [activeTab, setActiveTab] = useState<TabType>('photos');
++
+ // Fetch URIs for newly added confirmed photos
+ useEffect(() => {
+   const fetchUris = async () => {
+     // Find confirmed photos that don't have a cached URI yet
+
+[0m
+Now replace the header section to add tab navigation:
+[0m← [0mEdit src/screens/PhotoFeedScreen.tsx
+Index: /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/screens/PhotoFeedScreen.tsx
+===================================================================
+--- /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/screens/PhotoFeedScreen.tsx
++++ /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/screens/PhotoFeedScreen.tsx
+@@ -436,9 +436,11 @@
+       <View style={styles.header}>
+         <TouchableOpacity onPress={() => window.history.back()}>
+           <Text style={styles.backButton}>← Back</Text>
+         </TouchableOpacity>
+-        <Text style={styles.headerTitle}>Event Photos</Text>
++        <Text style={styles.headerTitle}>
++          {activeTab === 'photos' ? 'Event Photos' : 'Participants'}
++        </Text>
+         <View style={styles.statusContainer}>
+           {!isOnline && (
+             <View style={[styles.statusBadge, styles.offlineBadge]}>
+               <Text style={styles.statusText}>Offline</Text>
+@@ -451,27 +453,33 @@
+           )}
+         </View>
+       </View>
+ 
+-      {combinedPhotos.length === 0 ? (
+-        renderEmptyState()
++      {/* Tab Navigation */}
++      <View style={styles.tabContainer}>
++        <TouchableOpacity
++          style={[styles.tab, activeTab === 'photos' && styles.activeTab]}
++          onPress={() => setActiveTab('photos')}
++        >
++          <Text style={[styles.tabText, activeTab === 'photos' && styles.activeTabText]}>
++            Photos
++          </Text>
++        </TouchableOpacity>
++        <TouchableOpacity
++          style={[styles.tab, activeTab === 'participants' && styles.activeTab]}
++          onPress={() => setActiveTab('participants')}
++        >
++          <Text style={[styles.tabText, activeTab === 'participants' && styles.activeTabText]}>
++            Participants
++          </Text>
++        </TouchableOpacity>
++      </View>
++
++      {activeTab === 'photos' ? (
++        renderPhotoContent()
+       ) : (
+-        <FlatList
+-          data={combinedPhotos}
+-          renderItem={renderPhoto}
+-          keyExtractor={(item) => item.id}
+-          contentContainerStyle={styles.feed}
+-          showsVerticalScrollIndicator={false}
+-          onEndReached={loadMorePhotos}
+-          onEndReachedThreshold={0.5}
+-          ListFooterComponent={renderFooter}
+-        />
++        <ParticipantsList eventId={effectiveEventId || currentEvent?.id || ''} />
+       )}
+-      <CommentsModal
+-        visible={showCommentsModal}
+-        photoId={selectedPhotoId || ''}
+-        onClose={handleCloseComments}
+-      />
+     </View>
+   );
+ };
+ 
+
+[0m
+Let me restructure the PhotoFeedScreen properly. I'll add a renderPhotoContent function and add the missing styles:
+[0m← [0mEdit src/screens/PhotoFeedScreen.tsx
+Index: /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/screens/PhotoFeedScreen.tsx
+===================================================================
+--- /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/screens/PhotoFeedScreen.tsx
++++ /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/screens/PhotoFeedScreen.tsx
+@@ -329,8 +329,43 @@
+   setShowCommentsModal(false);
+   setSelectedPhotoId(null);
+ }, []);
+ 
++// Render the photo feed content
++const renderPhotoContent = () => {
++  if (initialLoading && combinedPhotos.length === 0) {
++    return renderLoadingState();
++  }
++
++  if (error && combinedPhotos.length === 0) {
++    return renderErrorState();
++  }
++
++  if (combinedPhotos.length === 0) {
++    return renderEmptyState();
++  }
++
++  return (
++    <>
++      <FlatList
++        data={combinedPhotos}
++        renderItem={renderPhoto}
++        keyExtractor={(item) => item.id}
++        contentContainerStyle={styles.feed}
++        showsVerticalScrollIndicator={false}
++        onEndReached={loadMorePhotos}
++        onEndReachedThreshold={0.5}
++        ListFooterComponent={renderFooter}
++      />
++      <CommentsModal
++        visible={showCommentsModal}
++        photoId={selectedPhotoId || ''}
++        onClose={handleCloseComments}
++      />
++    </>
++  );
++};
++
+ const renderPhoto = ({ item }: { item: PhotoWithUri }) => {
+   const isPending = pendingIds.has(item.id);
+   const canDelete = canUserDeletePhoto(item.id);
+ 
+
+[0m
+[0m✗ [0medit failed
+[91m[1mError: [0mThe edit tool was called with invalid arguments: [
+  {
+    "expected": "string",
+    "code": "invalid_type",
+    "path": [
+      "oldString"
+    ],
+    "message": "Invalid input: expected string, received undefined"
+  },
+  {
+    "expected": "string",
+    "code": "invalid_type",
+    "path": [
+      "newString"
+    ],
+    "message": "Invalid input: expected string, received undefined"
+  }
+].
+Please rewrite the input so it satisfies the expected schema.
+Now add the tab styles to the StyleSheet:
+Let me read the end of the file to get the exact closing of the StyleSheet:
+[0m→ [0mRead src/screens/PhotoFeedScreen.tsx[90m [offset=560][0m
+[0m
+[0m← [0mEdit src/screens/PhotoFeedScreen.tsx
+Index: /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/screens/PhotoFeedScreen.tsx
+===================================================================
+--- /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/screens/PhotoFeedScreen.tsx
++++ /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/screens/PhotoFeedScreen.tsx
+@@ -612,7 +612,33 @@
+     alignItems: 'center',
+     flexDirection: 'row',
+   },
+   footerLoaderText: { marginLeft: 10, fontSize: 14, color: '#666' },
++  // Tab styles
++  tabContainer: {
++    flexDirection: 'row',
++    backgroundColor: '#fff',
++    borderBottomWidth: 1,
++    borderBottomColor: '#e0e0e0',
++  },
++  tab: {
++    flex: 1,
++    paddingVertical: 12,
++    alignItems: 'center',
++    borderBottomWidth: 2,
++    borderBottomColor: 'transparent',
++  },
++  activeTab: {
++    borderBottomColor: '#007AFF',
++  },
++  tabText: {
++    fontSize: 16,
++    fontWeight: '500',
++    color: '#666',
++  },
++  activeTabText: {
++    color: '#007AFF',
++    fontWeight: '600',
++  },
+ });
+ 
+ export default PhotoFeedScreen;
+
+[0m
+Let me check the current README:
+[0m→ [0mRead README.md
+Update the README to add the participant list feature to the Features section and mark the task as complete in the Current Phase:
+[0m
+[0m← [0mEdit README.md
+Index: /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/README.md
+===================================================================
+--- /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/README.md
++++ /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/README.md
+@@ -8,8 +8,9 @@
+ - **Real-Time Photo Feed** - See photos as they're uploaded
+ - **Image Compression** - Optimized uploads without quality loss
+ - **Offline-First** - Works without internet, syncs when back online
+ - **Group Interactions** - Like and comment on photos
++- **Participant List** - View all event participants with avatars and photo counts
+ - **Cross-Platform** - Works on iOS and Android
+ 
+ ## Tech Stack
+ 
+
+[0m
+[0m← [0mEdit README.md
+Index: /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/README.md
+===================================================================
+--- /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/README.md
++++ /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/README.md
+@@ -90,9 +90,9 @@
+ **Phase 5: Group Permissions & Interactions** - In Progress
+ 
+ - [x] Add likes: create `likes` subcollection under each photo; toggle like on press; update aggregated like count
+ - [x] Create lightweight comments: allow short text on photos; store in `comments` subcollection; real-time updates
+-- [ ] Show participant list per event with avatars (from Google Auth) and photo count; differentiate current user
++- [x] Show participant list per event with avatars (from Google Auth) and photo count; differentiate current user
+ 
+ **Phase 4: Real-Time Feed & Sync** - Completed
+ 
+ - [x] Real-time subscription to Firestore photos with onSnapshot listener
+
+[0m
+Now update TASKS.md to mark the participant list task as completed:
+[0m← [0mEdit TASKS.md
+Index: /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/TASKS.md
+===================================================================
+--- /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/TASKS.md
++++ /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/TASKS.md
+@@ -35,9 +35,9 @@
+ 
+ - [x] Enable deletion: only photo owner or event creator can delete; remove from Storage and Firestore
+ - [x] Add likes: create `likes` subcollection under each photo; toggle like on press; update aggregated like count
+ - [x] Create lightweight comments: allow short text on photos; store in `comments` subcollection; real-time updates
+-- [ ] Show participant list per event with avatars (from Google Auth) and photo count; differentiate current user
++- [x] Show participant list per event with avatars (from Google Auth) and photo count; differentiate current user
+ 
+ ## Phase 6: Testing, Polish & Launch
+ 
+ - [ ] Write unit tests for utilities (code generation, image compression) and service wrappers using Jest
+
+[0m
+Let me check package.json for available scripts and then run linting:
+[0m→ [0mRead package.json
+```
+
+## TASKS.md After Iteration
+
+```markdown
+# pictureshare
+
+**Mission:** App for event photo sharing
+All participants scan a written code and pictures they sent will be accessible to all in da group n vice versa
+
+## Phase 1: Planning & Setup
+
+- [x] Choose tech stack: React Native (Expo), Firebase (Auth/Firestore/Storage), react-native-camera, qrcode library; document in ADR
+- [x] Initialize Expo project with TypeScript, configure ESLint/Prettier, and set up folder structure: components/, screens/, services/, utils/
+- [x] Create low-fidelity wireframes for: Event Join (QR scanner), Photo Feed, Upload Interface, Profile Screen
+- [x] Set up Firebase project with security rules baseline, initialize local emulators for development
+
+## Phase 2: Authentication & Event Code System
+
+- [x] Implement Firebase Anonymous Auth + Google Sign-In as fallback; store user mapping locally
+- [x] Build event creation screen: generates 6-digit alphanumeric code, optional time/visibility settings
+- [x] Integrate `react-native-qrcode-svg` to display event QR code for sharing; encode deep link with event ID
+- [x] Develop QR scanner screen using `expo-camera`; validate code against Firestore and join user to event document's participants array
+
+## Phase 3: Photo Capture, Compression & Upload
+
+- [x] Build camera/gallery picker with `expo-image-picker`; request permissions and handle denials with explanatory UI
+- [x] Add image compression pipeline: use `expo-image-manipulator` to resize to ≤1920px, compress to 80% quality
+- [x] Implement upload service: upload compressed image to Firebase Storage path `/events/{eventId}/photos/{photoId}.jpg`
+- [x] Save photo metadata to Firestore collection `photos` with fields: eventId, uploaderId, storagePath, createdAt, thumbnailPath
+
+## Phase 4: Real-Time Feed & Sync
+
+- [x] Subscribe to Firestore `photos` collection query `where eventId == current` with real-time listener; render in FlatList
+- [x] Implement optimistic UI: add photo to feed immediately after upload, mark pending, finalize on server confirmation
+- [x] Build infinite scroll pagination using Firestore cursor; load 20 initial photos, fetch more on scroll
+- [x] Add offline-first behavior: cache photos locally with `expo-file-system`; retry failed uploads when back online
+
+## Phase 5: Group Permissions & Interactions
+
+- [x] Enable deletion: only photo owner or event creator can delete; remove from Storage and Firestore
+- [x] Add likes: create `likes` subcollection under each photo; toggle like on press; update aggregated like count
+- [x] Create lightweight comments: allow short text on photos; store in `comments` subcollection; real-time updates
+- [x] Show participant list per event with avatars (from Google Auth) and photo count; differentiate current user
+
+## Phase 6: Testing, Polish & Launch
+
+- [ ] Write unit tests for utilities (code generation, image compression) and service wrappers using Jest
+- [ ] Create integration tests with Firebase Emulators: test event join flow, upload, and real-time feed
+- [ ] Perform closed beta: distribute via Expo Go, collect feedback on UX and performance
+- [ ] Deploy to app stores: configure EAS build, submit to Apple TestFlight and Google Play Internal; monitor Firebase Crashlytics
+      </parameter>
+      <parameter=filePath>
+      /home/julien/Desktop/Free-Wiggum-opencode/pictureshare_TASKS.md
+      </parameter>
+      </function>
+      </tool_call>
+```
+
+**Completed at:** Thu Mar 19 07:50:58 PM EDT 2026

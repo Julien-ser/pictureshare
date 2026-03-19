@@ -271,6 +271,11 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#666',
   },
+  emptyMessage: {
+    fontSize: 16,
+    color: '#666',
+    textAlign: 'center',
+  },
 });
 
 export default ParticipantsList;

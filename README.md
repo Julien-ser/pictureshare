@@ -9,6 +9,7 @@ Mobile app for seamless event photo sharing. Scan a QR code, join an event, and 
 - **Image Compression** - Optimized uploads without quality loss
 - **Offline-First** - Works without internet, syncs when back online
 - **Group Interactions** - Like and comment on photos
+- **Participant List** - View all event participants with avatars and photo counts
 - **Cross-Platform** - Works on iOS and Android
 
 ## Tech Stack
@@ -90,7 +91,7 @@ src/
 
 - [x] Add likes: create `likes` subcollection under each photo; toggle like on press; update aggregated like count
 - [x] Create lightweight comments: allow short text on photos; store in `comments` subcollection; real-time updates
-- [ ] Show participant list per event with avatars (from Google Auth) and photo count; differentiate current user
+- [x] Show participant list per event with avatars (from Google Auth) and photo count; differentiate current user
 
 **Phase 4: Real-Time Feed & Sync** - Completed
 
