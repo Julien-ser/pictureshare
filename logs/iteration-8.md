@@ -740,3 +740,64 @@ Index: /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/conte
    loading: boolean;
 
 [0m
+Now let's update the interface and provider:
+[0m← [0mEdit src/contexts/AuthContext.tsx
+Index: /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/contexts/AuthContext.tsx
+===================================================================
+--- /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/contexts/AuthContext.tsx
++++ /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/contexts/AuthContext.tsx
+@@ -9,8 +9,9 @@
+ interface AuthContextType {
+   user: User | null;
+   loading: boolean;
+   signInAnonymously: () => Promise<User>;
++  signInWithGoogle: () => Promise<User>;
+ }
+ 
+ const AuthContext = createContext<AuthContextType | undefined>(undefined);
+ 
+
+[0m
+I need to add the signInWithGoogle function to the provider and include it in the context value:
+[0m← [0mEdit src/contexts/AuthContext.tsx
+Index: /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/contexts/AuthContext.tsx
+===================================================================
+--- /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/contexts/AuthContext.tsx
++++ /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/contexts/AuthContext.tsx
+@@ -33,8 +33,14 @@
+   setUser(user);
+   return user;
+ };
+ 
++const signInWithGoogle = async (): Promise<User> => {
++  const user = await signInWithGoogle(); // This would cause infinite recursion if we call the same name
++  setUser(user);
++  return user;
++};
++
+ return (
+   <AuthContext.Provider value={{ user, loading, signInAnonymously }}>
+     {children}
+   </AuthContext.Provider>
+
+[0m
+I'm calling the same function recursively. I need to alias the import first:
+[0m← [0mEdit src/contexts/AuthContext.tsx
+Index: /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/contexts/AuthContext.tsx
+===================================================================
+--- /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/contexts/AuthContext.tsx
++++ /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/contexts/AuthContext.tsx
+@@ -1,9 +1,9 @@
+ import React, { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
+ import {
+   onAuthStateChangedListener,
+   signInAnonymouslyLocally,
+-  signInWithGoogle,
++  signInWithGoogle as signInWithGoogleService,
+ } from '../services/firebase';
+ import type { User } from '../types';
+ 
+ interface AuthContextType {
+
+[0m
+Now fix the function body and the return value:

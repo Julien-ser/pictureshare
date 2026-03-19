@@ -2,7 +2,7 @@ import React, { createContext, useContext, useState, useEffect, type ReactNode }
 import {
   onAuthStateChangedListener,
   signInAnonymouslyLocally,
-  signInWithGoogle,
+  signInWithGoogle as signInWithGoogleService,
 } from '../services/firebase';
 import type { User } from '../types';
 
@@ -10,6 +10,7 @@ interface AuthContextType {
   user: User | null;
   loading: boolean;
   signInAnonymously: () => Promise<User>;
+  signInWithGoogle: () => Promise<User>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -33,8 +34,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return user;
   };
 
+  const signInWithGoogle = async (): Promise<User> => {
+    const user = await signInWithGoogleService();
+    setUser(user);
+    return user;
+  };
+
   return (
-    <AuthContext.Provider value={{ user, loading, signInAnonymously }}>
+    <AuthContext.Provider value={{ user, loading, signInAnonymously, signInWithGoogle }}>
       {children}
     </AuthContext.Provider>
   );
