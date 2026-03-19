@@ -455,3 +455,10 @@ Great! I can see that the likes functionality is already partially implemented i
 [ ] Update README.md with current progress on likes feature
 [ ] Mark task as complete in TASKS.md
 [0m
+[0m# [0mTodos
+[ ] Wire up like button in PhotoFeedScreen to call toggleLike and update UI
+[ ] Add error handling for like/unlike operations
+[ ] Create tests for likeService using Jest
+[ ] Update README.md with current progress on likes feature
+[ ] Mark task as complete in TASKS.md
+[0m
