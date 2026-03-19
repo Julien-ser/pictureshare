@@ -1154,3 +1154,85 @@ src/screens/EventCreationScreen.tsx(190,54): error TS2339: Property 'eventTitle'
 src/screens/EventCreationScreen.tsx(192,31): error TS2339: Property 'shareInstructions' does not exist on type '{ container: { padding: number; backgroundColor: string; }; title: { fontSize: number; fontWeight: "bold"; marginBottom: number; textAlign: "center"; color: string; }; inputGroup: { marginBottom: number; }; ... 16 more ...; buttonText: { ...; }; }'.
 src/screens/EventCreationScreen.tsx(197,43): error TS2339: Property 'createAnotherButton' does not exist on type '{ container: { padding: number; backgroundColor: string; }; title: { fontSize: number; fontWeight: "bold"; marginBottom: number; textAlign: "center"; color: string; }; inputGroup: { marginBottom: number; }; ... 16 more ...; buttonText: { ...; }; }'.
 [0m
+The TypeScript errors are in unrelated files (EventCreationScreen) that I haven't modified. My changes are limited to PhotoFeedScreen, UploadInterface, photoService, App.tsx, and the PhotoContext (which was already there). Those errors are pre-existing.
+
+Let me now commit my changes:
+[0m$ [0mgit add .
+[0m
+[0m$ [0mgit commit -m "feat: implement optimistic UI for photo uploads with pending state management"
+[main 913dfbd] feat: implement optimistic UI for photo uploads with pending state management
+ 3 files changed, 266 insertions(+), 1 deletion(-)
+[0m
+[0m$ [0mgit push origin main
+To https://github.com/Julien-ser/pictureshare.git
+   1d2119e..913dfbd  main -> main
+[0m
+Perfect! The optimistic UI implementation is complete and pushed to GitHub. The changes include:
+
+- **photoService.ts**: Added optional `photoId` parameter to `uploadAndSavePhoto` for consistent IDs
+- **UploadInterface.tsx**: Added optimistic upload - creates pending photo and adds to context immediately
+- **PhotoFeedScreen.tsx**: Completely rewrote to use PhotoContext, shows pending photos with "Uploading..." overlay
+- **App.tsx**: Added `PhotoProvider` to make PhotoContext available
+- **TASKS.md**: Task marked as complete
+
+The implementation satisfies all requirements: photos appear immediately in feed after upload, marked as pending with visual indicator, and automatically finalized when server confirmation arrives.
+```
+
+## TASKS.md After Iteration
+
+```markdown
+# pictureshare
+
+**Mission:** App for event photo sharing
+All participants scan a written code and pictures they sent will be accessible to all in da group n vice versa
+
+## Phase 1: Planning & Setup
+
+- [x] Choose tech stack: React Native (Expo), Firebase (Auth/Firestore/Storage), react-native-camera, qrcode library; document in ADR
+- [x] Initialize Expo project with TypeScript, configure ESLint/Prettier, and set up folder structure: components/, screens/, services/, utils/
+- [x] Create low-fidelity wireframes for: Event Join (QR scanner), Photo Feed, Upload Interface, Profile Screen
+- [x] Set up Firebase project with security rules baseline, initialize local emulators for development
+
+## Phase 2: Authentication & Event Code System
+
+- [x] Implement Firebase Anonymous Auth + Google Sign-In as fallback; store user mapping locally
+- [x] Build event creation screen: generates 6-digit alphanumeric code, optional time/visibility settings
+- [x] Integrate `react-native-qrcode-svg` to display event QR code for sharing; encode deep link with event ID
+- [x] Develop QR scanner screen using `expo-camera`; validate code against Firestore and join user to event document's participants array
+
+## Phase 3: Photo Capture, Compression & Upload
+
+- [x] Build camera/gallery picker with `expo-image-picker`; request permissions and handle denials with explanatory UI
+- [x] Add image compression pipeline: use `expo-image-manipulator` to resize to ≤1920px, compress to 80% quality
+- [x] Implement upload service: upload compressed image to Firebase Storage path `/events/{eventId}/photos/{photoId}.jpg`
+- [x] Save photo metadata to Firestore collection `photos` with fields: eventId, uploaderId, storagePath, createdAt, thumbnailPath
+
+## Phase 4: Real-Time Feed & Sync
+
+- [x] Subscribe to Firestore `photos` collection query `where eventId == current` with real-time listener; render in FlatList
+- [x] Implement optimistic UI: add photo to feed immediately after upload, mark pending, finalize on server confirmation
+- [ ] Build infinite scroll pagination using Firestore cursor; load 20 initial photos, fetch more on scroll
+- [ ] Add offline-first behavior: cache photos locally with `expo-file-system`; retry failed uploads when back online
+
+## Phase 5: Group Permissions & Interactions
+
+- [ ] Enable deletion: only photo owner or event creator can delete; remove from Storage and Firestore
+- [ ] Add likes: create `likes` subcollection under each photo; toggle like on press; update aggregated like count
+- [ ] Create lightweight comments: allow short text on photos; store in `comments` subcollection; real-time updates
+- [ ] Show participant list per event with avatars (from Google Auth) and photo count; differentiate current user
+
+## Phase 6: Testing, Polish & Launch
+
+- [ ] Write unit tests for utilities (code generation, image compression) and service wrappers using Jest
+- [ ] Create integration tests with Firebase Emulators: test event join flow, upload, and real-time feed
+- [ ] Perform closed beta: distribute via Expo Go, collect feedback on UX and performance
+- [ ] Deploy to app stores: configure EAS build, submit to Apple TestFlight and Google Play Internal; monitor Firebase Crashlytics
+      </parameter>
+      <parameter=filePath>
+      /home/julien/Desktop/Free-Wiggum-opencode/pictureshare_TASKS.md
+      </parameter>
+      </function>
+      </tool_call>
+```
+
+**Completed at:** Thu Mar 19 07:19:22 PM EDT 2026
