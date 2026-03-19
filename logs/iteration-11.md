@@ -620,3 +620,64 @@ Index: /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/servi
  
 
 [0m
+Now I'll create the EventCreationScreen:
+[0m← [0mWrite src/screens/EventCreationScreen.tsx
+Wrote file successfully.
+
+LSP errors detected in other files:
+<diagnostics file="/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/utils/index.ts">
+ERROR [2:35] Cannot find module './codeGenerator' or its corresponding type declarations.
+</diagnostics>
+
+LSP errors detected in other files:
+<diagnostics file="/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/components/index.ts">
+ERROR [2:35] Cannot find module './Button' or its corresponding type declarations.
+</diagnostics>
+
+LSP errors detected in this file, please fix:
+<diagnostics file="/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/screens/EventCreationScreen.tsx">
+ERROR [119:43] ',' expected.
+ERROR [69:9] Argument of type 'number | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+ERROR [119:43] Cannot find name 'regenerateButton'.
+</diagnostics>
+[0m
+Fix the syntax errors:
+[0m← [0mEdit src/screens/EventCreationScreen.tsx
+Index: /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/screens/EventCreationScreen.tsx
+===================================================================
+--- /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/screens/EventCreationScreen.tsx
++++ /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/screens/EventCreationScreen.tsx
+@@ -115,9 +115,9 @@
+   <Text style={styles.label}>Event Code</Text>
+   <View style={styles.codeDisplay}>
+     <Text style={styles.codeText}>{generatingCode ? '...' : eventCode}</Text>
+     <TouchableOpacity
+-      style={[styles.button, styles regenerateButton]}
++      style={[styles.button, styles.regenerateButton]}
+       onPress={generateNewCode}
+       disabled={generatingCode}
+     >
+       {generatingCode ? (
+@@ -126,11 +126,9 @@
+         <Text style={styles.buttonText}>Regenerate</Text>
+       )}
+     </TouchableOpacity>
+   </View>
+-  <Text style={styles.helperText}>
+-    Share this 6-digit code with participants
+-  </Text>
++  <Text style={styles.helperText}>Share this 6-digit code with participants</Text>
+ </View>
+ 
+ {/* Duration Setting */}
+ <View style={styles.inputGroup}>
+
+[0m
+[0m✗ [0medit failed
+[91m[1mError: [0mFile /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/screens/EventCreationScreen.tsx has been modified since it was last read.
+Last modification: 2026-03-19T22:48:02.268Z
+Last read: 2026-03-19T22:47:40.717Z
+
+Please read the file again before modifying it.
+Let me fix the createEvent call order:

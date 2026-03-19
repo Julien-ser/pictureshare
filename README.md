@@ -90,7 +90,7 @@ src/
 
 - [x] Firebase Anonymous Auth + Google Sign-In (fallback)
 - [x] User mapping stored locally
-- [ ] Event creation screen with 6-digit code generation
+- [x] Event creation screen with 6-digit code generation, time/visibility settings
 - [ ] QR code display for event sharing
 - [ ] QR scanner integration
 
