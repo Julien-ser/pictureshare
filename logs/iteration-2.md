@@ -1,7 +1,7 @@
 # Iteration 2 - pictureshare
 
-**Timestamp:** Thu Mar 19 06:25:13 PM EDT 2026
-**Task:** Choose tech stack: React Native (Expo), Firebase (Auth/Firestore/Storage), react-native-camera, qrcode library; document in ADR
+**Timestamp:** Thu Mar 19 06:27:44 PM EDT 2026
+**Task:** Initialize Expo project with TypeScript, configure ESLint/Prettier, and set up folder structure: components/, screens/, services/, utils/
 
 ## Prompt Sent
 
@@ -353,7 +353,7 @@ Switch back to `generic` when the specialist work is done.
 All participants scan a written code and pictures they sent will be accessible to all in da group n vice versa
 
 ## Phase 1: Planning & Setup
-- [ ] Choose tech stack: React Native (Expo), Firebase (Auth/Firestore/Storage), react-native-camera, qrcode library; document in ADR
+- [x] Choose tech stack: React Native (Expo), Firebase (Auth/Firestore/Storage), react-native-camera, qrcode library; document in ADR
 - [ ] Initialize Expo project with TypeScript, configure ESLint/Prettier, and set up folder structure: components/, screens/, services/, utils/
 - [ ] Create low-fidelity wireframes for: Event Join (QR scanner), Photo Feed, Upload Interface, Profile Screen
 - [ ] Set up Firebase project with security rules baseline, initialize local emulators for development
@@ -396,7 +396,7 @@ All participants scan a written code and pictures they sent will be accessible t
 ```
 
 ## NEXT TASK TO COMPLETE:
-Choose tech stack: React Native (Expo), Firebase (Auth/Firestore/Storage), react-native-camera, qrcode library; document in ADR
+Initialize Expo project with TypeScript, configure ESLint/Prettier, and set up folder structure: components/, screens/, services/, utils/
 
 **Instructions:** Complete this task. Mark [x] in TASKS.md when done. Create, modify, or delete files as needed. Execute commands as needed. Also update README.md to match this project (name, setup instructions, current progress). No permission needed—just act.
 ```
@@ -407,76 +407,28 @@ Choose tech stack: React Native (Expo), Firebase (Auth/Firestore/Storage), react
 [0m
 > build · stepfun/step-3.5-flash:free
 [0m
-[93m[1m! [0mpermission requested: external_directory (/home/julien/Desktop/Free-Wiggum-opencode/*); auto-rejecting
-I'll start by checking the current state of the project and then complete the first task: choosing tech stack and documenting it in an ADR.
-[0m✗ [0mread failed
-[91m[1mError: [0mThe user rejected permission to use this specific tool call.
+I'll start by examining the project structure and reading the TASKS.md file to understand what needs to be done.
+[0m→ [0mRead TASKS.md
+[0m→ [0mRead .agent_role
 [0m
 [0m$ [0mls -la
-total 56
-drwxr-xr-x  5 julien julien 4096 Mar 19 18:25 .
+total 60
+drwxr-xr-x  6 julien julien 4096 Mar 19 18:25 .
 drwxr-xr-x 29 julien julien 4096 Mar 19 18:24 ..
 -rw-r--r--  1 julien julien    8 Mar 19 18:25 .agent_role
-drwxr-xr-x  7 julien julien 4096 Mar 19 18:25 .git
+drwxr-xr-x  3 julien julien 4096 Mar 19 18:25 docs
+drwxr-xr-x  7 julien julien 4096 Mar 19 18:27 .git
 drwxr-xr-x  3 julien julien 4096 Mar 19 18:24 .github
 -rw-r--r--  1 julien julien    4 Mar 19 18:24 .gitignore
-drwxr-xr-x  2 julien julien 4096 Mar 19 18:25 logs
+drwxr-xr-x  2 julien julien 4096 Mar 19 18:27 logs
 -rw-r--r--  1 julien julien 9218 Mar 19 18:24 prompt.txt
--rw-r--r--  1 julien julien  845 Mar 19 18:24 README.md
--rw-r--r--  1 julien julien 3334 Mar 19 18:25 TASKS.md
+-rw-r--r--  1 julien julien 2179 Mar 19 18:26 README.md
+-rw-r--r--  1 julien julien 3334 Mar 19 18:26 TASKS.md
 -rw-r--r--  1 julien julien 3334 Mar 19 18:25 TASKS_original.md
 -rw-r--r--  1 julien julien    6 Mar 19 18:25 .worker_persistent_mode
 [0m
-```
-
-## TASKS.md After Iteration
-
-```markdown
-# pictureshare
-**Mission:** App for event photo sharing
-All participants scan a written code and pictures they sent will be accessible to all in da group n vice versa
-
-## Phase 1: Planning & Setup
-- [ ] Choose tech stack: React Native (Expo), Firebase (Auth/Firestore/Storage), react-native-camera, qrcode library; document in ADR
-- [ ] Initialize Expo project with TypeScript, configure ESLint/Prettier, and set up folder structure: components/, screens/, services/, utils/
-- [ ] Create low-fidelity wireframes for: Event Join (QR scanner), Photo Feed, Upload Interface, Profile Screen
-- [ ] Set up Firebase project with security rules baseline, initialize local emulators for development
-
-## Phase 2: Authentication & Event Code System
-- [ ] Implement Firebase Anonymous Auth + Google Sign-In as fallback; store user mapping locally
-- [ ] Build event creation screen: generates 6-digit alphanumeric code, optional time/visibility settings
-- [ ] Integrate `react-native-qrcode-svg` to display event QR code for sharing; encode deep link with event ID
-- [ ] Develop QR scanner screen using `expo-camera`; validate code against Firestore and join user to event document's participants array
-
-## Phase 3: Photo Capture, Compression & Upload
-- [ ] Build camera/gallery picker with `expo-image-picker`; request permissions and handle denials with explanatory UI
-- [ ] Add image compression pipeline: use `expo-image-manipulator` to resize to ≤1920px, compress to 80% quality
-- [ ] Implement upload service: upload compressed image to Firebase Storage path `/events/{eventId}/photos/{photoId}.jpg`
-- [ ] Save photo metadata to Firestore collection `photos` with fields: eventId, uploaderId, storagePath, createdAt, thumbnailPath
-
-## Phase 4: Real-Time Feed & Sync
-- [ ] Subscribe to Firestore `photos` collection query `where eventId == current` with real-time listener; render in FlatList
-- [ ] Implement optimistic UI: add photo to feed immediately after upload, mark pending, finalize on server confirmation
-- [ ] Build infinite scroll pagination using Firestore cursor; load 20 initial photos, fetch more on scroll
-- [ ] Add offline-first behavior: cache photos locally with `expo-file-system`; retry failed uploads when back online
-
-## Phase 5: Group Permissions & Interactions
-- [ ] Enable deletion: only photo owner or event creator can delete; remove from Storage and Firestore
-- [ ] Add likes: create `likes` subcollection under each photo; toggle like on press; update aggregated like count
-- [ ] Create lightweight comments: allow short text on photos; store in `comments` subcollection; real-time updates
-- [ ] Show participant list per event with avatars (from Google Auth) and photo count; differentiate current user
-
-## Phase 6: Testing, Polish & Launch
-- [ ] Write unit tests for utilities (code generation, image compression) and service wrappers using Jest
-- [ ] Create integration tests with Firebase Emulators: test event join flow, upload, and real-time feed
-- [ ] Perform closed beta: distribute via Expo Go, collect feedback on UX and performance
-- [ ] Deploy to app stores: configure EAS build, submit to Apple TestFlight and Google Play Internal; monitor Firebase Crashlytics
-</parameter>
-<parameter=filePath>
-/home/julien/Desktop/Free-Wiggum-opencode/pictureshare_TASKS.md
-</parameter>
-</function>
-</tool_call>
-```
-
-**Completed at:** Thu Mar 19 06:25:21 PM EDT 2026
+Now let me check the README.md to understand current project documentation:
+[0m→ [0mRead README.md
+Let me check if there's already an Expo project initialized:
+[0m
+[0m$ [0mfind . -maxdepth 2 -name "package.json" -o -name "app.json" -o -name "app.config.js" -o -name "tsconfig.json" 2>/dev/null
