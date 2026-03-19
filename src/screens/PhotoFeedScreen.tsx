@@ -314,6 +314,16 @@ const PhotoFeedScreen: React.FC<PhotoFeedScreenProps> = ({ eventId: propEventId 
     [user, pendingLikePhotos]
   );
 
+  const handleOpenComments = useCallback((photoId: string) => {
+    setSelectedPhotoId(photoId);
+    setShowCommentsModal(true);
+  }, []);
+
+  const handleCloseComments = useCallback(() => {
+    setShowCommentsModal(false);
+    setSelectedPhotoId(null);
+  }, []);
+
   const renderPhoto = ({ item }: { item: PhotoWithUri }) => {
     const isPending = pendingIds.has(item.id);
     const canDelete = canUserDeletePhoto(item.id);
@@ -353,12 +363,9 @@ const PhotoFeedScreen: React.FC<PhotoFeedScreenProps> = ({ eventId: propEventId 
             <Text style={styles.actionIcon}>{likedByUser.get(item.id) ? '❤️' : '🤍'}</Text>
             <Text style={styles.actionText}>{likeCounts.get(item.id) || 0}</Text>
           </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.actionButton}
-            onPress={() => Alert.alert('Info', 'Comments feature coming in Phase 5')}
-          >
+          <TouchableOpacity style={styles.actionButton} onPress={() => handleOpenComments(item.id)}>
             <Text style={styles.actionIcon}>💬</Text>
-            <Text style={styles.actionText}>Comment</Text>
+            <Text style={styles.actionText}>{commentCounts.get(item.id) || 0}</Text>
           </TouchableOpacity>
           {!isPending && canDelete && (
             <TouchableOpacity
@@ -453,6 +460,11 @@ const PhotoFeedScreen: React.FC<PhotoFeedScreenProps> = ({ eventId: propEventId 
           ListFooterComponent={renderFooter}
         />
       )}
+      <CommentsModal
+        visible={showCommentsModal}
+        photoId={selectedPhotoId || ''}
+        onClose={handleCloseComments}
+      />
     </View>
   );
 };

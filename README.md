@@ -89,7 +89,7 @@ src/
 **Phase 5: Group Permissions & Interactions** - In Progress
 
 - [x] Add likes: create `likes` subcollection under each photo; toggle like on press; update aggregated like count
-- [ ] Create lightweight comments: allow short text on photos; store in `comments` subcollection; real-time updates
+- [x] Create lightweight comments: allow short text on photos; store in `comments` subcollection; real-time updates
 - [ ] Show participant list per event with avatars (from Google Auth) and photo count; differentiate current user
 
 **Phase 4: Real-Time Feed & Sync** - Completed
