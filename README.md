@@ -86,13 +86,12 @@ src/
 
 ## Current Phase
 
-**Phase 2: Authentication & Event Code System** - In Progress
+**Phase 3: Photo Capture, Compression & Upload** - In Progress
 
-- [x] Firebase Anonymous Auth + Google Sign-In (fallback)
-- [x] User mapping stored locally
-- [x] Event creation screen with 6-digit code generation, time/visibility settings
-- [x] QR code display for event sharing (deep link with event ID)
-- [x] QR scanner integration with event validation
+- [x] Camera/gallery picker with permission handling
+- [ ] Image compression pipeline (resize to ≤1920px, 80% quality)
+- [ ] Upload service to Firebase Storage
+- [ ] Photo metadata storage in Firestore
 
 See [TASKS.md](./TASKS.md) for full roadmap.
 
