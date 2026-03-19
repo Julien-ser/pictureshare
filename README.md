@@ -1,29 +1,83 @@
-# Project Template
+# PictureShare
 
-This is a template for new projects created via `wiggum_master.sh create`.
+Mobile app for seamless event photo sharing. Scan a QR code, join an event, and instantly share photos with your group in real-time.
 
-Each project:
-- Lives in `projects/<project-name>/`
-- Has its own GitHub repository
-- Runs its own autonomous OpenCode agent loop
-- Tracks progress in TASKS.md
+## Features
 
-## Setup
+- **QR Code Event Joining** - Scan and join events instantly
+- **Real-Time Photo Feed** - See photos as they're uploaded
+- **Image Compression** - Optimized uploads without quality loss
+- **Offline-First** - Works without internet, syncs when back online
+- **Group Interactions** - Like and comment on photos
+- **Cross-Platform** - Works on iOS and Android
 
-1. Create: `bash wiggum_master.sh create "my-project" "Description"`
-2. View: `cat projects/my-project/README.md`
-3. Initialize: `cd projects/my-project && opencode /init --yes`
-4. Run: `cd projects/my-project && bash wiggum.sh`
+## Tech Stack
 
-## Files
+- **React Native** (Expo) - Cross-platform mobile framework
+- **Firebase** - Backend (Auth, Firestore, Storage)
+- **TypeScript** - Type-safe development
 
-- **README.md** - Project documentation
-- **TASKS.md** - Development task list
-- **prompt.txt** - Agent instructions (project-specific)
-- **AGENTS.md** - Project context (auto-generated)
-- **src/** - Source code directory
-- **tests/** - Test files
+## Getting Started
 
-## Customization
+### Prerequisites
 
-Update TASKS.md with your project goals, then let the agent handle it!
+- Node.js 18+
+- Expo CLI: `npm install -g expo-cli`
+- iOS Simulator (Xcode) or Android Studio
+
+### Installation
+
+1. Clone and install dependencies:
+   ```bash
+   npm install
+   ```
+
+2. Set up Firebase:
+   - Create a Firebase project
+   - Download `google-services.json` (Android) and `GoogleService-Info.plist` (iOS)
+   - Place them in their respective platform directories
+   - Enable Authentication (Anonymous + Google), Firestore, and Storage
+
+3. Start the development server:
+   ```bash
+   npm start
+   ```
+
+4. Run on device/simulator:
+   - Scan QR code with Expo Go app (iOS/Android)
+   - Or press `i` for iOS simulator, `a` for Android emulator
+
+## Project Structure
+
+```
+src/
+├── components/     # Reusable UI components
+├── screens/        # App screens
+├── services/       # Firebase and API services
+├── utils/          # Helper functions
+└── types/          # TypeScript type definitions
+```
+
+## Development Workflow
+
+1. Create feature branch from `main`
+2. Make changes and add tests
+3. Run linting: `npm run lint`
+4. Run tests: `npm test`
+5. Commit and push
+6. Open pull request
+
+## Current Phase
+
+**Phase 1: Planning & Setup** - In Progress
+
+- [x] Tech stack documented in ADR
+- [ ] Expo project initialization
+- [ ] Wireframes
+- [ ] Firebase emulator setup
+
+See [TASKS.md](./TASKS.md) for full roadmap.
+
+## Contributing
+
+This is an autonomous agent-driven project. See agent instructions in `prompt.txt`.
