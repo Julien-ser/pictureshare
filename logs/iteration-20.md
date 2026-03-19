@@ -1,7 +1,7 @@
-# Iteration 18 - pictureshare
+# Iteration 20 - pictureshare
 
-**Timestamp:** Thu Mar 19 07:03:15 PM EDT 2026
-**Task:** Implement upload service: upload compressed image to Firebase Storage path `/events/{eventId}/photos/{photoId}.jpg`
+**Timestamp:** Thu Mar 19 07:05:56 PM EDT 2026
+**Task:** Subscribe to Firestore `photos` collection query `where eventId == current` with real-time listener; render in FlatList
 
 ## Prompt Sent
 
@@ -339,45 +339,13 @@ Switch back to `generic` when the specialist work is done.
 ---
 
 ### ⚠️ CRITICAL TOKEN CONSTRAINTS:
-- Iteration: 18 / 64k Token Budget
-- Attempt: 2 (previous attempts may have partial progress)
+- Iteration: 20 / 64k Token Budget
+- Attempt: 1 (previous attempts may have partial progress)
 - **Mandate:** Operate efficiently. Use partial edits, not full file rewrites when possible.
 - **Output:** Be concise and action-oriented.
-### Previous Attempt (Iteration 17):
-**Files created/modified:**
-```
-
-```
-
-**Last Output:**
-```
-## OpenCode Output
-
-```
-[0m
-> build · stepfun/step-3.5-flash:free
-[0m
-I'll implement the upload service for Firebase Storage. Let me first explore the project structure to understand what's already in place.
-[0m✱ [0mGlob "**/*.{ts,tsx,js,jsx}"[90m 20 matches[0m
-[0m→ [0mRead src/services/firebase.ts
-[0m→ [0mRead src/types/index.ts
-[0m→ [0mRead src/screens/UploadInterface.tsx
-[0m→ [0mRead src/services/eventService.ts
-Now I need to add Firebase Storage support. Let me check the Firebase Storage imports and create the photo upload service.
-[0m→ [0mRead src/services/index.ts
-[0m→ [0mRead src/utils/imagePicker.ts
-Let me check the imagePicker utility to understand the image format returned:
-[0m→ [0mRead package.json
-Let me check the package.json to see what Firebase packages are installed:
-[0m✗ [0medit failed
-[91m[1mError: [0mFile /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/services/firebase.ts has been modified since it was last read.
-Last modification: 2026-03-19T23:02:43.835Z
-```
-
-**Guidance:** Continue from where we left off. Don't re-do work already done. Focus on the next incomplete piece.
 
 
-## CURRENT PROJECT STATE (Iteration 18)
+## CURRENT PROJECT STATE (Iteration 20)
 
 ```
 # pictureshare
@@ -403,8 +371,8 @@ All participants scan a written code and pictures they sent will be accessible t
 
 - [x] Build camera/gallery picker with `expo-image-picker`; request permissions and handle denials with explanatory UI
 - [x] Add image compression pipeline: use `expo-image-manipulator` to resize to ≤1920px, compress to 80% quality
-- [ ] Implement upload service: upload compressed image to Firebase Storage path `/events/{eventId}/photos/{photoId}.jpg`
-- [ ] Save photo metadata to Firestore collection `photos` with fields: eventId, uploaderId, storagePath, createdAt, thumbnailPath
+- [x] Implement upload service: upload compressed image to Firebase Storage path `/events/{eventId}/photos/{photoId}.jpg`
+- [x] Save photo metadata to Firestore collection `photos` with fields: eventId, uploaderId, storagePath, createdAt, thumbnailPath
 
 ## Phase 4: Real-Time Feed & Sync
 
@@ -435,7 +403,7 @@ All participants scan a written code and pictures they sent will be accessible t
 ```
 
 ## NEXT TASK TO COMPLETE:
-Implement upload service: upload compressed image to Firebase Storage path `/events/{eventId}/photos/{photoId}.jpg`
+Subscribe to Firestore `photos` collection query `where eventId == current` with real-time listener; render in FlatList
 
 **Instructions:** Complete this task. Mark [x] in TASKS.md when done. Create, modify, or delete files as needed. Execute commands as needed. Also update README.md to match this project (name, setup instructions, current progress). No permission needed—just act.
 ```
@@ -446,286 +414,230 @@ Implement upload service: upload compressed image to Firebase Storage path `/eve
 [0m
 > build · stepfun/step-3.5-flash:free
 [0m
-I need to check the current state of the project and understand what was already done in the previous attempt. Let me read the relevant files to see what's in place.
+I'll help you complete the task of implementing real-time photo feed with Firestore listener and FlatList. Let me start by exploring the codebase to understand the current structure.
 [0m→ [0mRead TASKS.md
+[0m→ [0mRead package.json
+[0m✱ [0mGlob "**/*.{ts,tsx,js,jsx}"[90m 22 matches[0m
+[0m→ [0mRead src/screens/PhotoFeedScreen.tsx
+[0m→ [0mRead src/services/photoService.ts
 [0m→ [0mRead src/services/firebase.ts
 [0m→ [0mRead src/types/index.ts
-[0m→ [0mRead src/screens/UploadInterface.tsx
-[0m→ [0mRead src/utils/imagePicker.ts
-[0m→ [0mRead src/services/index.ts
-[0m→ [0mRead package.json
-Now let me check the imagePicker utility and any existing services structure to understand the image format and patterns used.
-Perfect! Now I understand the structure. The current UploadInterface has a mock upload. I need to:
-
-1. Create a real photo upload service that uploads to Firebase Storage and saves metadata to Firestore
-2. Update UploadInterface to use this service with real progress tracking
-
-Let me create the photoUploadService.ts file:
-[0m
-[0m← [0mWrite src/services/photoUploadService.ts
-Wrote file successfully.
-
-LSP errors detected in this file, please fix:
-<diagnostics file="/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/services/photoUploadService.ts">
-ERROR [2:15] '"firebase/storage"' has no exported member named 'uploadData'. Did you mean 'UploadTask'?
-ERROR [54:8] Parameter 'snapshot' implicitly has an 'any' type.
-ERROR [58:8] Parameter 'error' implicitly has an 'any' type.
-</diagnostics>
-[0m
-I need to fix the Firebase Storage API usage. The correct function is `uploadBytesResumable` for progress tracking. Let me update:
-[0m← [0mEdit src/services/photoUploadService.ts
-Index: /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/services/photoUploadService.ts
-===================================================================
---- /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/services/photoUploadService.ts
-+++ /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/services/photoUploadService.ts
-@@ -1,6 +1,6 @@
- import { storage, db } from './firebase';
--import { ref, uploadData, getDownloadURL } from 'firebase/storage';
-+import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
- import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
- import type { Photo } from '../types';
- import type { ImageResult } from '../utils/imagePicker';
- 
-@@ -44,9 +44,9 @@
-     },
-   };
- 
-   // Upload the image with progress tracking
--  const uploadTask = uploadData(storageRef, blob, metadata);
-+  const uploadTask = uploadBytesResumable(storageRef, blob, metadata);
- 
-   // Monitor progress
-   if (onProgress) {
-     uploadTask.on(
-
-[0m
-Now I need to update the UploadInterface to use the real upload service. I'll also need to pass eventId and userId (from auth). Let me check if there's any navigation context or prop passing for the eventId:
-[0m✱ [0mGrep "UploadInterface"[90m in src · 3 matches[0m
-[0m✱ [0mGlob "**/*.tsx"[90m in . · 9 matches[0m
-Let me check the AuthContext and App.tsx to see how the current user and event are managed:
-[0m→ [0mRead src/contexts/AuthContext.tsx
 [0m→ [0mRead App.tsx
+[0m→ [0mRead src/contexts/AuthContext.tsx
+[0m→ [0mRead src/screens/EventJoinScreen.tsx
+[0m→ [0mRead src/services/eventService.ts
+Let me check if React Navigation is already set up:
+[0m
+[0m$ [0mgrep -E "@react-navigation/native|@react-native-community/screens" /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/package.json
+[0m→ [0mRead .agent_role
+[0m
+[0m# [0mTodos
+[ ] Install React Navigation dependencies
+[ ] Create EventContext to track current event globally
+[ ] Implement real-time photo listener in photoService
+[ ] Update PhotoFeedScreen to use real-time listener
+[ ] Set up navigation structure in App.tsx
+[ ] Test the implementation locally
+[ ] Update README.md with setup and usage
+[ ] Mark task as complete in TASKS.md
+[0m
+Let me create a todo list to track this implementation:
+[0m# [0mTodos
+[ ] Install React Navigation dependencies
+[ ] Create EventContext to track current event globally
+[ ] Implement real-time photo listener in photoService
+[ ] Update PhotoFeedScreen to use real-time listener
+[ ] Set up navigation structure in App.tsx
+[ ] Test the implementation locally
+[ ] Update README.md with setup and usage
+[ ] Mark task as complete in TASKS.md
+[0m
+Now I'll install React Navigation dependencies:
+[0m$ [0mnpx expo install @react-navigation/native @react-navigation/native-stacks react-native-screens react-native-safe-area-context
+› Installing 2 SDK 50.0.0 compatible native modules and 2 other packages using npm
+> npm install --save @react-navigation/native @react-navigation/native-stacks
+npm error code E404
+npm error 404 Not Found - GET https://registry.npmjs.org/@react-navigation%2fnative-stacks - Not found
+npm error 404
+npm error 404  '@react-navigation/native-stacks@*' is not in this registry.
+npm error 404
+npm error 404 Note that you can also install from a
+npm error 404 tarball, folder, http url, or git url.
+npm error A complete log of this run can be found in: /home/julien/.npm/_logs/2026-03-19T23_06_38_489Z-debug-0.log
+Error: npm install --save @react-navigation/native @react-navigation/native-stacks exited with non-zero code: 1
+Error: npm install --save @react-navigation/native @react-navigation/native-stacks exited with non-zero code: 1
+    at ChildProcess.completionListener (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/@expo/package-manager/node_modules/@expo/spawn-async/build/spawnAsync.js:42:23)
+    at Object.onceWrapper (node:events:634:26)
+    at ChildProcess.emit (node:events:519:28)
+    at maybeClose (node:internal/child_process:1101:16)
+    at ChildProcess._handle.onexit (node:internal/child_process:304:5)
+    ...
+    at spawnAsync (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/@expo/package-manager/node_modules/@expo/spawn-async/build/spawnAsync.js:7:23)
+    at NpmPackageManager.runAsync (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/@expo/package-manager/build/node/BasePackageManager.js:41:42)
+    at /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/@expo/package-manager/build/node/NpmPackageManager.js:37:20
+    at /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/@expo/package-manager/build/utils/spawn.js:14:34
+[0m
+Let me correct the package names:
+[0m$ [0mnpx expo install @react-navigation/native @react-navigation/native-stacks react-native-screens react-native-safe-area-context
+› Installing 2 SDK 50.0.0 compatible native modules and 2 other packages using npm
+> npm install --save @react-navigation/native @react-navigation/native-stacks
+npm error code E404
+npm error 404 Not Found - GET https://registry.npmjs.org/@react-navigation%2fnative-stacks - Not found
+npm error 404
+npm error 404  '@react-navigation/native-stacks@*' is not in this registry.
+npm error 404
+npm error 404 Note that you can also install from a
+npm error 404 tarball, folder, http url, or git url.
+npm error A complete log of this run can be found in: /home/julien/.npm/_logs/2026-03-19T23_06_45_884Z-debug-0.log
+Error: npm install --save @react-navigation/native @react-navigation/native-stacks exited with non-zero code: 1
+Error: npm install --save @react-navigation/native @react-navigation/native-stacks exited with non-zero code: 1
+    at ChildProcess.completionListener (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/@expo/package-manager/node_modules/@expo/spawn-async/build/spawnAsync.js:42:23)
+    at Object.onceWrapper (node:events:634:26)
+    at ChildProcess.emit (node:events:519:28)
+    at maybeClose (node:internal/child_process:1101:16)
+    at ChildProcess._handle.onexit (node:internal/child_process:304:5)
+    ...
+    at spawnAsync (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/@expo/package-manager/node_modules/@expo/spawn-async/build/spawnAsync.js:7:23)
+    at NpmPackageManager.runAsync (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/@expo/package-manager/build/node/BasePackageManager.js:41:42)
+    at /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/@expo/package-manager/build/node/NpmPackageManager.js:37:20
+    at /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/@expo/package-manager/build/utils/spawn.js:14:34
+[0m
+Let me fix the package name - it's `@react-navigation/native-stack` (singular):
+[0m$ [0mnpx expo install @react-navigation/native @react-navigation/native-stack react-native-screens react-native-safe-area-context
+› Installing 2 SDK 50.0.0 compatible native modules and 2 other packages using npm
+> npm install --save @react-navigation/native @react-navigation/native-stack
+npm error code ERESOLVE
+npm error ERESOLVE unable to resolve dependency tree
+npm error
+npm error While resolving: pictureshare@1.0.0
+npm error Found: react-native-screens@3.29.0
+npm error node_modules/react-native-screens
+npm error   react-native-screens@"~3.29.0" from the root project
+npm error
+npm error Could not resolve dependency:
+npm error peer react-native-screens@">= 4.0.0" from @react-navigation/native-stack@7.14.6
+npm error node_modules/@react-navigation/native-stack
+npm error   @react-navigation/native-stack@"*" from the root project
+npm error
+npm error Fix the upstream dependency conflict, or retry
+npm error this command with --force or --legacy-peer-deps
+npm error to accept an incorrect (and potentially broken) dependency resolution.
+npm error
+npm error
+npm error For a full report see:
+npm error /home/julien/.npm/_logs/2026-03-19T23_06_55_799Z-eresolve-report.txt
+npm error A complete log of this run can be found in: /home/julien/.npm/_logs/2026-03-19T23_06_55_799Z-debug-0.log
+Error: npm install --save @react-navigation/native @react-navigation/native-stack exited with non-zero code: 1
+Error: npm install --save @react-navigation/native @react-navigation/native-stack exited with non-zero code: 1
+    at ChildProcess.completionListener (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/@expo/package-manager/node_modules/@expo/spawn-async/build/spawnAsync.js:42:23)
+    at Object.onceWrapper (node:events:634:26)
+    at ChildProcess.emit (node:events:519:28)
+    at maybeClose (node:internal/child_process:1101:16)
+    at ChildProcess._handle.onexit (node:internal/child_process:304:5)
+    ...
+    at spawnAsync (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/@expo/package-manager/node_modules/@expo/spawn-async/build/spawnAsync.js:7:23)
+    at NpmPackageManager.runAsync (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/@expo/package-manager/build/node/BasePackageManager.js:41:42)
+    at /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/@expo/package-manager/build/node/NpmPackageManager.js:37:20
+    at /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/@expo/package-manager/build/utils/spawn.js:14:34
+[0m
+[0m# [0mTodos
+[ ] Implement real-time photo listener in photoService
+[ ] Update PhotoFeedScreen to use real-time listener with eventId prop
+[ ] Create simple EventContext for current event tracking
+[ ] Update App.tsx to pass eventId via context
+[ ] Update README.md with current progress
+[ ] Mark task as complete in TASKS.md
+[0m
+There's a peer dependency conflict. Given the token constraints, I'll focus on the core task - implementing the real-time listener without adding navigation dependencies. I can implement the photo subscription functionality and update PhotoFeedScreen to use it, then test it independently. Let me update my approach:
 [0m✗ [0medit failed
-[91m[1mError: [0mFile /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/screens/UploadInterface.tsx has been modified since it was last read.
-Last modification: 2026-03-19T23:04:30.060Z
-Last read: 2026-03-19T23:03:30.172Z
+[91m[1mError: [0mFile /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/services/photoService.ts has been modified since it was last read.
+Last modification: 2026-03-19T23:06:06.741Z
+Last read: 2026-03-19T23:06:05.474Z
 
 Please read the file again before modifying it.
-Now I need to update UploadInterface.tsx to use the real upload service. I'll modify it to accept eventId as a prop and use the auth context:
-Let me re-read the file first:
-[0m→ [0mRead src/screens/UploadInterface.tsx
+Now let me add the real-time subscription function to photoService.ts:
+Let me read the file again:
 [0m→ [0mRead src/services/photoService.ts
-[0m✱ [0mGlob "*.ts"[90m in src/services · 5 matches[0m
-Interesting! It looks like the file was updated to import from `photoService` instead. Let me check if that file exists and what it contains:
-Great! There's already a `photoService.ts` file with a complete implementation. The service already:
-- Uploads to Firebase Storage at the correct path
-- Saves metadata to Firestore
-- Handles deletion
-
-The UploadInterface is already using it! However, I notice:
-1. It uses `uploadBytes` which doesn't provide progress tracking
-2. The simulated progress in UploadInterface is just a visual fake
-
-Let me upgrade the service to support real progress tracking using `uploadBytesResumable`. I'll update the photoService.ts:
-[0m→ [0mRead src/services/photoService.ts
-The existing `photoService.ts` already provides complete upload and metadata functionality. The tasks 24 and 25 are already implemented! I should mark them as complete. But first, I need to clean up my duplicate `photoUploadService.ts` file and make sure the implementation fully meets requirements.
-
-Let me also check the thumbnailPath: The Photo type includes `thumbnailPath` as optional. Currently photoService doesn't set it. We could set it to the same as storagePath or generate a separate thumbnail later. That's acceptable as optional.
-
-However, I should improve the service to support progress tracking. The current UploadInterface simulates progress. I'll upgrade the service to use `uploadBytesResumable` and pass progress callbacks. Let me update `photoService.ts`:
+Now let me add the real-time subscription function. First, I'll update the imports:
 [0m
 [0m← [0mEdit src/services/photoService.ts
 Index: /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/services/photoService.ts
 ===================================================================
 --- /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/services/photoService.ts
 +++ /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/services/photoService.ts
-@@ -1,6 +1,12 @@
--import { getStorage, ref, uploadBytes, deleteObject } from 'firebase/storage';
- import {
-+  getStorage,
-+  ref,
-+  uploadBytesResumable,
-+  getDownloadURL,
-+  deleteObject,
-+} from 'firebase/storage';
-+import {
-   collection,
+@@ -10,9 +10,15 @@
    doc,
    setDoc,
    deleteDoc,
-@@ -19,30 +25,50 @@
-   return `photo_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
- }
+   serverTimestamp,
++  query,
++  where,
++  orderBy,
++  onSnapshot,
+   type DocumentData,
++  type QuerySnapshot,
++  type Unsubscribe,
+ } from 'firebase/firestore';
+ import { storage, db } from './firebase';
+ import type { Photo } from '../types';
  
- /**
-- * Uploads an image file to Firebase Storage
-+ * Uploads an image file to Firebase Storage with progress tracking
-  * @param eventId - Event ID
-  * @param photoId - Unique photo identifier
-  * @param imageUri - Local URI of the compressed image
-+ * @param onProgress - Optional progress callback (0-100)
-  * @returns Storage path of the uploaded image
-  */
- export async function uploadPhotoToStorage(
-   eventId: string,
-   photoId: string,
--  imageUri: string
-+  imageUri: string,
-+  onProgress?: (progress: number) => void
- ): Promise<string> {
-   try {
-     // Create storage reference
-     const storagePath = `events/${eventId}/photos/${photoId}.jpg`;
-     const storageRef = ref(storage, storagePath);
- 
--    // Upload the file using uploadBytes (React Native compatible)
-+    // Read image file
-     const response = await fetch(imageUri);
-     const blob = await response.blob();
- 
--    await uploadBytes(storageRef, blob);
-+    // Use resumable upload for progress tracking
-+    const uploadTask = uploadBytesResumable(storageRef, blob);
- 
-+    // Monitor progress
-+    if (onProgress) {
-+      uploadTask.on(
-+        'state_changed',
-+        (snapshot) => {
-+          const progress = Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100);
-+          onProgress(progress);
-+        },
-+        (error) => {
-+          console.error('Upload error:', error);
-+        }
-+      );
-+    }
-+
-+    // Wait for completion
-+    await uploadTask;
-+
-     return storagePath;
-   } catch (error) {
-     console.error('Error uploading photo to storage:', error);
-     throw error;
 
 [0m
-Now I need to update the `uploadAndSavePhoto` function to accept the onProgress callback:
+Now let me add the subscription function at the end of the file:
 [0m← [0mEdit src/services/photoService.ts
 Index: /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/services/photoService.ts
 ===================================================================
 --- /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/services/photoService.ts
 +++ /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/services/photoService.ts
-@@ -133,8 +133,9 @@
-  * Complete upload workflow: upload image and save metadata
-  * @param eventId - Event ID to upload to
-  * @param uploaderId - User ID of the uploader
-  * @param imageResult - Compressed image result from image picker
-+ * @param onProgress - Optional progress callback (0-100)
-  * @returns The saved Photo object
-  */
- export async function uploadAndSavePhoto(
-   eventId: string,
-@@ -142,15 +143,16 @@
-   imageResult: {
-     uri: string;
-     width: number;
-     height: number;
--  }
-+  },
-+  onProgress?: (progress: number) => void
- ): Promise<Photo> {
-   // Generate unique photo ID
-   const photoId = generatePhotoId();
- 
--  // Upload image to Firebase Storage
--  const storagePath = await uploadPhotoToStorage(eventId, photoId, imageResult.uri);
-+  // Upload image to Firebase Storage with progress
-+  const storagePath = await uploadPhotoToStorage(eventId, photoId, imageResult.uri, onProgress);
- 
-   // Create photo metadata
-   const photo: Omit<Photo, 'id' | 'createdAt'> = {
-     eventId,
+@@ -177,4 +177,49 @@
+     id: photoId,
+     createdAt: new Date(),
+   };
+ }
++
++/**
++ * Subscribes to real-time updates for photos in a specific event
++ * @param eventId - Event ID to filter photos
++ * @param onPhotosUpdate - Callback function receiving array of Photo objects
++ * @returns Unsubscribe function to stop listening
++ */
++export function subscribeToPhotos(
++  eventId: string,
++  onPhotosUpdate: (photos: Photo[]) => void
++): Unsubscribe {
++  // Create query: photos where eventId == current, ordered by createdAt descending
++  const photosQuery = query(
++    collection(db, PHOTOS_COLLECTION),
++    where('eventId', '==', eventId),
++    orderBy('createdAt', 'desc')
++  );
++
++  // Set up real-time listener
++  const unsubscribe = onSnapshot(
++    photosQuery,
++    (snapshot: QuerySnapshot<DocumentData>) => {
++      const photos: Photo[] = snapshot.docs.map((doc) => {
++        const data = doc.data();
++        return {
++          id: doc.id,
++          eventId: data.eventId,
++          uploaderId: data.uploaderId,
++          storagePath: data.storagePath,
++          thumbnailPath: data.thumbnailPath,
++          createdAt: data.createdAt?.toDate() || new Date(),
++          width: data.width,
++          height: data.height,
++        } as Photo;
++      });
++      onPhotosUpdate(photos);
++    },
++    (error) => {
++      console.error('Error in photos subscription:', error);
++      onPhotosUpdate([]);
++    }
++  );
++
++  return unsubscribe;
++}
 
-[0m
-Now I need to update the UploadInterface to use real progress. Let me re-read it and modify handleUpload:
-[0m→ [0mRead src/screens/UploadInterface.tsx[90m [limit=60, offset=1][0m
-[0m→ [0mRead src/screens/UploadInterface.tsx[90m [limit=60, offset=61][0m
-Now I'll update the handleUpload function to use real progress:
-[0m
-[0m← [0mEdit src/screens/UploadInterface.tsx
-Index: /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/screens/UploadInterface.tsx
-===================================================================
---- /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/screens/UploadInterface.tsx
-+++ /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/screens/UploadInterface.tsx
-@@ -67,25 +67,14 @@
- setIsUploading(true);
- setUploadProgress(0);
- 
- try {
--  // Start upload
--  const uploadPromise = uploadAndSavePhoto(eventId, user.uid, selectedImage);
-+  // Start upload with progress callback
-+  await uploadAndSavePhoto(eventId, user.uid, selectedImage, (progress) => {
-+    setUploadProgress(progress);
-+  });
- 
--  // Simulate progress increments until complete
--  const interval = setInterval(() => {
--    setUploadProgress((prev) => {
--      if (prev >= 95) {
--        clearInterval(interval);
--        return prev;
--      }
--      return prev + 5;
--    });
--  }, 200);
--
--  // Wait for upload to complete
--  await uploadPromise;
--  clearInterval(interval);
-+  // Ensure progress shows 100% after completion
-   setUploadProgress(100);
- 
-   Alert.alert('Upload Complete', 'Your photo has been shared with the event group!', [
-     {
-
-[0m
-Now let me delete the duplicate photoUploadService.ts file:
-[0m$ [0mrm /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/services/photoUploadService.ts
-[0m✗ [0medit failed
-[91m[1mError: [0mFile /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/TASKS.md has been modified since it was last read.
-Last modification: 2026-03-19T23:05:19.985Z
-Last read: 2026-03-19T23:03:30.154Z
-
-Please read the file again before modifying it.
-Now I'll mark tasks 24 and 25 as complete in TASKS.md:
-[0m→ [0mRead TASKS.md
-Let me re-read TASKS.md:
-Perfect! Tasks 24 and 25 are already marked as done. Now I need to handle Task 0: GitHub Actions workflow setup. Let me check if the workflow file exists, and if not, create it:
-[0m
-[0m$ [0mmkdir -p .github/workflows && ls .github/workflows
-deploy-production.yml
-deploy-staging.yml
-report-ci-errors.yml
-test.yml
-wiggum-system-check.yml
-[0m
-Good, workflows already exist. Now let's check the git status and commit all changes:
-[0m$ [0mgit status
-On branch main
-Changes not staged for commit:
-  (use "git add/rm <file>..." to update what will be committed)
-  (use "git restore <file>..." to discard changes in working directory)
-	modified:   logs/iteration-18.md
-	modified:   package.json
-	modified:   src/screens/UploadInterface.tsx
-	modified:   src/services/photoService.ts
-	deleted:    src/services/photoUploadService.ts
-
-Untracked files:
-  (use "git add <file>..." to include in what will be committed)
-	logs/iteration-20.md
-
-no changes added to commit (use "git add" and/or "git commit -a")
 [0m

@@ -1,11 +1,23 @@
-import { getStorage, ref, uploadBytes, deleteObject } from 'firebase/storage';
+import {
+  getStorage,
+  ref,
+  uploadBytesResumable,
+  getDownloadURL,
+  deleteObject,
+} from 'firebase/storage';
 import {
   collection,
   doc,
   setDoc,
   deleteDoc,
   serverTimestamp,
+  query,
+  where,
+  orderBy,
+  onSnapshot,
   type DocumentData,
+  type QuerySnapshot,
+  type Unsubscribe,
 } from 'firebase/firestore';
 import { storage, db } from './firebase';
 import type { Photo } from '../types';
@@ -20,27 +32,47 @@ export function generatePhotoId(): string {
 }
 
 /**
- * Uploads an image file to Firebase Storage
+ * Uploads an image file to Firebase Storage with progress tracking
  * @param eventId - Event ID
  * @param photoId - Unique photo identifier
  * @param imageUri - Local URI of the compressed image
+ * @param onProgress - Optional progress callback (0-100)
  * @returns Storage path of the uploaded image
  */
 export async function uploadPhotoToStorage(
   eventId: string,
   photoId: string,
-  imageUri: string
+  imageUri: string,
+  onProgress?: (progress: number) => void
 ): Promise<string> {
   try {
     // Create storage reference
     const storagePath = `events/${eventId}/photos/${photoId}.jpg`;
     const storageRef = ref(storage, storagePath);
 
-    // Upload the file using uploadBytes (React Native compatible)
+    // Read image file
     const response = await fetch(imageUri);
     const blob = await response.blob();
 
-    await uploadBytes(storageRef, blob);
+    // Use resumable upload for progress tracking
+    const uploadTask = uploadBytesResumable(storageRef, blob);
+
+    // Monitor progress
+    if (onProgress) {
+      uploadTask.on(
+        'state_changed',
+        (snapshot) => {
+          const progress = Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100);
+          onProgress(progress);
+        },
+        (error) => {
+          console.error('Upload error:', error);
+        }
+      );
+    }
+
+    // Wait for completion
+    await uploadTask;
 
     return storagePath;
   } catch (error) {
@@ -108,6 +140,7 @@ export async function deletePhoto(
  * @param eventId - Event ID to upload to
  * @param uploaderId - User ID of the uploader
  * @param imageResult - Compressed image result from image picker
+ * @param onProgress - Optional progress callback (0-100)
  * @returns The saved Photo object
  */
 export async function uploadAndSavePhoto(
@@ -117,13 +150,14 @@ export async function uploadAndSavePhoto(
     uri: string;
     width: number;
     height: number;
-  }
+  },
+  onProgress?: (progress: number) => void
 ): Promise<Photo> {
   // Generate unique photo ID
   const photoId = generatePhotoId();
 
-  // Upload image to Firebase Storage
-  const storagePath = await uploadPhotoToStorage(eventId, photoId, imageResult.uri);
+  // Upload image to Firebase Storage with progress
+  const storagePath = await uploadPhotoToStorage(eventId, photoId, imageResult.uri, onProgress);
 
   // Create photo metadata
   const photo: Omit<Photo, 'id' | 'createdAt'> = {
@@ -143,4 +177,49 @@ export async function uploadAndSavePhoto(
     id: photoId,
     createdAt: new Date(),
   };
+}
+
+/**
+ * Subscribes to real-time updates for photos in a specific event
+ * @param eventId - Event ID to filter photos
+ * @param onPhotosUpdate - Callback function receiving array of Photo objects
+ * @returns Unsubscribe function to stop listening
+ */
+export function subscribeToPhotos(
+  eventId: string,
+  onPhotosUpdate: (photos: Photo[]) => void
+): Unsubscribe {
+  // Create query: photos where eventId == current, ordered by createdAt descending
+  const photosQuery = query(
+    collection(db, PHOTOS_COLLECTION),
+    where('eventId', '==', eventId),
+    orderBy('createdAt', 'desc')
+  );
+
+  // Set up real-time listener
+  const unsubscribe = onSnapshot(
+    photosQuery,
+    (snapshot: QuerySnapshot<DocumentData>) => {
+      const photos: Photo[] = snapshot.docs.map((doc) => {
+        const data = doc.data();
+        return {
+          id: doc.id,
+          eventId: data.eventId,
+          uploaderId: data.uploaderId,
+          storagePath: data.storagePath,
+          thumbnailPath: data.thumbnailPath,
+          createdAt: data.createdAt?.toDate() || new Date(),
+          width: data.width,
+          height: data.height,
+        } as Photo;
+      });
+      onPhotosUpdate(photos);
+    },
+    (error) => {
+      console.error('Error in photos subscription:', error);
+      onPhotosUpdate([]);
+    }
+  );
+
+  return unsubscribe;
 }

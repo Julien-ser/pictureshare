@@ -68,23 +68,12 @@ const UploadInterface: React.FC<UploadInterfaceProps> = ({ eventId }) => {
     setUploadProgress(0);
 
     try {
-      // Start upload
-      const uploadPromise = uploadAndSavePhoto(eventId, user.uid, selectedImage);
+      // Start upload with progress callback
+      await uploadAndSavePhoto(eventId, user.uid, selectedImage, (progress) => {
+        setUploadProgress(progress);
+      });
 
-      // Simulate progress increments until complete
-      const interval = setInterval(() => {
-        setUploadProgress((prev) => {
-          if (prev >= 95) {
-            clearInterval(interval);
-            return prev;
-          }
-          return prev + 5;
-        });
-      }, 200);
-
-      // Wait for upload to complete
-      await uploadPromise;
-      clearInterval(interval);
+      // Ensure progress shows 100% after completion
       setUploadProgress(100);
 
       Alert.alert('Upload Complete', 'Your photo has been shared with the event group!', [
