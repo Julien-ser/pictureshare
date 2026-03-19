@@ -1,6 +1,6 @@
-# Iteration 17 - pictureshare
+# Iteration 19 - pictureshare
 
-**Timestamp:** Thu Mar 19 07:02:01 PM EDT 2026
+**Timestamp:** Thu Mar 19 07:02:10 PM EDT 2026
 **Task:** Implement upload service: upload compressed image to Firebase Storage path `/events/{eventId}/photos/{photoId}.jpg`
 
 ## Prompt Sent
@@ -339,13 +339,44 @@ Switch back to `generic` when the specialist work is done.
 ---
 
 ### ⚠️ CRITICAL TOKEN CONSTRAINTS:
-- Iteration: 17 / 64k Token Budget
-- Attempt: 1 (previous attempts may have partial progress)
+- Iteration: 19 / 64k Token Budget
+- Attempt: 2 (previous attempts may have partial progress)
 - **Mandate:** Operate efficiently. Use partial edits, not full file rewrites when possible.
 - **Output:** Be concise and action-oriented.
+### Previous Attempt (Iteration 18):
+**Files created/modified:**
+```
+
+```
+
+**Last Output:**
+```
+## OpenCode Output
+
+```
+[0m
+> build · stepfun/step-3.5-flash:free
+[0m
+[0m→ [0mRead .
+I'll help you implement the upload service for Firebase Storage. Let me first explore the project structure to understand what's already in place.
+[0m→ [0mRead package.json
+[0m✱ [0mGlob "src/**/*.tsx"[90m 8 matches[0m
+[0m✱ [0mGlob "src/**/*.ts"[90m 9 matches[0m
+[0m→ [0mRead src/services/firebase.ts
+[0m→ [0mRead src/services/eventService.ts
+[0m→ [0mRead TASKS.md
+[0m→ [0mRead src/screens/UploadInterface.tsx
+[0m→ [0mRead src/utils/imagePicker.ts
+[0m→ [0mRead src/types/index.ts
+```
+
+## TASKS.md After Iteration
+```
+
+**Guidance:** Continue from where we left off. Don't re-do work already done. Focus on the next incomplete piece.
 
 
-## CURRENT PROJECT STATE (Iteration 17)
+## CURRENT PROJECT STATE (Iteration 19)
 
 ```
 # pictureshare
@@ -414,91 +445,80 @@ Implement upload service: upload compressed image to Firebase Storage path `/eve
 [0m
 > build · stepfun/step-3.5-flash:free
 [0m
-I'll implement the upload service for Firebase Storage. Let me first explore the project structure to understand what's already in place.
-[0m✱ [0mGlob "**/*.{ts,tsx,js,jsx}"[90m 20 matches[0m
+I'll implement the upload service for Firebase Storage. Let me first examine the existing Firebase service to understand the current setup.
 [0m→ [0mRead src/services/firebase.ts
-[0m→ [0mRead src/types/index.ts
-[0m→ [0mRead src/screens/UploadInterface.tsx
-[0m→ [0mRead src/services/eventService.ts
-Now I need to add Firebase Storage support. Let me check the Firebase Storage imports and create the photo upload service.
-[0m→ [0mRead src/services/index.ts
-[0m→ [0mRead src/utils/imagePicker.ts
-Let me check the imagePicker utility to understand the image format returned:
 [0m→ [0mRead package.json
-Let me check the package.json to see what Firebase packages are installed:
-[0m✗ [0medit failed
-[91m[1mError: [0mFile /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/services/firebase.ts has been modified since it was last read.
-Last modification: 2026-03-19T23:02:43.835Z
-Last read: 2026-03-19T23:02:11.627Z
+[0m→ [0mRead src/types/index.ts
+Let me also check the image picker and upload interface to understand the data flow:
+[0m→ [0mRead src/utils/imagePicker.ts
+[0m→ [0mRead src/screens/UploadInterface.tsx
+Let me check the existing folder structure and create the upload service:
+[0m
+[0m$ [0mls -la src/services/
+total 24
+drwxr-xr-x 2 julien julien 4096 Mar 19 18:46 .
+drwxr-xr-x 8 julien julien 4096 Mar 19 18:37 ..
+-rw-r--r-- 1 julien julien 2429 Mar 19 18:47 eventService.ts
+-rw-r--r-- 1 julien julien 4976 Mar 19 18:44 firebase.ts
+-rw-r--r-- 1 julien julien    0 Mar 19 18:30 .gitkeep
+-rw-r--r-- 1 julien julien   63 Mar 19 18:39 index.ts
+[0m
+[0m→ [0mRead src/services/index.ts
+[0m→ [0mRead src/services/eventService.ts
+Now I'll implement the upload service. First, I'll update `firebase.ts` to add Firebase Storage:
+[0m
+[0m← [0mEdit src/services/firebase.ts
+Index: /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/services/firebase.ts
+===================================================================
+--- /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/services/firebase.ts
++++ /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/services/firebase.ts
+@@ -8,8 +8,9 @@
+   type Auth,
+   type User as FirebaseUser,
+ } from 'firebase/auth';
+ import { getFirestore, connectFirestoreEmulator } from 'firebase/firestore';
++import { getStorage, connectStorageEmulator, ref, type Storage } from 'firebase/storage';
+ import { connectAuthEmulator } from 'firebase/auth';
+ import * as WebBrowser from 'expo-web-browser';
+ import { makeRedirectUri, AuthRequest } from 'expo-auth-session';
+ import * as Google from 'expo-auth-session/providers/google';
 
-Please read the file again before modifying it.
-Now I'll implement the upload service. Let me start by updating the Firebase config to include Storage, then create the photo service:
-Let me read the file again since it changed:
-[0m→ [0mRead src/services/firebase.ts
-[0m✗ [0medit failed
-[91m[1mError: [0mFile /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/services/firebase.ts has been modified since it was last read.
-Last modification: 2026-03-19T23:02:59.599Z
-Last read: 2026-03-19T23:02:58.774Z
+[0m
+Let me fix the type import:
+[0m← [0mEdit src/services/firebase.ts
+Index: /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/services/firebase.ts
+===================================================================
+--- /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/services/firebase.ts
++++ /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/services/firebase.ts
+@@ -8,9 +8,9 @@
+   type Auth,
+   type User as FirebaseUser,
+ } from 'firebase/auth';
+ import { getFirestore, connectFirestoreEmulator } from 'firebase/firestore';
+-import { getStorage, connectStorageEmulator, ref, type Storage } from 'firebase/storage';
++import { getStorage, connectStorageEmulator, type FirebaseStorage } from 'firebase/storage';
+ import { connectAuthEmulator } from 'firebase/auth';
+ import * as WebBrowser from 'expo-web-browser';
+ import { makeRedirectUri, AuthRequest } from 'expo-auth-session';
+ import * as Google from 'expo-auth-session/providers/google';
 
-Please read the file again before modifying it.
-I see storage is already imported but not initialized. Let me add the storage initialization and export:
-```
+[0m
+Now add storage initialization and export:
+[0m← [0mEdit src/services/firebase.ts
+Index: /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/services/firebase.ts
+===================================================================
+--- /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/services/firebase.ts
++++ /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/services/firebase.ts
+@@ -33,8 +33,9 @@
+ // Initialize Firebase (singleton)
+ const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
+ export const auth: Auth = getAuth(app);
+ export const db = getFirestore(app);
++export const storage: FirebaseStorage = getStorage(app);
+ 
+ // Use emulators in development
+ if (__DEV__) {
+   connectAuthEmulator(auth, 'http://localhost:9099');
 
-## TASKS.md After Iteration
-
-```markdown
-# pictureshare
-
-**Mission:** App for event photo sharing
-All participants scan a written code and pictures they sent will be accessible to all in da group n vice versa
-
-## Phase 1: Planning & Setup
-
-- [x] Choose tech stack: React Native (Expo), Firebase (Auth/Firestore/Storage), react-native-camera, qrcode library; document in ADR
-- [x] Initialize Expo project with TypeScript, configure ESLint/Prettier, and set up folder structure: components/, screens/, services/, utils/
-- [x] Create low-fidelity wireframes for: Event Join (QR scanner), Photo Feed, Upload Interface, Profile Screen
-- [x] Set up Firebase project with security rules baseline, initialize local emulators for development
-
-## Phase 2: Authentication & Event Code System
-
-- [x] Implement Firebase Anonymous Auth + Google Sign-In as fallback; store user mapping locally
-- [x] Build event creation screen: generates 6-digit alphanumeric code, optional time/visibility settings
-- [x] Integrate `react-native-qrcode-svg` to display event QR code for sharing; encode deep link with event ID
-- [x] Develop QR scanner screen using `expo-camera`; validate code against Firestore and join user to event document's participants array
-
-## Phase 3: Photo Capture, Compression & Upload
-
-- [x] Build camera/gallery picker with `expo-image-picker`; request permissions and handle denials with explanatory UI
-- [x] Add image compression pipeline: use `expo-image-manipulator` to resize to ≤1920px, compress to 80% quality
-- [ ] Implement upload service: upload compressed image to Firebase Storage path `/events/{eventId}/photos/{photoId}.jpg`
-- [ ] Save photo metadata to Firestore collection `photos` with fields: eventId, uploaderId, storagePath, createdAt, thumbnailPath
-
-## Phase 4: Real-Time Feed & Sync
-
-- [ ] Subscribe to Firestore `photos` collection query `where eventId == current` with real-time listener; render in FlatList
-- [ ] Implement optimistic UI: add photo to feed immediately after upload, mark pending, finalize on server confirmation
-- [ ] Build infinite scroll pagination using Firestore cursor; load 20 initial photos, fetch more on scroll
-- [ ] Add offline-first behavior: cache photos locally with `expo-file-system`; retry failed uploads when back online
-
-## Phase 5: Group Permissions & Interactions
-
-- [ ] Enable deletion: only photo owner or event creator can delete; remove from Storage and Firestore
-- [ ] Add likes: create `likes` subcollection under each photo; toggle like on press; update aggregated like count
-- [ ] Create lightweight comments: allow short text on photos; store in `comments` subcollection; real-time updates
-- [ ] Show participant list per event with avatars (from Google Auth) and photo count; differentiate current user
-
-## Phase 6: Testing, Polish & Launch
-
-- [ ] Write unit tests for utilities (code generation, image compression) and service wrappers using Jest
-- [ ] Create integration tests with Firebase Emulators: test event join flow, upload, and real-time feed
-- [ ] Perform closed beta: distribute via Expo Go, collect feedback on UX and performance
-- [ ] Deploy to app stores: configure EAS build, submit to Apple TestFlight and Google Play Internal; monitor Firebase Crashlytics
-      </parameter>
-      <parameter=filePath>
-      /home/julien/Desktop/Free-Wiggum-opencode/pictureshare_TASKS.md
-      </parameter>
-      </function>
-      </tool_call>
-```
-
-**Completed at:** Thu Mar 19 07:03:11 PM EDT 2026
+[0m
+Now add storage emulator connection and import ref:

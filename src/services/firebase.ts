@@ -9,6 +9,7 @@ import {
   type User as FirebaseUser,
 } from 'firebase/auth';
 import { getFirestore, connectFirestoreEmulator } from 'firebase/firestore';
+import { getStorage, connectStorageEmulator, ref, type FirebaseStorage } from 'firebase/storage';
 import { connectAuthEmulator } from 'firebase/auth';
 import * as WebBrowser from 'expo-web-browser';
 import { makeRedirectUri, AuthRequest } from 'expo-auth-session';
@@ -33,11 +34,13 @@ const firebaseConfig = {
 const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
 export const auth: Auth = getAuth(app);
 export const db = getFirestore(app);
+export const storage: FirebaseStorage = getStorage(app);
 
 // Use emulators in development
 if (__DEV__) {
   connectAuthEmulator(auth, 'http://localhost:9099');
   connectFirestoreEmulator(db, 'localhost', 8080);
+  connectStorageEmulator(storage, 'localhost', 9199);
 }
 
 // Google provider for fallback auth
