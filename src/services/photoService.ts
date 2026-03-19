@@ -15,6 +15,11 @@ import {
   where,
   orderBy,
   onSnapshot,
+  getDocs,
+  Query,
+  QueryDocumentSnapshot,
+  limit,
+  startAfter,
   type DocumentData,
   type QuerySnapshot,
   type Unsubscribe,
@@ -224,4 +229,66 @@ export function subscribeToPhotos(
   );
 
   return unsubscribe;
+}
+
+/**
+ * Loads a batch of photos for an event with pagination support
+ * @param eventId - Event ID to filter photos
+ * @param batchSize - Number of photos to fetch (default 20)
+ * @param lastPhoto - Optional last photo document from previous batch to use as cursor
+ * @returns Array of Photo objects and the last document snapshot for next pagination
+ */
+export async function loadPhotosBatch(
+  eventId: string,
+  batchSize: number = 20,
+  lastPhoto?: QueryDocumentSnapshot<DocumentData>
+): Promise<{ photos: Photo[]; lastDoc: QueryDocumentSnapshot<DocumentData> | null }> {
+  try {
+    // Build query with optional cursor
+    let photosQuery: Query<DocumentData> = query(
+      collection(db, PHOTOS_COLLECTION),
+      where('eventId', '==', eventId),
+      orderBy('createdAt', 'desc'),
+      limit(batchSize)
+    );
+
+    // Add cursor if we have a last photo
+    if (lastPhoto) {
+      photosQuery = query(photosQuery, startAfter(lastPhoto));
+    }
+
+    // Execute query
+    const snapshot = await getDocs(photosQuery);
+    const photos: Photo[] = snapshot.docs.map((doc) => {
+      const data = doc.data();
+      return {
+        id: doc.id,
+        eventId: data.eventId,
+        uploaderId: data.uploaderId,
+        storagePath: data.storagePath,
+        thumbnailPath: data.thumbnailPath,
+        createdAt: data.createdAt?.toDate() || new Date(),
+        width: data.width,
+        height: data.height,
+      } as Photo;
+    });
+
+    // Get the last document for next pagination
+    const lastDoc = snapshot.docs[snapshot.docs.length - 1] || null;
+
+    return { photos, lastDoc };
+  } catch (error) {
+    console.error('Error loading photos batch:', error);
+    throw error;
+  }
+}
+
+/**
+ * Loads the initial batch of photos (convenience function)
+ */
+export async function loadInitialPhotos(
+  eventId: string,
+  batchSize: number = 20
+): Promise<{ photos: Photo[]; lastDoc: QueryDocumentSnapshot<DocumentData> | null }> {
+  return loadPhotosBatch(eventId, batchSize);
 }
