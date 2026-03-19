@@ -27,7 +27,7 @@ const EventJoinScreen: React.FC = () => {
     if (!permission?.granted) {
       requestPermission();
     }
-  }, [permission]);
+  }, [permission, requestPermission]);
 
   const handleBarCodeScanned = async ({ data }: { data: string }) => {
     if (joinStatus === 'loading') return;
