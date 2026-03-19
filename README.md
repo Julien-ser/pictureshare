@@ -91,7 +91,7 @@ src/
 - [x] Firebase Anonymous Auth + Google Sign-In (fallback)
 - [x] User mapping stored locally
 - [x] Event creation screen with 6-digit code generation, time/visibility settings
-- [ ] QR code display for event sharing
+- [x] QR code display for event sharing (deep link with event ID)
 - [ ] QR scanner integration
 
 See [TASKS.md](./TASKS.md) for full roadmap.

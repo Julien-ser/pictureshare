@@ -13,19 +13,38 @@
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
-    "assetBundlePatterns": [
-      "**/*"
-    ],
+    "assetBundlePatterns": ["**/*"],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.pictureshare.app"
+      "bundleIdentifier": "com.pictureshare.app",
+      "infoPlist": {
+        "CFBundleURLSchemes": ["pictureshare"]
+      }
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.pictureshare.app"
+      "package": "com.pictureshare.app",
+      "intentFilters": [
+        {
+          "action": "VIEW",
+          "data": [
+            {
+              "scheme": "pictureshare",
+              "host": "event",
+              "pathPrefix": "/"
+            },
+            {
+              "scheme": "pictureshare",
+              "host": "join",
+              "pathPrefix": "/"
+            }
+          ],
+          "category": ["BROWSABLE", "DEFAULT"]
+        }
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png"
