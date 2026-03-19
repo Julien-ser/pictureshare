@@ -498,3 +498,43 @@ Index: /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/README.md
  
 
 [0m
+Now let me commit and push the changes:
+[0m$ [0mgit add .
+[0m
+[0m$ [0mgit status
+On branch main
+Changes to be committed:
+  (use "git restore --staged <file>..." to unstage)
+	modified:   README.md
+	modified:   TASKS.md
+	modified:   logs/iteration-4.md
+	modified:   logs/iteration-5.md
+	modified:   logs/worker-session-20260319-182452.log
+	modified:   logs/worker-session-20260319-182513.log
+	new file:   src/screens/EventJoinScreen.tsx
+	new file:   src/screens/PhotoFeedScreen.tsx
+	new file:   src/screens/ProfileScreen.tsx
+	new file:   src/screens/UploadInterface.tsx
+	modified:   src/screens/index.ts
+[0m
+[0m$ [0mgit commit -m "feat: add wireframe screens for Event Join, Photo Feed, Upload, and Profile"
+[main 4fe38e4] feat: add wireframe screens for Event Join, Photo Feed, Upload, and Profile
+ 11 files changed, 1159 insertions(+), 4 deletions(-)
+ create mode 100644 src/screens/EventJoinScreen.tsx
+ create mode 100644 src/screens/PhotoFeedScreen.tsx
+ create mode 100644 src/screens/ProfileScreen.tsx
+ create mode 100644 src/screens/UploadInterface.tsx
+[0m
+[0m$ [0mgit push origin main
+To https://github.com/Julien-ser/pictureshare.git
+   d327a6e..4fe38e4  main -> main
+[0m
+Perfect! The wireframe task is complete. I've created four low-fidelity React Native screen components:
+
+1. **EventJoinScreen.tsx** - QR scanner + manual code entry
+2. **PhotoFeedScreen.tsx** - Real-time photo feed with interactions
+3. **UploadInterface.tsx** - Photo picker, preview, and upload
+4. **ProfileScreen.tsx** - User profile, stats, and settings
+
+All changes have been committed and pushed to GitHub. The task is marked as completed in TASKS.md and README.md has been updated accordingly.
+📝 Log saved: logs/iteration-4.md
