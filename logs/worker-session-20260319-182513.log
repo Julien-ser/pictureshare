@@ -365,3 +365,236 @@ To https://github.com/Julien-ser/pictureshare.git
 [0m
 Let me check the existing .gitignore to see if we need to update it:
 [0m→ [0mRead .gitignore
+Now I'll initialize the Expo project. I'll create all necessary files and directories in one bash command:
+[0m
+[0m$ [0mcat > tsconfig.json << 'EOF'
+{
+  "extends": "expo/tsconfig.base",
+  "compilerOptions": {
+    "strict": true,
+    "jsx": "react-native"
+  },
+  "include": [
+    "**/*.ts",
+    "**/*.tsx"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
+}
+EOF
+[0m
+[0m$ [0mcat > babel.config.js << 'EOF'
+module.exports = function(api) {
+  api.cache(true);
+  return {
+    presets: ['babel-preset-expo'],
+  };
+};
+EOF
+[0m
+[0m$ [0mcat > app.json << 'EOF'
+{
+  "expo": {
+    "name": "pictureshare",
+    "slug": "pictureshare",
+    "version": "1.0.0",
+    "platforms": ["ios", "android", "web"],
+    "sdkVersion": "50.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "automatic",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.pictureshare.app"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#ffffff"
+      },
+      "package": "com.pictureshare.app"
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    }
+  }
+}
+EOF
+[0m
+[0m$ [0mcat > .eslintrc.js << 'EOF'
+module.exports = {
+  extends: ['expo'],
+  parser: '@typescript-eslint/parser',
+  plugins: ['@typescript-eslint'],
+  rules: {
+    // Add custom rules here if needed
+  },
+};
+EOF
+[0m
+[0m$ [0mcat > .prettierrc << 'EOF'
+{
+  "semi": true,
+  "singleQuote": true,
+  "trailingComma": "es5",
+  "printWidth": 100,
+  "tabWidth": 2
+}
+EOF
+[0m
+[0m$ [0mcat > .gitignore << 'EOF'
+# Dependencies
+node_modules/
+
+# Expo
+.expo/
+dist/
+web-build/
+
+# Native
+*.orig.*
+*.rej.*
+*~
+.DS_Store
+
+# Environment
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Cache
+.cache/
+.parcel-cache/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+Thumbs.db
+EOF
+[0m
+[0m$ [0mcat > App.tsx << 'EOF'
+import React from 'react';
+import { SafeAreaView, Text, StyleSheet } from 'react-native';
+import { StatusBar } from 'expo-status-bar';
+
+export default function App() {
+  return (
+    <SafeAreaView style={styles.container}>
+      <StatusBar style="auto" />
+      <Text style={styles.text}>PictureShare</Text>
+      <Text style={styles.subtext}>Event Photo Sharing App</Text>
+    </SafeAreaView>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#fff',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  text: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 10,
+  },
+  subtext: {
+    fontSize: 16,
+    color: '#666',
+  },
+});
+EOF
+[0m
+[0m$ [0mmkdir -p src/components src/screens src/services src/utils src/types && \
+cat > package.json << 'EOF'
+{
+  "name": "pictureshare",
+  "version": "1.0.0",
+  "main": "App.tsx",
+  "scripts": {
+    "start": "expo start",
+    "android": "expo start --android",
+    "ios": "expo start --ios",
+    "web": "expo start --web",
+    "lint": "eslint .",
+    "test": "jest"
+  },
+  "dependencies": {
+    "expo": "~50.0.0",
+    "expo-status-bar": "~1.11.0",
+    "react": "18.2.0",
+    "react-native": "0.73.0"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.20.0",
+    "@types/react": "~18.2.14",
+    "@types/react-native": "~0.73.0",
+    "typescript": "^5.1.3",
+    "eslint": "^8.0.0",
+    "eslint-config-expo": "^8.0.0",
+    "eslint-plugin-import": "^2.28.0",
+    "@typescript-eslint/parser": "^6.0.0",
+    "@typescript-eslint/eslint-plugin": "^6.0.0",
+    "prettier": "^3.0.0",
+    "jest": "^29.0.0",
+    "jest-expo": "~50.0.0"
+  },
+  "private": true
+}
+EOF
+[0m
+[0m$ [0mtouch src/components/.gitkeep src/screens/.gitkeep src/services/.gitkeep src/utils/.gitkeep src/types/.gitkeep && cat > src/types/index.ts << 'EOF'
+export type User = {
+  id: string;
+  email?: string;
+  displayName?: string;
+  photoURL?: string;
+};
+
+export type Event = {
+  id: string;
+  code: string;
+  createdAt: any;
+  createdBy: string;
+  participants: string[];
+  settings?: {
+    maxDuration?: number;
+    isPublic?: boolean;
+  };
+};
+
+export type Photo = {
+  id: string;
+  eventId: string;
+  uploaderId: string;
+  storagePath: string;
+  thumbnailPath?: string;
+  createdAt: any;
+  width: number;
+  height: number;
+};
+EOF
+Now I need to update TASKS.md and README.md to mark the task as complete. Let me edit those files:
+[0m→ [0mRead TASKS.md
+[0m→ [0mRead README.md
