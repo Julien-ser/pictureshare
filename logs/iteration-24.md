@@ -590,3 +590,271 @@ Index: /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/servi
 [ ] Test the pagination flow locally
 [ ] Update README.md to reflect current progress
 [0m
+Now I'll update PhotoContext.tsx to manage pagination state. I'll replace the real-time listener with manual pagination:
+[0m← [0mEdit src/contexts/PhotoContext.tsx
+Index: /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/contexts/PhotoContext.tsx
+===================================================================
+--- /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/contexts/PhotoContext.tsx
++++ /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/contexts/PhotoContext.tsx
+@@ -6,17 +6,23 @@
+   useCallback,
+   type ReactNode,
+ } from 'react';
+ import { useEvent } from './EventContext';
+-import { subscribeToPhotos } from '../services/photoService';
++import {
++  loadInitialPhotos,
++  loadPhotosBatch,
++  type QueryDocumentSnapshot,
++} from '../services/photoService';
+ import type { Photo } from '../types';
+ 
+ interface PhotoContextType {
+   photos: Photo[];
+   pendingPhotos: Photo[];
++  hasMore: boolean;
++  loadingMore: boolean;
++  loadMorePhotos: () => Promise<void>;
+   addPendingPhoto: (photo: Photo) => void;
+   removePendingPhoto: (photoId: string) => void;
+-  getCombinedPhotos: () => Photo[];
+ }
+ 
+ const PhotoContext = createContext<PhotoContextType | undefined>(undefined);
+ 
+@@ -28,34 +34,79 @@
+   const { currentEvent } = useEvent();
+   const eventId = currentEvent?.id;
+   const [photos, setPhotos] = useState<Photo[]>([]);
+   const [pendingPhotos, setPendingPhotos] = useState<Map<string, Photo>>(new Map());
++  const [hasMore, setHasMore] = useState(true);
++  const [loadingMore, setLoadingMore] = useState(false);
++  const [lastDoc, setLastDoc] = useState<QueryDocumentSnapshot<DocumentData> | null>(null);
++  const [error, setError] = useState<string | null>(null);
+ 
+-  // Subscribe to real-time photo updates from Firestore for current event
++  // Load initial batch of photos when event changes
+   useEffect(() => {
+     if (!eventId) {
+       setPhotos([]);
++      setHasMore(true);
++      setLastDoc(null);
++      setError(null);
+       return;
+     }
+ 
+-    const unsubscribe = subscribeToPhotos(eventId, (photosData: Photo[]) => {
+-      setPhotos(photosData);
++    let mounted = true;
+ 
+-      // Remove any pending photos that have been confirmed in Firestore
+-      setPendingPhotos((prev) => {
+-        const next = new Map(prev);
+-        photosData.forEach((photo) => {
+-          if (next.has(photo.id)) {
+-            next.delete(photo.id);
+-          }
+-        });
+-        return next;
+-      });
+-    });
++    const loadInitial = async () => {
++      try {
++        setError(null);
++        const { photos: initialPhotos, lastDoc: newLastDoc } = await loadInitialPhotos(eventId, 20);
+ 
+-    return () => unsubscribe();
++        if (mounted) {
++          setPhotos(initialPhotos);
++          setLastDoc(newLastDoc);
++          setHasMore(newLastDoc !== null); // If we got a lastDoc, there might be more
++        }
++      } catch (err) {
++        console.error('Error loading initial photos:', err);
++        if (mounted) {
++          setError('Failed to load photos');
++          setPhotos([]);
++          setHasMore(false);
++        }
++      }
++    };
++
++    loadInitial();
++
++    return () => {
++      mounted = false;
++    };
+   }, [eventId]);
+ 
++  // Load more photos (called by FlatList onEndReached)
++  const loadMorePhotos = useCallback(async () => {
++    if (!eventId || loadingMore || !hasMore || !lastDoc) {
++      return;
++    }
++
++    try {
++      setLoadingMore(true);
++      setError(null);
++
++      const { photos: newPhotos, lastDoc: newLastDoc } = await loadPhotosBatch(
++        eventId,
++        20,
++        lastDoc
++      );
++
++      setPhotos((prev) => [...prev, ...newPhotos]);
++      setLastDoc(newLastDoc);
++      setHasMore(newLastDoc !== null); // If no lastDoc returned, we've loaded all
++    } catch (err) {
++      console.error('Error loading more photos:', err);
++      setError('Failed to load more photos');
++    } finally {
++      setLoadingMore(false);
++    }
++  }, [eventId, loadingMore, hasMore, lastDoc]);
++
+   const addPendingPhoto = useCallback((photo: Photo) => {
+     setPendingPhotos((prev) => {
+       const next = new Map(prev);
+       next.set(photo.id, photo);
+@@ -70,8 +121,9 @@
+       return next;
+     });
+   }, []);
+ 
++  // Get combined photos: pending first (they're newer), then confirmed photos
+   const getCombinedPhotos = useCallback(() => {
+     const pendingArray = Array.from(pendingPhotos.values());
+     // Combine pending and confirmed photos, sort by createdAt descending (newest first)
+     const combined = [...pendingArray, ...photos];
+@@ -89,8 +141,11 @@
+     <PhotoContext.Provider
+       value={{
+         photos,
+         pendingPhotos: Array.from(pendingPhotos.values()),
++        hasMore,
++        loadingMore,
++        loadMorePhotos,
+         addPendingPhoto,
+         removePendingPhoto,
+         getCombinedPhotos,
+       }}
+
+[0m
+Let me fix the errors. I need to import the necessary types properly:
+[0m← [0mEdit src/contexts/PhotoContext.tsx
+Index: /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/contexts/PhotoContext.tsx
+===================================================================
+--- /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/contexts/PhotoContext.tsx
++++ /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/contexts/PhotoContext.tsx
+@@ -6,13 +6,21 @@
+   useCallback,
+   type ReactNode,
+ } from 'react';
+ import { useEvent } from './EventContext';
++import { loadInitialPhotos, loadPhotosBatch } from '../services/photoService';
+ import {
+-  loadInitialPhotos,
+-  loadPhotosBatch,
++  collection,
++  query,
++  where,
++  orderBy,
++  limit,
++  startAfter,
++  getDocs,
++  type Query,
+   type QueryDocumentSnapshot,
+-} from '../services/photoService';
++  type DocumentData,
++} from 'firebase/firestore';
+ import type { Photo } from '../types';
+ 
+ interface PhotoContextType {
+   photos: Photo[];
+
+[0m
+Now I need to add `getCombinedPhotos` to the interface:
+[0m← [0mEdit src/contexts/PhotoContext.tsx
+Index: /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/contexts/PhotoContext.tsx
+===================================================================
+--- /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/contexts/PhotoContext.tsx
++++ /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/contexts/PhotoContext.tsx
+@@ -29,8 +29,9 @@
+   loadingMore: boolean;
+   loadMorePhotos: () => Promise<void>;
+   addPendingPhoto: (photo: Photo) => void;
+   removePendingPhoto: (photoId: string) => void;
++  getCombinedPhotos: () => Photo[];
+ }
+ 
+ const PhotoContext = createContext<PhotoContextType | undefined>(undefined);
+ 
+
+[0m
+[0m# [0mTodos
+[x] Add pagination functions to photoService.ts (loadPhotosBatch, loadAllPhotos initially)
+[x] Update PhotoContext.tsx to manage pagination state and loadMore function
+[ ] Update PhotoFeedScreen.tsx to use FlatList with onEndReached for infinite scroll
+[ ] Add loading indicator at bottom for pagination
+[ ] Test the pagination flow locally
+[ ] Update README.md to reflect current progress
+[0m
+I need to update PhotoContext.tsx to include `initialLoading` and `error` in the interface and provider value. Let me do that:
+[0m← [0mEdit src/contexts/PhotoContext.tsx
+Index: /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/contexts/PhotoContext.tsx
+===================================================================
+--- /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/contexts/PhotoContext.tsx
++++ /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/contexts/PhotoContext.tsx
+@@ -26,8 +26,10 @@
+ photos: Photo[];
+ pendingPhotos: Photo[];
+ hasMore: boolean;
+ loadingMore: boolean;
++initialLoading: boolean;
++error: string | null;
+ loadMorePhotos: () => Promise<void>;
+ addPendingPhoto: (photo: Photo) => void;
+ removePendingPhoto: (photoId: string) => void;
+ getCombinedPhotos: () => Photo[];
+
+[0m
+Now I need to add those properties to the provider value:
+[0m← [0mEdit src/contexts/PhotoContext.tsx
+Index: /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/contexts/PhotoContext.tsx
+===================================================================
+--- /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/contexts/PhotoContext.tsx
++++ /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/contexts/PhotoContext.tsx
+@@ -154,8 +154,10 @@
+ photos,
+ pendingPhotos: Array.from(pendingPhotos.values()),
+ hasMore,
+ loadingMore,
++initialLoading,
++error,
+ loadMorePhotos,
+ addPendingPhoto,
+ removePendingPhoto,
+ getCombinedPhotos,
+
+[0m
+I need to add the `initialLoading` state variable. Let me add it in the component:
+[0m← [0mEdit src/contexts/PhotoContext.tsx
+Index: /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/contexts/PhotoContext.tsx
+===================================================================
+--- /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/contexts/PhotoContext.tsx
++++ /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/contexts/PhotoContext.tsx
+@@ -49,8 +49,9 @@
+ const [hasMore, setHasMore] = useState(true);
+ const [loadingMore, setLoadingMore] = useState(false);
+ const [lastDoc, setLastDoc] = useState<QueryDocumentSnapshot<DocumentData> | null>(null);
+ const [error, setError] = useState<string | null>(null);
++const [initialLoading, setInitialLoading] = useState(true);
+ 
+ // Load initial batch of photos when event changes
+ useEffect(() => {
+   if (!eventId) {
+
+[0m
+Let me verify the current PhotoContext.tsx to ensure the useEffect is correct:
+[0m→ [0mRead src/contexts/PhotoContext.tsx

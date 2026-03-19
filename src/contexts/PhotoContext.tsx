@@ -7,12 +7,29 @@ import React, {
   type ReactNode,
 } from 'react';
 import { useEvent } from './EventContext';
-import { subscribeToPhotos } from '../services/photoService';
+import { loadInitialPhotos, loadPhotosBatch } from '../services/photoService';
+import {
+  collection,
+  query,
+  where,
+  orderBy,
+  limit,
+  startAfter,
+  getDocs,
+  type Query,
+  type QueryDocumentSnapshot,
+  type DocumentData,
+} from 'firebase/firestore';
 import type { Photo } from '../types';
 
 interface PhotoContextType {
   photos: Photo[];
   pendingPhotos: Photo[];
+  hasMore: boolean;
+  loadingMore: boolean;
+  initialLoading: boolean;
+  error: string | null;
+  loadMorePhotos: () => Promise<void>;
   addPendingPhoto: (photo: Photo) => void;
   removePendingPhoto: (photoId: string) => void;
   getCombinedPhotos: () => Photo[];
@@ -29,31 +46,77 @@ export function PhotoProvider({ children }: PhotoProviderProps) {
   const eventId = currentEvent?.id;
   const [photos, setPhotos] = useState<Photo[]>([]);
   const [pendingPhotos, setPendingPhotos] = useState<Map<string, Photo>>(new Map());
+  const [hasMore, setHasMore] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [lastDoc, setLastDoc] = useState<QueryDocumentSnapshot<DocumentData> | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [initialLoading, setInitialLoading] = useState(true);
 
-  // Subscribe to real-time photo updates from Firestore for current event
+  // Load initial batch of photos when event changes
   useEffect(() => {
     if (!eventId) {
       setPhotos([]);
+      setHasMore(true);
+      setLastDoc(null);
+      setError(null);
       return;
     }
 
-    const unsubscribe = subscribeToPhotos(eventId, (photosData: Photo[]) => {
-      setPhotos(photosData);
+    let mounted = true;
 
-      // Remove any pending photos that have been confirmed in Firestore
-      setPendingPhotos((prev) => {
-        const next = new Map(prev);
-        photosData.forEach((photo) => {
-          if (next.has(photo.id)) {
-            next.delete(photo.id);
-          }
-        });
-        return next;
-      });
-    });
+    const loadInitial = async () => {
+      try {
+        setError(null);
+        const { photos: initialPhotos, lastDoc: newLastDoc } = await loadInitialPhotos(eventId, 20);
 
-    return () => unsubscribe();
+        if (mounted) {
+          setPhotos(initialPhotos);
+          setLastDoc(newLastDoc);
+          setHasMore(newLastDoc !== null); // If we got a lastDoc, there might be more
+        }
+      } catch (err) {
+        console.error('Error loading initial photos:', err);
+        if (mounted) {
+          setError('Failed to load photos');
+          setPhotos([]);
+          setHasMore(false);
+        }
+      }
+    };
+
+    loadInitial();
+
+    return () => {
+      mounted = false;
+    };
   }, [eventId]);
+
+  // Load more photos (called by FlatList onEndReached)
+  const loadMorePhotos = useCallback(async () => {
+    if (!eventId || loadingMore || !hasMore || !lastDoc) {
+      return;
+    }
+
+    try {
+      setLoadingMore(true);
+      setError(null);
+
+      const { photos: newPhotos, lastDoc: newLastDoc } = await loadPhotosBatch(
+        eventId,
+        20,
+        lastDoc
+      );
+
+      setPhotos((prev) => [...prev, ...newPhotos]);
+      setLastDoc(newLastDoc);
+      setHasMore(newLastDoc !== null); // If no lastDoc returned, we've loaded all
+    } catch (err) {
+      console.error('Error loading more photos:', err);
+      setError('Failed to load more photos');
+    } finally {
+      setLoadingMore(false);
+    }
+  }, [eventId, loadingMore, hasMore, lastDoc]);
 
   const addPendingPhoto = useCallback((photo: Photo) => {
     setPendingPhotos((prev) => {
@@ -71,6 +134,7 @@ export function PhotoProvider({ children }: PhotoProviderProps) {
     });
   }, []);
 
+  // Get combined photos: pending first (they're newer), then confirmed photos
   const getCombinedPhotos = useCallback(() => {
     const pendingArray = Array.from(pendingPhotos.values());
     // Combine pending and confirmed photos, sort by createdAt descending (newest first)
@@ -90,6 +154,11 @@ export function PhotoProvider({ children }: PhotoProviderProps) {
       value={{
         photos,
         pendingPhotos: Array.from(pendingPhotos.values()),
+        hasMore,
+        loadingMore,
+        initialLoading,
+        error,
+        loadMorePhotos,
         addPendingPhoto,
         removePendingPhoto,
         getCombinedPhotos,
