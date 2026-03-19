@@ -9,7 +9,7 @@ import {
   Alert,
   ActivityIndicator,
 } from 'react-native';
-import { Camera } from 'expo-camera';
+import { Camera, CameraType } from 'expo-camera';
 import { useAuth } from '../contexts/AuthContext';
 import { getEventByCode, joinEvent } from '../services/eventService';
 
@@ -160,10 +160,10 @@ const EventJoinScreen: React.FC = () => {
             <View style={styles.cameraContainer}>
               <Camera
                 style={styles.camera}
-                type={Camera.Constants.Type.back}
-                onBarcodeScanned={joinStatus === 'idle' ? handleBarCodeScanned : undefined}
-                barcodeScannerSettings={{
-                  barcodeTypes: ['qr'],
+                type={CameraType.back}
+                onBarCodeScanned={joinStatus === 'idle' ? handleBarCodeScanned : undefined}
+                barCodeScannerSettings={{
+                  barCodeTypes: ['qr'],
                 }}
               >
                 <View style={styles.cameraOverlay}>
