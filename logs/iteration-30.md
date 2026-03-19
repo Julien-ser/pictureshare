@@ -268,3 +268,28 @@ src/services/offlineQueue.ts(120,33): error TS2552: Cannot find name 'OFFFLINE_Q
 [0m
 [0m• [0mFix TypeScript errors in codebase[90m General Agent[0m
 There are multiple TypeScript errors across the codebase. Let me read the problematic files to understand and fix them:
+[0m✓ [0mFix TypeScript errors in codebase[90m General Agent[0m
+Great! The TypeScript errors have been fixed. Now let me verify the build and also handle the ESLint errors by updating dependencies. First, let me check the current state of PhotoFeedScreen to see if ParticipantsList is integrated:
+[0m→ [0mRead src/screens/PhotoFeedScreen.tsx[90m [limit=100][0m
+Let me see the rest of the file, especially the rendering section:
+[0m→ [0mRead src/screens/PhotoFeedScreen.tsx[90m [offset=400, limit=200][0m
+Let me check if renderPhotoContent is defined:
+[0m✱ [0mGrep "renderPhotoContent"[90m in src/screens/PhotoFeedScreen.tsx · 2 matches[0m
+Now let's verify the fixes by running the type check and lint again:
+[0m
+[0m$ [0mnpx tsc --noEmit 2>&1
+__tests__/codeGenerator.test.ts(104,1): error TS1128: Declaration or statement expected.
+__tests__/codeGenerator.test.ts(104,2): error TS1128: Declaration or statement expected.
+[0m
+Let me read the test file to fix those errors:
+[0m→ [0mRead __tests__/codeGenerator.test.ts[90m [offset=100, limit=20][0m
+Let me read the full test file to see the structure:
+[0m→ [0mRead __tests__/codeGenerator.test.ts
+[0m✗ [0medit failed
+[91m[1mError: [0mFile /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/__tests__/codeGenerator.test.ts has been modified since it was last read.
+Last modification: 2026-03-19T23:53:55.650Z
+Last read: 2026-03-19T23:53:46.592Z
+
+Please read the file again before modifying it.
+Now I see the issue. There's a duplicate block of code (lines 36-39) that is misplaced. Let me fix it:
+[0m→ [0mRead __tests__/codeGenerator.test.ts
