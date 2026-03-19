@@ -1,7 +1,7 @@
 # Iteration 3 - pictureshare
 
-**Timestamp:** Thu Mar 19 06:25:25 PM EDT 2026
-**Task:** Choose tech stack: React Native (Expo), Firebase (Auth/Firestore/Storage), react-native-camera, qrcode library; document in ADR
+**Timestamp:** Thu Mar 19 06:29:11 PM EDT 2026
+**Task:** Initialize Expo project with TypeScript, configure ESLint/Prettier, and set up folder structure: components/, screens/, services/, utils/
 
 ## Prompt Sent
 
@@ -346,7 +346,8 @@ Switch back to `generic` when the specialist work is done.
 ### Previous Attempt (Iteration 2):
 **Files created/modified:**
 ```
-
+[0m$ [0mmkdir -p src/{components,screens,services,utils,types}
+[0m$ [0mmkdir -p .github/workflows
 ```
 
 **Last Output:**
@@ -357,20 +358,20 @@ Switch back to `generic` when the specialist work is done.
 [0m
 > build · stepfun/step-3.5-flash:free
 [0m
-[93m[1m! [0mpermission requested: external_directory (/home/julien/Desktop/Free-Wiggum-opencode/*); auto-rejecting
-I'll start by checking the current state of the project and then complete the first task: choosing tech stack and documenting it in an ADR.
-[0m✗ [0mread failed
-[91m[1mError: [0mThe user rejected permission to use this specific tool call.
+I'll start by examining the project structure and reading the TASKS.md file to understand what needs to be done.
+[0m→ [0mRead TASKS.md
+[0m→ [0mRead .agent_role
 [0m
 [0m$ [0mls -la
-total 56
-drwxr-xr-x  5 julien julien 4096 Mar 19 18:25 .
+total 60
+drwxr-xr-x  6 julien julien 4096 Mar 19 18:25 .
 drwxr-xr-x 29 julien julien 4096 Mar 19 18:24 ..
 -rw-r--r--  1 julien julien    8 Mar 19 18:25 .agent_role
-drwxr-xr-x  7 julien julien 4096 Mar 19 18:25 .git
+drwxr-xr-x  3 julien julien 4096 Mar 19 18:25 docs
+drwxr-xr-x  7 julien julien 4096 Mar 19 18:27 .git
 drwxr-xr-x  3 julien julien 4096 Mar 19 18:24 .github
 -rw-r--r--  1 julien julien    4 Mar 19 18:24 .gitignore
-drwxr-xr-x  2 julien julien 4096 Mar 19 18:25 logs
+drwxr-xr-x  2 julien julien 4096 Mar 19 18:27 logs
 -rw-r--r--  1 julien julien 9218 Mar 19 18:24 prompt.txt
 ```
 
@@ -380,266 +381,6 @@ drwxr-xr-x  2 julien julien 4096 Mar 19 18:25 logs
 ## CURRENT PROJECT STATE (Iteration 3)
 
 ```
-# pictureshare
-**Mission:** App for event photo sharing
-All participants scan a written code and pictures they sent will be accessible to all in da group n vice versa
-
-## Phase 1: Planning & Setup
-- [ ] Choose tech stack: React Native (Expo), Firebase (Auth/Firestore/Storage), react-native-camera, qrcode library; document in ADR
-- [ ] Initialize Expo project with TypeScript, configure ESLint/Prettier, and set up folder structure: components/, screens/, services/, utils/
-- [ ] Create low-fidelity wireframes for: Event Join (QR scanner), Photo Feed, Upload Interface, Profile Screen
-- [ ] Set up Firebase project with security rules baseline, initialize local emulators for development
-
-## Phase 2: Authentication & Event Code System
-- [ ] Implement Firebase Anonymous Auth + Google Sign-In as fallback; store user mapping locally
-- [ ] Build event creation screen: generates 6-digit alphanumeric code, optional time/visibility settings
-- [ ] Integrate `react-native-qrcode-svg` to display event QR code for sharing; encode deep link with event ID
-- [ ] Develop QR scanner screen using `expo-camera`; validate code against Firestore and join user to event document's participants array
-
-## Phase 3: Photo Capture, Compression & Upload
-- [ ] Build camera/gallery picker with `expo-image-picker`; request permissions and handle denials with explanatory UI
-- [ ] Add image compression pipeline: use `expo-image-manipulator` to resize to ≤1920px, compress to 80% quality
-- [ ] Implement upload service: upload compressed image to Firebase Storage path `/events/{eventId}/photos/{photoId}.jpg`
-- [ ] Save photo metadata to Firestore collection `photos` with fields: eventId, uploaderId, storagePath, createdAt, thumbnailPath
-
-## Phase 4: Real-Time Feed & Sync
-- [ ] Subscribe to Firestore `photos` collection query `where eventId == current` with real-time listener; render in FlatList
-- [ ] Implement optimistic UI: add photo to feed immediately after upload, mark pending, finalize on server confirmation
-- [ ] Build infinite scroll pagination using Firestore cursor; load 20 initial photos, fetch more on scroll
-- [ ] Add offline-first behavior: cache photos locally with `expo-file-system`; retry failed uploads when back online
-
-## Phase 5: Group Permissions & Interactions
-- [ ] Enable deletion: only photo owner or event creator can delete; remove from Storage and Firestore
-- [ ] Add likes: create `likes` subcollection under each photo; toggle like on press; update aggregated like count
-- [ ] Create lightweight comments: allow short text on photos; store in `comments` subcollection; real-time updates
-- [ ] Show participant list per event with avatars (from Google Auth) and photo count; differentiate current user
-
-## Phase 6: Testing, Polish & Launch
-- [ ] Write unit tests for utilities (code generation, image compression) and service wrappers using Jest
-- [ ] Create integration tests with Firebase Emulators: test event join flow, upload, and real-time feed
-- [ ] Perform closed beta: distribute via Expo Go, collect feedback on UX and performance
-- [ ] Deploy to app stores: configure EAS build, submit to Apple TestFlight and Google Play Internal; monitor Firebase Crashlytics
-</parameter>
-<parameter=filePath>
-/home/julien/Desktop/Free-Wiggum-opencode/pictureshare_TASKS.md
-</parameter>
-</function>
-</tool_call>
-```
-
-## NEXT TASK TO COMPLETE:
-Choose tech stack: React Native (Expo), Firebase (Auth/Firestore/Storage), react-native-camera, qrcode library; document in ADR
-
-**Instructions:** Complete this task. Mark [x] in TASKS.md when done. Create, modify, or delete files as needed. Execute commands as needed. Also update README.md to match this project (name, setup instructions, current progress). No permission needed—just act.
-```
-
-## OpenCode Output
-
-```
-[0m
-> build · stepfun/step-3.5-flash:free
-[0m
-I'll check the current project state and complete the first task: choosing tech stack and documenting in an ADR.
-[0m→ [0mRead TASKS.md
-[0m→ [0mRead README.md
-[0m✱ [0mGlob "**/*.md"[90m 6 matches[0m
-[0m⚙ [0minvalid Invalid Tool
-Let me check if there's an ADR directory or existing ADRs:
-[0m✱ [0mGlob "**/ADR*.md"[90m 0 matches[0m
-[0m✱ [0mGlob "**/adr*.md"[90m 0 matches[0m
-[0m
-[0m$ [0mmkdir -p /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/docs/adr
-No ADRs exist yet. I'll create an ADR directory and document the tech stack decision:
-[0m
-[0m← [0mWrite docs/adr/ADR-001-tech-stack.md
-Wrote file successfully.
-[0m
-Now I'll create the ADR documenting the tech stack decision:
-Now I'll update the README.md to reflect this specific project:
-[0m← [0mEdit README.md
-Index: /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/README.md
-===================================================================
---- /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/README.md
-+++ /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/README.md
-@@ -1,29 +1,83 @@
--# Project Template
-+# PictureShare
- 
--This is a template for new projects created via `wiggum_master.sh create`.
-+Mobile app for seamless event photo sharing. Scan a QR code, join an event, and instantly share photos with your group in real-time.
- 
--Each project:
--- Lives in `projects/<project-name>/`
--- Has its own GitHub repository
--- Runs its own autonomous OpenCode agent loop
--- Tracks progress in TASKS.md
-+## Features
- 
--## Setup
-+- **QR Code Event Joining** - Scan and join events instantly
-+- **Real-Time Photo Feed** - See photos as they're uploaded
-+- **Image Compression** - Optimized uploads without quality loss
-+- **Offline-First** - Works without internet, syncs when back online
-+- **Group Interactions** - Like and comment on photos
-+- **Cross-Platform** - Works on iOS and Android
- 
--1. Create: `bash wiggum_master.sh create "my-project" "Description"`
--2. View: `cat projects/my-project/README.md`
--3. Initialize: `cd projects/my-project && opencode /init --yes`
--4. Run: `cd projects/my-project && bash wiggum.sh`
-+## Tech Stack
- 
--## Files
-+- **React Native** (Expo) - Cross-platform mobile framework
-+- **Firebase** - Backend (Auth, Firestore, Storage)
-+- **TypeScript** - Type-safe development
- 
--- **README.md** - Project documentation
--- **TASKS.md** - Development task list
--- **prompt.txt** - Agent instructions (project-specific)
--- **AGENTS.md** - Project context (auto-generated)
--- **src/** - Source code directory
--- **tests/** - Test files
-+## Getting Started
- 
--## Customization
-+### Prerequisites
- 
--Update TASKS.md with your project goals, then let the agent handle it!
-+- Node.js 18+
-+- Expo CLI: `npm install -g expo-cli`
-+- iOS Simulator (Xcode) or Android Studio
-+
-+### Installation
-+
-+1. Clone and install dependencies:
-+   ```bash
-+   npm install
-+   ```
-+
-+2. Set up Firebase:
-+   - Create a Firebase project
-+   - Download `google-services.json` (Android) and `GoogleService-Info.plist` (iOS)
-+   - Place them in their respective platform directories
-+   - Enable Authentication (Anonymous + Google), Firestore, and Storage
-+
-+3. Start the development server:
-+   ```bash
-+   npm start
-+   ```
-+
-+4. Run on device/simulator:
-+   - Scan QR code with Expo Go app (iOS/Android)
-+   - Or press `i` for iOS simulator, `a` for Android emulator
-+
-+## Project Structure
-+
-+```
-+src/
-+├── components/     # Reusable UI components
-+├── screens/        # App screens
-+├── services/       # Firebase and API services
-+├── utils/          # Helper functions
-+└── types/          # TypeScript type definitions
-+```
-+
-+## Development Workflow
-+
-+1. Create feature branch from `main`
-+2. Make changes and add tests
-+3. Run linting: `npm run lint`
-+4. Run tests: `npm test`
-+5. Commit and push
-+6. Open pull request
-+
-+## Current Phase
-+
-+**Phase 1: Planning & Setup** - In Progress
-+
-+- [x] Tech stack documented in ADR
-+- [ ] Expo project initialization
-+- [ ] Wireframes
-+- [ ] Firebase emulator setup
-+
-+See [TASKS.md](./TASKS.md) for full roadmap.
-+
-+## Contributing
-+
-+This is an autonomous agent-driven project. See agent instructions in `prompt.txt`.
-
-[0m
-[0m← [0mEdit TASKS.md
-Index: /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/TASKS.md
-===================================================================
---- /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/TASKS.md
-+++ /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/TASKS.md
-@@ -2,9 +2,9 @@
- **Mission:** App for event photo sharing
- All participants scan a written code and pictures they sent will be accessible to all in da group n vice versa
- 
- ## Phase 1: Planning & Setup
--- [ ] Choose tech stack: React Native (Expo), Firebase (Auth/Firestore/Storage), react-native-camera, qrcode library; document in ADR
-+- [x] Choose tech stack: React Native (Expo), Firebase (Auth/Firestore/Storage), react-native-camera, qrcode library; document in ADR
- - [ ] Initialize Expo project with TypeScript, configure ESLint/Prettier, and set up folder structure: components/, screens/, services/, utils/
- - [ ] Create low-fidelity wireframes for: Event Join (QR scanner), Photo Feed, Upload Interface, Profile Screen
- - [ ] Set up Firebase project with security rules baseline, initialize local emulators for development
- 
-
-[0m
-Now I'll mark the first task as completed in TASKS.md:
-Wait - I need to complete **Task 0** first (GitHub Actions workflow setup) before Task 1 can be considered done. Let me create the GitHub Actions workflow file:
-[0m$ [0mmkdir -p /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/.github/workflows
-[0m✗ [0mwrite failed
-[91m[1mError: [0mYou must read file /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/.github/workflows/test.yml before overwriting it. Use the Read tool first
-Now I'll create the GitHub Actions workflow file with the Node.js template:
-Let me check if the workflow directory was created properly and read an existing file to satisfy the requirement:
-[0m
-[0m$ [0mls -la /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/.github/workflows/
-total 40
-drwxr-xr-x 2 julien julien 4096 Mar 19 18:24 .
-drwxr-xr-x 3 julien julien 4096 Mar 19 18:24 ..
--rw-r--r-- 1 julien julien 6143 Mar 19 18:24 deploy-production.yml
--rw-r--r-- 1 julien julien 4295 Mar 19 18:24 deploy-staging.yml
--rw-r--r-- 1 julien julien 3218 Mar 19 18:24 report-ci-errors.yml
--rw-r--r-- 1 julien julien 3227 Mar 19 18:24 test.yml
--rw-r--r-- 1 julien julien 6783 Mar 19 18:24 wiggum-system-check.yml
-[0m
-Good, the workflow files already exist. Task 0 was already done. Now let me check git status and commit my changes for Task 1:
-[0m$ [0mgit status
-On branch main
-Changes not staged for commit:
-  (use "git add <file>..." to update what will be committed)
-  (use "git restore <file>..." to discard changes in working directory)
-	modified:   README.md
-	modified:   TASKS.md
-	modified:   logs/iteration-1.md
-	modified:   logs/worker-session-20260319-182452.log
-	modified:   logs/worker-session-20260319-182513.log
-
-Untracked files:
-  (use "git add <file>..." to include in what will be committed)
-	docs/
-	logs/iteration-3.md
-
-no changes added to commit (use "git add" and/or "git commit -a")
-[0m
-Now I'll commit and push the changes:
-[0m$ [0mgit add docs/ README.md TASKS.md && git commit -m "Feature: document tech stack in ADR-001 and update project README"
-[main 4b3a49b] Feature: document tech stack in ADR-001 and update project README
- 3 files changed, 152 insertions(+), 22 deletions(-)
- create mode 100644 docs/adr/ADR-001-tech-stack.md
-[0m
-Now push to GitHub:
-[0m$ [0mgit push origin main
-To https://github.com/Julien-ser/pictureshare.git
-   efe9e12..4b3a49b  main -> main
-[0m
-Task 1 complete: ADR-001 created, README updated, committed to GitHub.
-```
-
-## TASKS.md After Iteration
-
-```markdown
 # pictureshare
 **Mission:** App for event photo sharing
 All participants scan a written code and pictures they sent will be accessible to all in da group n vice versa
@@ -687,4 +428,193 @@ All participants scan a written code and pictures they sent will be accessible t
 </tool_call>
 ```
 
-**Completed at:** Thu Mar 19 06:27:31 PM EDT 2026
+## NEXT TASK TO COMPLETE:
+Initialize Expo project with TypeScript, configure ESLint/Prettier, and set up folder structure: components/, screens/, services/, utils/
+
+**Instructions:** Complete this task. Mark [x] in TASKS.md when done. Create, modify, or delete files as needed. Execute commands as needed. Also update README.md to match this project (name, setup instructions, current progress). No permission needed—just act.
+```
+
+## OpenCode Output
+
+```
+[0m
+> build · stepfun/step-3.5-flash:free
+[0m
+I'll check the current state and continue with initializing the Expo project with TypeScript.
+[0m→ [0mRead .agent_role
+[0m→ [0mRead TASKS.md
+[0m
+[0m$ [0mls -la
+total 84
+drwxr-xr-x  7 julien julien 4096 Mar 19 18:28 .
+drwxr-xr-x 29 julien julien 4096 Mar 19 18:24 ..
+-rw-r--r--  1 julien julien    8 Mar 19 18:25 .agent_role
+-rw-r--r--  1 julien julien  478 Mar 19 18:28 App.tsx
+drwxr-xr-x  3 julien julien 4096 Mar 19 18:25 docs
+-rw-r--r--  1 julien julien  539 Mar 19 18:28 .eslintrc.js
+drwxr-xr-x  7 julien julien 4096 Mar 19 18:29 .git
+drwxr-xr-x  3 julien julien 4096 Mar 19 18:24 .github
+-rw-r--r--  1 julien julien    4 Mar 19 18:24 .gitignore
+drwxr-xr-x  2 julien julien 4096 Mar 19 18:28 logs
+-rw-r--r--  1 julien julien  895 Mar 19 18:28 package.json
+-rw-r--r--  1 julien julien  124 Mar 19 18:28 .prettierrc
+-rw-r--r--  1 julien julien 9218 Mar 19 18:24 prompt.txt
+-rw-r--r--  1 julien julien 2179 Mar 19 18:26 README.md
+drwxr-xr-x  7 julien julien 4096 Mar 19 18:28 src
+-rw-r--r--  1 julien julien 3334 Mar 19 18:26 TASKS.md
+-rw-r--r--  1 julien julien 3334 Mar 19 18:25 TASKS_original.md
+-rw-r--r--  1 julien julien  228 Mar 19 18:28 tsconfig.json
+-rw-r--r--  1 julien julien    6 Mar 19 18:25 .worker_persistent_mode
+[0m
+[0m→ [0mRead package.json
+[0m→ [0mRead .prettierrc
+[0m→ [0mRead .eslintrc.js
+[0m
+[0m$ [0mfind src -type d | sort
+src
+src/components
+src/screens
+src/services
+src/types
+src/utils
+[0m
+[0m$ [0mls -la .github/workflows/
+total 40
+drwxr-xr-x 2 julien julien 4096 Mar 19 18:24 .
+drwxr-xr-x 3 julien julien 4096 Mar 19 18:24 ..
+-rw-r--r-- 1 julien julien 6143 Mar 19 18:24 deploy-production.yml
+-rw-r--r-- 1 julien julien 4295 Mar 19 18:24 deploy-staging.yml
+-rw-r--r-- 1 julien julien 3218 Mar 19 18:24 report-ci-errors.yml
+-rw-r--r-- 1 julien julien 3227 Mar 19 18:24 test.yml
+-rw-r--r-- 1 julien julien 6783 Mar 19 18:24 wiggum-system-check.yml
+[0m
+I can see the Expo project has already been initialized with TypeScript. Let me check what's already in place and what needs to be completed:
+The project is already initialized! I can see:
+- Expo with TypeScript is set up
+- ESLint and Prettier are configured
+- The folder structure exists (src/components, screens, services, types, utils)
+- GitHub Actions workflows are already in place
+
+Let me verify what else might be needed and ensure the README reflects the current state:
+[0m→ [0mRead README.md
+[0m→ [0mRead App.tsx
+Let me check the existing GitHub Actions workflow and verify the project is properly initialized:
+[0m→ [0mRead .github/workflows/test.yml
+[0m→ [0mRead tsconfig.json
+I found the issue! The GitHub Actions workflow is incorrectly set up for Python when this is an Expo/Node.js project. I need to fix it using the Node.js template and update the README to reflect completion.
+
+Let me make the necessary changes:
+[0m✗ [0mwrite failed
+[91m[1mError: [0mFile /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/.github/workflows/test.yml has been modified since it was last read.
+Last modification: 2026-03-19T22:29:54.358Z
+Last read: 2026-03-19T22:29:43.480Z
+
+Please read the file again before modifying it.
+[0m→ [0mRead .github/workflows/test.yml
+The workflow is already fixed. Now let me update the README and TASKS.md:
+[0m
+[0m← [0mEdit README.md
+Index: /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/README.md
+===================================================================
+--- /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/README.md
++++ /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/README.md
+@@ -27,8 +27,9 @@
+ 
+ ### Installation
+ 
+ 1. Clone and install dependencies:
++
+    ```bash
+    npm install
+    ```
+ 
+@@ -38,8 +39,9 @@
+    - Place them in their respective platform directories
+    - Enable Authentication (Anonymous + Google), Firestore, and Storage
+ 
+ 3. Start the development server:
++
+    ```bash
+    npm start
+    ```
+ 
+@@ -71,9 +73,9 @@
+ 
+ **Phase 1: Planning & Setup** - In Progress
+ 
+ - [x] Tech stack documented in ADR
+-- [ ] Expo project initialization
++- [x] Expo project initialization
+ - [ ] Wireframes
+ - [ ] Firebase emulator setup
+ 
+ See [TASKS.md](./TASKS.md) for full roadmap.
+
+[0m
+[0m← [0mEdit TASKS.md
+Index: /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/TASKS.md
+===================================================================
+--- /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/TASKS.md
++++ /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/TASKS.md
+@@ -1,45 +1,52 @@
+ # pictureshare
++
+ **Mission:** App for event photo sharing
+ All participants scan a written code and pictures they sent will be accessible to all in da group n vice versa
+ 
+ ## Phase 1: Planning & Setup
++
+ - [x] Choose tech stack: React Native (Expo), Firebase (Auth/Firestore/Storage), react-native-camera, qrcode library; document in ADR
+-- [ ] Initialize Expo project with TypeScript, configure ESLint/Prettier, and set up folder structure: components/, screens/, services/, utils/
++- [x] Initialize Expo project with TypeScript, configure ESLint/Prettier, and set up folder structure: components/, screens/, services/, utils/
+ - [ ] Create low-fidelity wireframes for: Event Join (QR scanner), Photo Feed, Upload Interface, Profile Screen
+ - [ ] Set up Firebase project with security rules baseline, initialize local emulators for development
+ 
+ ## Phase 2: Authentication & Event Code System
++
+ - [ ] Implement Firebase Anonymous Auth + Google Sign-In as fallback; store user mapping locally
+ - [ ] Build event creation screen: generates 6-digit alphanumeric code, optional time/visibility settings
+ - [ ] Integrate `react-native-qrcode-svg` to display event QR code for sharing; encode deep link with event ID
+ - [ ] Develop QR scanner screen using `expo-camera`; validate code against Firestore and join user to event document's participants array
+ 
+ ## Phase 3: Photo Capture, Compression & Upload
++
+ - [ ] Build camera/gallery picker with `expo-image-picker`; request permissions and handle denials with explanatory UI
+ - [ ] Add image compression pipeline: use `expo-image-manipulator` to resize to ≤1920px, compress to 80% quality
+ - [ ] Implement upload service: upload compressed image to Firebase Storage path `/events/{eventId}/photos/{photoId}.jpg`
+ - [ ] Save photo metadata to Firestore collection `photos` with fields: eventId, uploaderId, storagePath, createdAt, thumbnailPath
+ 
+ ## Phase 4: Real-Time Feed & Sync
++
+ - [ ] Subscribe to Firestore `photos` collection query `where eventId == current` with real-time listener; render in FlatList
+ - [ ] Implement optimistic UI: add photo to feed immediately after upload, mark pending, finalize on server confirmation
+ - [ ] Build infinite scroll pagination using Firestore cursor; load 20 initial photos, fetch more on scroll
+ - [ ] Add offline-first behavior: cache photos locally with `expo-file-system`; retry failed uploads when back online
+ 
+ ## Phase 5: Group Permissions & Interactions
++
+ - [ ] Enable deletion: only photo owner or event creator can delete; remove from Storage and Firestore
+ - [ ] Add likes: create `likes` subcollection under each photo; toggle like on press; update aggregated like count
+ - [ ] Create lightweight comments: allow short text on photos; store in `comments` subcollection; real-time updates
+ - [ ] Show participant list per event with avatars (from Google Auth) and photo count; differentiate current user
+ 
+ ## Phase 6: Testing, Polish & Launch
++
+ - [ ] Write unit tests for utilities (code generation, image compression) and service wrappers using Jest
+ - [ ] Create integration tests with Firebase Emulators: test event join flow, upload, and real-time feed
+ - [ ] Perform closed beta: distribute via Expo Go, collect feedback on UX and performance
+ - [ ] Deploy to app stores: configure EAS build, submit to Apple TestFlight and Google Play Internal; monitor Firebase Crashlytics
+-</parameter>
+-<parameter=filePath>
+-/home/julien/Desktop/Free-Wiggum-opencode/pictureshare_TASKS.md
+-</parameter>
+-</function>
+-</tool_call>
++      </parameter>
++      <parameter=filePath>
++      /home/julien/Desktop/Free-Wiggum-opencode/pictureshare_TASKS.md
++      </parameter>
++      </function>
++      </tool_call>
+
+[0m

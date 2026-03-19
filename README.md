@@ -28,6 +28,7 @@ Mobile app for seamless event photo sharing. Scan a QR code, join an event, and 
 ### Installation
 
 1. Clone and install dependencies:
+
    ```bash
    npm install
    ```
@@ -39,6 +40,7 @@ Mobile app for seamless event photo sharing. Scan a QR code, join an event, and 
    - Enable Authentication (Anonymous + Google), Firestore, and Storage
 
 3. Start the development server:
+
    ```bash
    npm start
    ```
@@ -72,7 +74,7 @@ src/
 **Phase 1: Planning & Setup** - In Progress
 
 - [x] Tech stack documented in ADR
-- [ ] Expo project initialization
+- [x] Expo project initialization
 - [ ] Wireframes
 - [ ] Firebase emulator setup
 
