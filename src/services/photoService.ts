@@ -174,6 +174,7 @@ export async function uploadAndSavePhoto(
     storagePath,
     width: imageResult.width,
     height: imageResult.height,
+    likeCount: 0, // Initialize like count
   };
 
   // Save metadata to Firestore
