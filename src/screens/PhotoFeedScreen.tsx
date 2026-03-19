@@ -10,12 +10,20 @@ import {
   Alert,
 } from 'react-native';
 import { getDownloadURL, ref } from 'firebase/storage';
+import { type Unsubscribe } from 'firebase/firestore';
 import { storage } from '../services/firebase';
 import { usePhotos } from '../contexts/PhotoContext';
 import { useEvent } from '../contexts/EventContext';
 import { useNetwork } from '../contexts/NetworkContext';
 import { useAuth } from '../contexts/AuthContext';
 import { canDeletePhoto, deletePhotoWithPermission } from '../services/photoService';
+import {
+  toggleLike,
+  getLikeCount,
+  hasUserLiked,
+  subscribeToLikeCount,
+  subscribeToUserLike,
+} from '../services/likeService';
 import type { Photo } from '../types';
 
 interface PhotoFeedScreenProps {
@@ -50,6 +58,11 @@ const PhotoFeedScreen: React.FC<PhotoFeedScreenProps> = ({ eventId: propEventId 
   // Track delete permissions: photoId -> boolean
   const [deletePermissions, setDeletePermissions] = useState<Map<string, boolean>>(new Map());
   const [loadingPermissions, setLoadingPermissions] = useState<Set<string>>(new Set());
+
+  // Track like counts and user like status
+  const [likeCounts, setLikeCounts] = useState<Map<string, number>>(new Map());
+  const [likedByUser, setLikedByUser] = useState<Map<string, boolean>>(new Map());
+  const [loadingLikes, setLoadingLikes] = useState<Set<string>>(new Set());
 
   // Fetch URIs for newly added confirmed photos
   useEffect(() => {
@@ -129,6 +142,47 @@ const PhotoFeedScreen: React.FC<PhotoFeedScreenProps> = ({ eventId: propEventId 
 
     checkPermissions();
   }, [user, effectiveEventId, confirmedPhotos, pendingIds, deletePermissions]);
+
+  // Subscribe to like counts for confirmed photos
+  useEffect(() => {
+    const unsubscribers: Unsubscribe[] = [];
+
+    confirmedPhotos.forEach((photo) => {
+      if (pendingIds.has(photo.id)) return; // Skip pending photos
+
+      const unsubscribe = subscribeToLikeCount(photo.id, (count) => {
+        setLikeCounts((prev) => new Map(prev.set(photo.id, count)));
+      });
+      unsubscribers.push(unsubscribe);
+    });
+
+    return () => {
+      unsubscribers.forEach((unsub) => unsub());
+    };
+  }, [confirmedPhotos, pendingIds]);
+
+  // Subscribe to user like status for each confirmed photo
+  useEffect(() => {
+    if (!user) {
+      setLikedByUser(new Map());
+      return;
+    }
+
+    const unsubscribers: Unsubscribe[] = [];
+
+    confirmedPhotos.forEach((photo) => {
+      if (pendingIds.has(photo.id)) return;
+
+      const unsubscribe = subscribeToUserLike(photo.id, user.id, (hasLiked) => {
+        setLikedByUser((prev) => new Map(prev.set(photo.id, hasLiked)));
+      });
+      unsubscribers.push(unsubscribe);
+    });
+
+    return () => {
+      unsubscribers.forEach((unsub) => unsub());
+    };
+  }, [confirmedPhotos, pendingIds, user]);
 
   // Build combined photos list with URIs
   const combinedPhotos = useMemo(() => {

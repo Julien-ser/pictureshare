@@ -27,5 +27,6 @@ export type Photo = {
   createdAt: any;
   width: number;
   height: number;
+  likeCount?: number; // Aggregated count of likes
   localUri?: string; // Local URI for pending photos (optimistic UI)
 };

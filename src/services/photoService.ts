@@ -219,6 +219,7 @@ export function subscribeToPhotos(
           createdAt: data.createdAt?.toDate() || new Date(),
           width: data.width,
           height: data.height,
+          likeCount: data.likeCount || 0,
         } as Photo;
       });
       onPhotosUpdate(photos);
@@ -271,6 +272,7 @@ export async function loadPhotosBatch(
         createdAt: data.createdAt?.toDate() || new Date(),
         width: data.width,
         height: data.height,
+        likeCount: data.likeCount || 0,
       } as Photo;
     });
 

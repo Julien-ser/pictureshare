@@ -694,3 +694,278 @@ Let me read TASKS.md again:
 [0m→ [0mRead package.json
 Let me check package.json for lint and typecheck scripts:
 Let me run lint and typecheck to ensure code quality:
+[0m
+[0m$ [0mnpx tsc --noEmit
+src/screens/EventCreationScreen.tsx(174,29): error TS2339: Property 'qrSection' does not exist on type '{ container: { padding: number; backgroundColor: string; }; title: { fontSize: number; fontWeight: "bold"; marginBottom: number; textAlign: "center"; color: string; }; inputGroup: { marginBottom: number; }; ... 16 more ...; buttonText: { ...; }; }'.
+src/screens/EventCreationScreen.tsx(175,31): error TS2339: Property 'qrHeader' does not exist on type '{ container: { padding: number; backgroundColor: string; }; title: { fontSize: number; fontWeight: "bold"; marginBottom: number; textAlign: "center"; color: string; }; inputGroup: { marginBottom: number; }; ... 16 more ...; buttonText: { ...; }; }'.
+src/screens/EventCreationScreen.tsx(176,33): error TS2551: Property 'qrTitle' does not exist on type '{ container: { padding: number; backgroundColor: string; }; title: { fontSize: number; fontWeight: "bold"; marginBottom: number; textAlign: "center"; color: string; }; inputGroup: { marginBottom: number; }; ... 16 more ...; buttonText: { ...; }; }'. Did you mean 'title'?
+src/screens/EventCreationScreen.tsx(178,29): error TS2339: Property 'closeButton' does not exist on type '{ container: { padding: number; backgroundColor: string; }; title: { fontSize: number; fontWeight: "bold"; marginBottom: number; textAlign: "center"; color: string; }; inputGroup: { marginBottom: number; }; ... 16 more ...; buttonText: { ...; }; }'.
+src/screens/EventCreationScreen.tsx(184,35): error TS2551: Property 'closeButtonText' does not exist on type '{ container: { padding: number; backgroundColor: string; }; title: { fontSize: number; fontWeight: "bold"; marginBottom: number; textAlign: "center"; color: string; }; inputGroup: { marginBottom: number; }; ... 16 more ...; buttonText: { ...; }; }'. Did you mean 'buttonText'?
+src/screens/EventCreationScreen.tsx(190,54): error TS2339: Property 'eventTitle' does not exist on type '{ container: { padding: number; backgroundColor: string; }; title: { fontSize: number; fontWeight: "bold"; marginBottom: number; textAlign: "center"; color: string; }; inputGroup: { marginBottom: number; }; ... 16 more ...; buttonText: { ...; }; }'.
+src/screens/EventCreationScreen.tsx(192,31): error TS2339: Property 'shareInstructions' does not exist on type '{ container: { padding: number; backgroundColor: string; }; title: { fontSize: number; fontWeight: "bold"; marginBottom: number; textAlign: "center"; color: string; }; inputGroup: { marginBottom: number; }; ... 16 more ...; buttonText: { ...; }; }'.
+src/screens/EventCreationScreen.tsx(197,43): error TS2339: Property 'createAnotherButton' does not exist on type '{ container: { padding: number; backgroundColor: string; }; title: { fontSize: number; fontWeight: "bold"; marginBottom: number; textAlign: "center"; color: string; }; inputGroup: { marginBottom: number; }; ... 16 more ...; buttonText: { ...; }; }'.
+src/services/offlineQueue.ts(58,50): error TS2552: Cannot find name 'OFFFLINE_QUEUE_KEY'. Did you mean 'OFFLINE_QUEUE_KEY'?
+src/services/offlineQueue.ts(88,30): error TS2552: Cannot find name 'OFFFLINE_QUEUE_KEY'. Did you mean 'OFFLINE_QUEUE_KEY'?
+src/services/offlineQueue.ts(97,30): error TS2552: Cannot find name 'OFFFLINE_QUEUE_KEY'. Did you mean 'OFFLINE_QUEUE_KEY'?
+src/services/offlineQueue.ts(112,32): error TS2552: Cannot find name 'OFFFLINE_QUEUE_KEY'. Did you mean 'OFFLINE_QUEUE_KEY'?
+src/services/offlineQueue.ts(120,33): error TS2552: Cannot find name 'OFFFLINE_QUEUE_KEY'. Did you mean 'OFFLINE_QUEUE_KEY'?
+[0m
+[0m$ [0mnpm run lint
+> pictureshare@1.0.0 lint
+> eslint .
+
+
+/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/App.tsx
+   1:1   error    Definition for rule '@typescript-eslint/no-empty-object-type' was not found     @typescript-eslint/no-empty-object-type
+   1:1   error    Definition for rule '@typescript-eslint/no-wrapper-object-types' was not found  @typescript-eslint/no-wrapper-object-types
+  13:25  warning  'setCurrentEvent' is assigned a value but never used                            @typescript-eslint/no-unused-vars
+
+/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/components/QRCodeDisplay.tsx
+  1:1  error  Definition for rule '@typescript-eslint/no-empty-object-type' was not found     @typescript-eslint/no-empty-object-type
+  1:1  error  Definition for rule '@typescript-eslint/no-wrapper-object-types' was not found  @typescript-eslint/no-wrapper-object-types
+
+/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/components/index.ts
+  1:1  error  Definition for rule '@typescript-eslint/no-empty-object-type' was not found     @typescript-eslint/no-empty-object-type
+  1:1  error  Definition for rule '@typescript-eslint/no-wrapper-object-types' was not found  @typescript-eslint/no-wrapper-object-types
+
+/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/contexts/AuthContext.tsx
+  1:1  error  Definition for rule '@typescript-eslint/no-empty-object-type' was not found     @typescript-eslint/no-empty-object-type
+  1:1  error  Definition for rule '@typescript-eslint/no-wrapper-object-types' was not found  @typescript-eslint/no-wrapper-object-types
+
+/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/contexts/EventContext.tsx
+  1:1  error  Definition for rule '@typescript-eslint/no-empty-object-type' was not found     @typescript-eslint/no-empty-object-type
+  1:1  error  Definition for rule '@typescript-eslint/no-wrapper-object-types' was not found  @typescript-eslint/no-wrapper-object-types
+
+/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/contexts/NetworkContext.tsx
+  1:1  error  Definition for rule '@typescript-eslint/no-empty-object-type' was not found     @typescript-eslint/no-empty-object-type
+  1:1  error  Definition for rule '@typescript-eslint/no-wrapper-object-types' was not found  @typescript-eslint/no-wrapper-object-types
+
+/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/contexts/PhotoContext.tsx
+   1:1  error    Definition for rule '@typescript-eslint/no-empty-object-type' was not found     @typescript-eslint/no-empty-object-type
+   1:1  error    Definition for rule '@typescript-eslint/no-wrapper-object-types' was not found  @typescript-eslint/no-wrapper-object-types
+  12:3  warning  'collection' is defined but never used                                          @typescript-eslint/no-unused-vars
+  13:3  warning  'query' is defined but never used                                               @typescript-eslint/no-unused-vars
+  14:3  warning  'where' is defined but never used                                               @typescript-eslint/no-unused-vars
+  15:3  warning  'orderBy' is defined but never used                                             @typescript-eslint/no-unused-vars
+  16:3  warning  'limit' is defined but never used                                               @typescript-eslint/no-unused-vars
+  17:3  warning  'startAfter' is defined but never used                                          @typescript-eslint/no-unused-vars
+  18:3  warning  'getDocs' is defined but never used                                             @typescript-eslint/no-unused-vars
+  19:8  warning  'Query' is defined but never used                                               @typescript-eslint/no-unused-vars
+
+/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/screens/EventCreationScreen.tsx
+   1:1  error    Definition for rule '@typescript-eslint/no-empty-object-type' was not found                                         @typescript-eslint/no-empty-object-type
+   1:1  error    Definition for rule '@typescript-eslint/no-wrapper-object-types' was not found                                      @typescript-eslint/no-wrapper-object-types
+  36:6  warning  React Hook useEffect has a missing dependency: 'generateNewCode'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/screens/EventJoinScreen.tsx
+  1:1  error  Definition for rule '@typescript-eslint/no-empty-object-type' was not found     @typescript-eslint/no-empty-object-type
+  1:1  error  Definition for rule '@typescript-eslint/no-wrapper-object-types' was not found  @typescript-eslint/no-wrapper-object-types
+
+/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/screens/LoginScreen.tsx
+  1:1  error  Definition for rule '@typescript-eslint/no-empty-object-type' was not found     @typescript-eslint/no-empty-object-type
+  1:1  error  Definition for rule '@typescript-eslint/no-wrapper-object-types' was not found  @typescript-eslint/no-wrapper-object-types
+
+/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/screens/PhotoFeedScreen.tsx
+   1:1  error    Definition for rule '@typescript-eslint/no-empty-object-type' was not found                                      @typescript-eslint/no-empty-object-type
+   1:1  error    Definition for rule '@typescript-eslint/no-wrapper-object-types' was not found                                   @typescript-eslint/no-wrapper-object-types
+  35:5  warning  'hasMore' is assigned a value but never used                                                                     @typescript-eslint/no-unused-vars
+  85:6  warning  React Hook useEffect has a missing dependency: 'photoUrisMap'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/screens/ProfileScreen.tsx
+  1:1   error    Definition for rule '@typescript-eslint/no-empty-object-type' was not found     @typescript-eslint/no-empty-object-type
+  1:1   error    Definition for rule '@typescript-eslint/no-wrapper-object-types' was not found  @typescript-eslint/no-wrapper-object-types
+  2:64  warning  'Image' is defined but never used                                               @typescript-eslint/no-unused-vars
+
+/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/screens/UploadInterface.tsx
+  1:1  error  Definition for rule '@typescript-eslint/no-empty-object-type' was not found     @typescript-eslint/no-empty-object-type
+  1:1  error  Definition for rule '@typescript-eslint/no-wrapper-object-types' was not found  @typescript-eslint/no-wrapper-object-types
+
+/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/screens/index.ts
+  1:1  error  Definition for rule '@typescript-eslint/no-empty-object-type' was not found     @typescript-eslint/no-empty-object-type
+  1:1  error  Definition for rule '@typescript-eslint/no-wrapper-object-types' was not found  @typescript-eslint/no-wrapper-object-types
+
+/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/services/eventService.ts
+  1:1  error  Definition for rule '@typescript-eslint/no-empty-object-type' was not found     @typescript-eslint/no-empty-object-type
+  1:1  error  Definition for rule '@typescript-eslint/no-wrapper-object-types' was not found  @typescript-eslint/no-wrapper-object-types
+
+/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/services/firebase.ts
+   1:1   error    Definition for rule '@typescript-eslint/no-empty-object-type' was not found     @typescript-eslint/no-empty-object-type
+   1:1   error    Definition for rule '@typescript-eslint/no-wrapper-object-types' was not found  @typescript-eslint/no-wrapper-object-types
+  12:46  warning  'ref' is defined but never used                                                 @typescript-eslint/no-unused-vars
+
+/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/services/index.ts
+  1:1  error  Definition for rule '@typescript-eslint/no-empty-object-type' was not found     @typescript-eslint/no-empty-object-type
+  1:1  error  Definition for rule '@typescript-eslint/no-wrapper-object-types' was not found  @typescript-eslint/no-wrapper-object-types
+
+/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/services/offlineQueue.ts
+    1:1   error    Definition for rule '@typescript-eslint/no-empty-object-type' was not found     @typescript-eslint/no-empty-object-type
+    1:1   error    Definition for rule '@typescript-eslint/no-wrapper-object-types' was not found  @typescript-eslint/no-wrapper-object-types
+    6:7   warning  'OFFLINE_QUEUE_KEY' is assigned a value but never used                          @typescript-eslint/no-unused-vars
+  183:13  warning  'result' is assigned a value but never used                                     @typescript-eslint/no-unused-vars
+
+/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/services/photoService.ts
+  1:1  error    Definition for rule '@typescript-eslint/no-empty-object-type' was not found     @typescript-eslint/no-empty-object-type
+  1:1  error    Definition for rule '@typescript-eslint/no-wrapper-object-types' was not found  @typescript-eslint/no-wrapper-object-types
+  2:3  warning  'getStorage' is defined but never used                                          @typescript-eslint/no-unused-vars
+  5:3  warning  'getDownloadURL' is defined but never used                                      @typescript-eslint/no-unused-vars
+
+/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/types/index.ts
+  1:1  error  Definition for rule '@typescript-eslint/no-empty-object-type' was not found     @typescript-eslint/no-empty-object-type
+  1:1  error  Definition for rule '@typescript-eslint/no-wrapper-object-types' was not found  @typescript-eslint/no-wrapper-object-types
+
+/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/utils/codeGenerator.ts
+  1:1  error  Definition for rule '@typescript-eslint/no-empty-object-type' was not found     @typescript-eslint/no-empty-object-type
+  1:1  error  Definition for rule '@typescript-eslint/no-wrapper-object-types' was not found  @typescript-eslint/no-wrapper-object-types
+
+/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/utils/imagePicker.ts
+  1:1  error  Definition for rule '@typescript-eslint/no-empty-object-type' was not found     @typescript-eslint/no-empty-object-type
+  1:1  error  Definition for rule '@typescript-eslint/no-wrapper-object-types' was not found  @typescript-eslint/no-wrapper-object-types
+
+/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/utils/index.ts
+  1:1  error  Definition for rule '@typescript-eslint/no-empty-object-type' was not found     @typescript-eslint/no-empty-object-type
+  1:1  error  Definition for rule '@typescript-eslint/no-wrapper-object-types' was not found  @typescript-eslint/no-wrapper-object-types
+
+✖ 64 problems (46 errors, 18 warnings)
+[0m
+[0m→ [0mRead src/services/offlineQueue.ts[90m [limit=20][0m
+Let me check the offlineQueue.ts file again for the constant definition:
+Let me check git status to see what files have been modified:
+[0m
+[0m$ [0mgit status
+On branch main
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+	modified:   logs/iteration-26.md
+	modified:   src/types/index.ts
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+	logs/iteration-28.md
+
+no changes added to commit (use "git add" and/or "git commit -a")
+[0m
+The git status doesn't show UploadInterface.tsx as modified, which is strange. Let me check if my changes were actually saved:
+[0m$ [0mgit diff src/screens/UploadInterface.tsx
+The diff is empty, meaning my changes aren't detected. Let me verify the file content again to ensure the edit persisted:
+[0m→ [0mRead src/screens/UploadInterface.tsx[90m [limit=20, offset=155][0m
+The file has my changes (lines 162-163, 168 commented removal), but git isn't detecting it. Let me check git status more thoroughly:
+[0m
+[0m$ [0mgit status -uall
+On branch main
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+	modified:   logs/iteration-26.md
+	modified:   src/services/photoService.ts
+	modified:   src/types/index.ts
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+	logs/iteration-28.md
+	src/services/likeService.ts
+
+no changes added to commit (use "git add" and/or "git commit -a")
+[0m
+Let me try adding the file explicitly and check status:
+[0m$ [0mgit add src/screens/UploadInterface.tsx && git status
+On branch main
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+	modified:   logs/iteration-26.md
+	modified:   src/screens/PhotoFeedScreen.tsx
+	modified:   src/services/photoService.ts
+	modified:   src/types/index.ts
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+	logs/iteration-28.md
+	src/services/likeService.ts
+
+no changes added to commit (use "git add" and/or "git commit -a")
+[0m
+Let me try to commit the file directly to see if git detects changes:
+[0m$ [0mgit commit -m "fix: keep pending photos visible after upload failure" src/screens/UploadInterface.tsx
+On branch main
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+	modified:   logs/iteration-26.md
+	modified:   src/screens/PhotoFeedScreen.tsx
+	modified:   src/services/photoService.ts
+	modified:   src/types/index.ts
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+	logs/iteration-28.md
+	src/services/likeService.ts
+
+no changes added to commit (use "git add" and/or "git commit -a")
+[0m
+Let me check if the file is actually tracked by git and at what path:
+[0m$ [0mgit ls-files | grep -i uploadinterface
+src/screens/UploadInterface.tsx
+[0m
+Let me compute hashes to check if the file content actually changed:
+[0m$ [0mgit hash-object src/screens/UploadInterface.tsx && git show HEAD:src/screens/UploadInterface.tsx | git hash-object --stdin
+ba3ddd589d2181ce9f7874032103cf87874fa4d1
+ba3ddd589d2181ce9f7874032103cf87874fa4d1
+[0m
+Let me check the actual content of HEAD vs working file for those lines:
+[0m$ [0mgit show HEAD:src/screens/UploadInterface.tsx | sed -n '155,175p' && echo "---WORKING---" && sed -n '155,175p' src/screens/UploadInterface.tsx
+);
+        } catch (queueError) {
+          console.error('Failed to add to offline queue:', queueError);
+          Alert.alert(
+            'Upload Failed',
+            'Could not upload the photo and failed to save for retry. Please try again.'
+          );
+          // Keep pending photo visible so user knows upload state
+          // removePendingPhoto(photoId); // Removed - keep pending to show failure state
+        }
+      } else {
+        // This shouldn't happen as we check isOnline above, but handle it
+        Alert.alert('Upload Failed', 'Could not upload the photo. Please try again.');
+        // removePendingPhoto(photoId); // Removed - keep pending
+      }
+
+      setSelectedImage(null);
+      setIsUploading(false);
+      setUploadProgress(0);
+    }
+  };
+---WORKING---
+          );
+        } catch (queueError) {
+          console.error('Failed to add to offline queue:', queueError);
+          Alert.alert(
+            'Upload Failed',
+            'Could not upload the photo and failed to save for retry. Please try again.'
+          );
+          // Keep pending photo visible so user knows upload state
+          // removePendingPhoto(photoId); // Removed - keep pending to show failure state
+        }
+      } else {
+        // This shouldn't happen as we check isOnline above, but handle it
+        Alert.alert('Upload Failed', 'Could not upload the photo. Please try again.');
+        // removePendingPhoto(photoId); // Removed - keep pending
+      }
+
+      setSelectedImage(null);
+      setIsUploading(false);
+      setUploadProgress(0);
+    }
+  };
+[0m
+Let me check if the GitHub Actions workflow exists as required by Task 0:
+[0m$ [0mls -la .github/workflows/ 2>/dev/null || echo "No workflows directory"
+total 40
+drwxr-xr-x 2 julien julien 4096 Mar 19 18:24 .
+drwxr-xr-x 3 julien julien 4096 Mar 19 18:24 ..
+-rw-r--r-- 1 julien julien 6143 Mar 19 18:24 deploy-production.yml
+-rw-r--r-- 1 julien julien 4295 Mar 19 18:24 deploy-staging.yml
+-rw-r--r-- 1 julien julien 3218 Mar 19 18:24 report-ci-errors.yml
+-rw-r--r-- 1 julien julien  592 Mar 19 18:29 test.yml
+-rw-r--r-- 1 julien julien 6783 Mar 19 18:24 wiggum-system-check.yml
+[0m
