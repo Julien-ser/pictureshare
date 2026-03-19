@@ -449,3 +449,102 @@ ERROR [32:44] Parameter 'photosData' implicitly has an 'any' type.
 ERROR [38:29] Parameter 'photo' implicitly has an 'any' type.
 </diagnostics>
 [0m
+Now I'll fix the TypeScript errors and also handle the event subscription properly:
+[0m✗ [0medit failed
+[91m[1mError: [0mCould not find oldString in the file. It must match exactly, including whitespace, indentation, and line endings.
+Let me read the file and fix it properly:
+[0m→ [0mRead src/contexts/PhotoContext.tsx
+[0m
+[0m← [0mWrite src/contexts/PhotoContext.tsx
+Wrote file successfully.
+
+LSP errors detected in other files:
+<diagnostics file="/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/screens/EventCreationScreen.tsx">
+ERROR [174:29] Property 'qrSection' does not exist on type '{ container: { padding: number; backgroundColor: string; }; title: { fontSize: number; fontWeight: "bold"; marginBottom: number; textAlign: "center"; color: string; }; inputGroup: { marginBottom: number; }; ... 16 more ...; buttonText: { ...; }; }'.
+ERROR [175:31] Property 'qrHeader' does not exist on type '{ container: { padding: number; backgroundColor: string; }; title: { fontSize: number; fontWeight: "bold"; marginBottom: number; textAlign: "center"; color: string; }; inputGroup: { marginBottom: number; }; ... 16 more ...; buttonText: { ...; }; }'.
+ERROR [176:33] Property 'qrTitle' does not exist on type '{ container: { padding: number; backgroundColor: string; }; title: { fontSize: number; fontWeight: "bold"; marginBottom: number; textAlign: "center"; color: string; }; inputGroup: { marginBottom: number; }; ... 16 more ...; buttonText: { ...; }; }'. Did you mean 'title'?
+ERROR [178:29] Property 'closeButton' does not exist on type '{ container: { padding: number; backgroundColor: string; }; title: { fontSize: number; fontWeight: "bold"; marginBottom: number; textAlign: "center"; color: string; }; inputGroup: { marginBottom: number; }; ... 16 more ...; buttonText: { ...; }; }'.
+ERROR [184:35] Property 'closeButtonText' does not exist on type '{ container: { padding: number; backgroundColor: string; }; title: { fontSize: number; fontWeight: "bold"; marginBottom: number; textAlign: "center"; color: string; }; inputGroup: { marginBottom: number; }; ... 16 more ...; buttonText: { ...; }; }'. Did you mean 'buttonText'?
+ERROR [190:54] Property 'eventTitle' does not exist on type '{ container: { padding: number; backgroundColor: string; }; title: { fontSize: number; fontWeight: "bold"; marginBottom: number; textAlign: "center"; color: string; }; inputGroup: { marginBottom: number; }; ... 16 more ...; buttonText: { ...; }; }'.
+ERROR [192:31] Property 'shareInstructions' does not exist on type '{ container: { padding: number; backgroundColor: string; }; title: { fontSize: number; fontWeight: "bold"; marginBottom: number; textAlign: "center"; color: string; }; inputGroup: { marginBottom: number; }; ... 16 more ...; buttonText: { ...; }; }'.
+ERROR [197:43] Property 'createAnotherButton' does not exist on type '{ container: { padding: number; backgroundColor: string; }; title: { fontSize: number; fontWeight: "bold"; marginBottom: number; textAlign: "center"; color: string; }; inputGroup: { marginBottom: number; }; ... 16 more ...; buttonText: { ...; }; }'.
+</diagnostics>
+[0m
+Now update App.tsx to wrap with PhotoProvider:
+[0m← [0mEdit App.tsx
+Index: /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/App.tsx
+===================================================================
+--- /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/App.tsx
++++ /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/App.tsx
+@@ -2,8 +2,9 @@
+ import { SafeAreaView, Text, StyleSheet, ActivityIndicator } from 'react-native';
+ import { StatusBar } from 'expo-status-bar';
+ import { AuthProvider, useAuth } from './src/contexts/AuthContext';
+ import { EventProvider, useEvent } from './src/contexts/EventContext';
++import { PhotoProvider } from './src/contexts/PhotoContext';
+ import LoginScreen from './src/screens/LoginScreen';
+ import PhotoFeedScreen from './src/screens/PhotoFeedScreen';
+ 
+ function MainNavigator() {
+
+[0m
+```
+
+## TASKS.md After Iteration
+
+```markdown
+# pictureshare
+
+**Mission:** App for event photo sharing
+All participants scan a written code and pictures they sent will be accessible to all in da group n vice versa
+
+## Phase 1: Planning & Setup
+
+- [x] Choose tech stack: React Native (Expo), Firebase (Auth/Firestore/Storage), react-native-camera, qrcode library; document in ADR
+- [x] Initialize Expo project with TypeScript, configure ESLint/Prettier, and set up folder structure: components/, screens/, services/, utils/
+- [x] Create low-fidelity wireframes for: Event Join (QR scanner), Photo Feed, Upload Interface, Profile Screen
+- [x] Set up Firebase project with security rules baseline, initialize local emulators for development
+
+## Phase 2: Authentication & Event Code System
+
+- [x] Implement Firebase Anonymous Auth + Google Sign-In as fallback; store user mapping locally
+- [x] Build event creation screen: generates 6-digit alphanumeric code, optional time/visibility settings
+- [x] Integrate `react-native-qrcode-svg` to display event QR code for sharing; encode deep link with event ID
+- [x] Develop QR scanner screen using `expo-camera`; validate code against Firestore and join user to event document's participants array
+
+## Phase 3: Photo Capture, Compression & Upload
+
+- [x] Build camera/gallery picker with `expo-image-picker`; request permissions and handle denials with explanatory UI
+- [x] Add image compression pipeline: use `expo-image-manipulator` to resize to ≤1920px, compress to 80% quality
+- [x] Implement upload service: upload compressed image to Firebase Storage path `/events/{eventId}/photos/{photoId}.jpg`
+- [x] Save photo metadata to Firestore collection `photos` with fields: eventId, uploaderId, storagePath, createdAt, thumbnailPath
+
+## Phase 4: Real-Time Feed & Sync
+
+- [x] Subscribe to Firestore `photos` collection query `where eventId == current` with real-time listener; render in FlatList
+- [ ] Implement optimistic UI: add photo to feed immediately after upload, mark pending, finalize on server confirmation
+- [ ] Build infinite scroll pagination using Firestore cursor; load 20 initial photos, fetch more on scroll
+- [ ] Add offline-first behavior: cache photos locally with `expo-file-system`; retry failed uploads when back online
+
+## Phase 5: Group Permissions & Interactions
+
+- [ ] Enable deletion: only photo owner or event creator can delete; remove from Storage and Firestore
+- [ ] Add likes: create `likes` subcollection under each photo; toggle like on press; update aggregated like count
+- [ ] Create lightweight comments: allow short text on photos; store in `comments` subcollection; real-time updates
+- [ ] Show participant list per event with avatars (from Google Auth) and photo count; differentiate current user
+
+## Phase 6: Testing, Polish & Launch
+
+- [ ] Write unit tests for utilities (code generation, image compression) and service wrappers using Jest
+- [ ] Create integration tests with Firebase Emulators: test event join flow, upload, and real-time feed
+- [ ] Perform closed beta: distribute via Expo Go, collect feedback on UX and performance
+- [ ] Deploy to app stores: configure EAS build, submit to Apple TestFlight and Google Play Internal; monitor Firebase Crashlytics
+      </parameter>
+      <parameter=filePath>
+      /home/julien/Desktop/Free-Wiggum-opencode/pictureshare_TASKS.md
+      </parameter>
+      </function>
+      </tool_call>
+```
+
+**Completed at:** Thu Mar 19 07:12:40 PM EDT 2026

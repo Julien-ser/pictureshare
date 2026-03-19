@@ -3,6 +3,7 @@ import { SafeAreaView, Text, StyleSheet, ActivityIndicator } from 'react-native'
 import { StatusBar } from 'expo-status-bar';
 import { AuthProvider, useAuth } from './src/contexts/AuthContext';
 import { EventProvider, useEvent } from './src/contexts/EventContext';
+import { PhotoProvider } from './src/contexts/PhotoContext';
 import LoginScreen from './src/screens/LoginScreen';
 import PhotoFeedScreen from './src/screens/PhotoFeedScreen';
 

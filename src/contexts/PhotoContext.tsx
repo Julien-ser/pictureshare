@@ -6,6 +6,7 @@ import React, {
   useCallback,
   type ReactNode,
 } from 'react';
+import { useEvent } from './EventContext';
 import { subscribeToPhotos } from '../services/photoService';
 import type { Photo } from '../types';
 
@@ -24,12 +25,19 @@ interface PhotoProviderProps {
 }
 
 export function PhotoProvider({ children }: PhotoProviderProps) {
+  const { currentEvent } = useEvent();
+  const eventId = currentEvent?.id;
   const [photos, setPhotos] = useState<Photo[]>([]);
   const [pendingPhotos, setPendingPhotos] = useState<Map<string, Photo>>(new Map());
 
-  // Subscribe to real-time photo updates from Firestore
+  // Subscribe to real-time photo updates from Firestore for current event
   useEffect(() => {
-    const unsubscribe = subscribeToPhotos((photosData) => {
+    if (!eventId) {
+      setPhotos([]);
+      return;
+    }
+
+    const unsubscribe = subscribeToPhotos(eventId, (photosData: Photo[]) => {
       setPhotos(photosData);
 
       // Remove any pending photos that have been confirmed in Firestore
@@ -45,7 +53,7 @@ export function PhotoProvider({ children }: PhotoProviderProps) {
     });
 
     return () => unsubscribe();
-  }, []);
+  }, [eventId]);
 
   const addPendingPhoto = useCallback((photo: Photo) => {
     setPendingPhotos((prev) => {
