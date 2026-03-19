@@ -11,7 +11,7 @@ import {
 import { getFirestore, connectFirestoreEmulator } from 'firebase/firestore';
 import { connectAuthEmulator } from 'firebase/auth';
 import * as WebBrowser from 'expo-web-browser';
-import { AuthRequest, makeRedirectUri, discover } from 'expo-auth-session';
+import { makeRedirectUri, AuthRequest } from 'expo-auth-session';
 import * as Google from 'expo-auth-session/providers/google';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import type { User } from '../types';
@@ -98,10 +98,56 @@ export async function signInAnonymouslyLocally(): Promise<User> {
   return appUser;
 }
 
-// Sign in with Google (placeholder - requires expo-auth-session integration)
+// Sign in with Google using expo-auth-session
 export async function signInWithGoogle(): Promise<User> {
-  // This will be implemented in a future iteration with expo-auth-session
-  throw new Error('Google Sign-In not yet implemented');
+  try {
+    // Use the discovery object from Google provider
+    const discovery = Google.discovery;
+
+    // Create redirect URI
+    const redirectUri = makeRedirectUri({
+      native: 'pictureshare://redirect',
+    });
+
+    // Create the auth request
+    const authRequest = new AuthRequest({
+      clientId: 'YOUR_GOOGLE_CLIENT_ID', // TODO: Replace with actual client ID from Google Cloud Console
+      redirectUri,
+      scopes: ['profile', 'email'],
+    });
+
+    // Perform the authentication flow
+    const result = await authRequest.promptAsync(discovery);
+
+    if (result.type !== 'success') {
+      if (result.type === 'cancel') {
+        throw new Error('User cancelled Google sign-in');
+      }
+      throw new Error('Google sign-in failed');
+    }
+
+    // Extract the ID token from the response
+    const { id_token } = result.params;
+
+    if (!id_token) {
+      throw new Error('No ID token received from Google');
+    }
+
+    // Create Firebase credential
+    const credential = GoogleAuthProvider.credential(id_token);
+
+    // Sign in to Firebase
+    const userCredential = await signInWithCredential(auth, credential);
+    const appUser = firebaseUserToAppUser(userCredential.user);
+
+    // Store local user mapping
+    await storeUserMapping(appUser);
+
+    return appUser;
+  } catch (error) {
+    console.error('Error signing in with Google:', error);
+    throw error;
+  }
 }
 
 // Auth state change listener - converts Firebase user to app User

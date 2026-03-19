@@ -476,3 +476,267 @@ Index: /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/servi
 
 [0m
 Now I'll add the necessary imports for AuthRequest, makeRedirectUri, and discover:
+[0m← [0mEdit src/services/firebase.ts
+Index: /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/services/firebase.ts
+===================================================================
+--- /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/services/firebase.ts
++++ /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/services/firebase.ts
+@@ -10,8 +10,9 @@
+ } from 'firebase/auth';
+ import { getFirestore, connectFirestoreEmulator } from 'firebase/firestore';
+ import { connectAuthEmulator } from 'firebase/auth';
+ import * as WebBrowser from 'expo-web-browser';
++import { AuthRequest, makeRedirectUri, discover } from 'expo-auth-session';
+ import * as Google from 'expo-auth-session/providers/google';
+ import AsyncStorage from '@react-native-async-storage/async-storage';
+ import type { User } from '../types';
+ 
+
+[0m
+I'll fix the imports - use Google.discover() and Google.AuthRequest instead:
+[0m← [0mEdit src/services/firebase.ts
+Index: /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/services/firebase.ts
+===================================================================
+--- /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/services/firebase.ts
++++ /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/services/firebase.ts
+@@ -10,9 +10,9 @@
+ } from 'firebase/auth';
+ import { getFirestore, connectFirestoreEmulator } from 'firebase/firestore';
+ import { connectAuthEmulator } from 'firebase/auth';
+ import * as WebBrowser from 'expo-web-browser';
+-import { AuthRequest, makeRedirectUri, discover } from 'expo-auth-session';
++import { makeRedirectUri } from 'expo-auth-session';
+ import * as Google from 'expo-auth-session/providers/google';
+ import AsyncStorage from '@react-native-async-storage/async-storage';
+ import type { User } from '../types';
+ 
+
+[0m
+Now let's implement the signInWithGoogle function:
+[0m← [0mEdit src/services/firebase.ts
+Index: /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/services/firebase.ts
+===================================================================
+--- /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/services/firebase.ts
++++ /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/services/firebase.ts
+@@ -97,12 +97,60 @@
+ 
+   return appUser;
+ }
+ 
+-// Sign in with Google (placeholder - requires expo-auth-session integration)
++// Sign in with Google using expo-auth-session
+ export async function signInWithGoogle(): Promise<User> {
+-  // This will be implemented in a future iteration with expo-auth-session
+-  throw new Error('Google Sign-In not yet implemented');
++  try {
++    // Discover Google's OAuth endpoints
++    const discovery = await Google.discover();
++
++    // Create redirect URI
++    const redirectUri = makeRedirectUri({
++      native: 'pictureshare://redirect',
++    });
++
++    // Create the auth request
++    const authRequest = new Google.AuthRequest({
++      clientId: 'YOUR_GOOGLE_CLIENT_ID', // TODO: Replace with actual client ID from Google Cloud Console
++      redirectUri,
++      scopes: ['profile', 'email'],
++    });
++
++    // Perform the authentication flow
++    const result = await authRequest.makeAuthRequestAsync({
++      // Open the system browser for authentication
++    });
++
++    if (result.type !== 'success') {
++      if (result.type === 'cancel') {
++        throw new Error('User cancelled Google sign-in');
++      }
++      throw new Error('Google sign-in failed');
++    }
++
++    // Extract the ID token from the response
++    const { id_token } = result.params;
++
++    if (!id_token) {
++      throw new Error('No ID token received from Google');
++    }
++
++    // Create Firebase credential
++    const credential = GoogleAuthProvider.credential(id_token);
++
++    // Sign in to Firebase
++    const userCredential = await signInWithCredential(auth, credential);
++    const appUser = firebaseUserToAppUser(userCredential.user);
++
++    // Store local user mapping
++    await storeUserMapping(appUser);
++
++    return appUser;
++  } catch (error) {
++    console.error('Error signing in with Google:', error);
++    throw error;
++  }
+ }
+ 
+ // Auth state change listener - converts Firebase user to app User
+ export function onAuthStateChangedListener(callback: (user: User | null) => void): () => void {
+
+[0m
+The Google provider exports a `discovery` object, not a `discover` function. And `AuthRequest` is from 'expo-auth-session/core'. Let me fix:
+[0m← [0mEdit src/services/firebase.ts
+Index: /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/services/firebase.ts
+===================================================================
+--- /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/services/firebase.ts
++++ /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/services/firebase.ts
+@@ -11,8 +11,9 @@
+ import { getFirestore, connectFirestoreEmulator } from 'firebase/firestore';
+ import { connectAuthEmulator } from 'firebase/auth';
+ import * as WebBrowser from 'expo-web-browser';
+ import { makeRedirectUri } from 'expo-auth-session';
++import { AuthRequest } from 'expo-auth-session/core';
+ import * as Google from 'expo-auth-session/providers/google';
+ import AsyncStorage from '@react-native-async-storage/async-storage';
+ import type { User } from '../types';
+ 
+
+[0m
+Let's try importing AuthRequest from the main expo-auth-session package:
+[0m← [0mEdit src/services/firebase.ts
+Index: /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/services/firebase.ts
+===================================================================
+--- /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/services/firebase.ts
++++ /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/services/firebase.ts
+@@ -10,10 +10,9 @@
+ } from 'firebase/auth';
+ import { getFirestore, connectFirestoreEmulator } from 'firebase/firestore';
+ import { connectAuthEmulator } from 'firebase/auth';
+ import * as WebBrowser from 'expo-web-browser';
+-import { makeRedirectUri } from 'expo-auth-session';
+-import { AuthRequest } from 'expo-auth-session/core';
++import { makeRedirectUri, AuthRequest } from 'expo-auth-session';
+ import * as Google from 'expo-auth-session/providers/google';
+ import AsyncStorage from '@react-native-async-storage/async-storage';
+ import type { User } from '../types';
+ 
+
+[0m
+I need to fix the signInWithGoogle implementation - use `Google.discovery` (object) and `new AuthRequest()` directly:
+[0m← [0mEdit src/services/firebase.ts
+Index: /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/services/firebase.ts
+===================================================================
+--- /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/services/firebase.ts
++++ /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/services/firebase.ts
+@@ -100,27 +100,25 @@
+ 
+ // Sign in with Google using expo-auth-session
+ export async function signInWithGoogle(): Promise<User> {
+   try {
+-    // Discover Google's OAuth endpoints
+-    const discovery = await Google.discover();
++    // Use the discovery object from Google provider
++    const discovery = Google.discovery;
+ 
+     // Create redirect URI
+     const redirectUri = makeRedirectUri({
+       native: 'pictureshare://redirect',
+     });
+ 
+     // Create the auth request
+-    const authRequest = new Google.AuthRequest({
++    const authRequest = new AuthRequest({
+       clientId: 'YOUR_GOOGLE_CLIENT_ID', // TODO: Replace with actual client ID from Google Cloud Console
+       redirectUri,
+       scopes: ['profile', 'email'],
+     });
+ 
+     // Perform the authentication flow
+-    const result = await authRequest.makeAuthRequestAsync({
+-      // Open the system browser for authentication
+-    });
++    const result = await authRequest.makeAuthRequestAsync(discovery);
+ 
+     if (result.type !== 'success') {
+       if (result.type === 'cancel') {
+         throw new Error('User cancelled Google sign-in');
+
+[0m
+It's `promptAsync`, not `makeAuthRequestAsync`. Let's fix that:
+[0m← [0mEdit src/services/firebase.ts
+Index: /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/services/firebase.ts
+===================================================================
+--- /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/services/firebase.ts
++++ /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/services/firebase.ts
+@@ -116,9 +116,9 @@
+   scopes: ['profile', 'email'],
+ });
+ 
+ // Perform the authentication flow
+-const result = await authRequest.makeAuthRequestAsync(discovery);
++const result = await authRequest.promptAsync(discovery);
+ 
+ if (result.type !== 'success') {
+   if (result.type === 'cancel') {
+     throw new Error('User cancelled Google sign-in');
+
+[0m
+[0m# [0mTodos
+[ ] Add signInWithGoogle to AuthContext interface and provider
+[x] Implement signInWithGoogle function in firebase.ts using expo-auth-session
+[ ] Update LoginScreen to call real signInWithGoogle function
+[ ] Test authentication flow locally
+[ ] Update TASKS.md to mark task as complete
+[ ] Setup GitHub Actions workflow (Task 0)
+[0m
+[0m✗ [0medit failed
+[91m[1mError: [0mFile /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/contexts/AuthContext.tsx has been modified since it was last read.
+Last modification: 2026-03-19T22:43:05.256Z
+Last read: 2026-03-19T22:41:01.677Z
+
+Please read the file again before modifying it.
+Now update the AuthContext to add signInWithGoogle:
+[0m→ [0mRead src/contexts/AuthContext.tsx
+Now let's update the AuthContext:
+[0m
+[0m← [0mEdit src/contexts/AuthContext.tsx
+Index: /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/contexts/AuthContext.tsx
+===================================================================
+--- /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/contexts/AuthContext.tsx
++++ /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/contexts/AuthContext.tsx
+@@ -1,7 +1,11 @@
+ import React, { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
+-import { onAuthStateChangedListener, signInAnonymouslyLocally } from '../services/firebase';
+-import type { User } from '../types';
++import {
++  onAuthStateChangedListener,
++  signInAnonymouslyLocally,
++  signInWithGoogle,
++  type User,
++} from '../services/firebase';
+ 
+ interface AuthContextType {
+   user: User | null;
+   loading: boolean;
+
+[0m
+I need to keep the User import from types separately:
+[0m← [0mEdit src/contexts/AuthContext.tsx
+Index: /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/contexts/AuthContext.tsx
+===================================================================
+--- /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/contexts/AuthContext.tsx
++++ /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/contexts/AuthContext.tsx
+@@ -2,10 +2,10 @@
+ import {
+   onAuthStateChangedListener,
+   signInAnonymouslyLocally,
+   signInWithGoogle,
+-  type User,
+ } from '../services/firebase';
++import type { User } from '../types';
+ 
+ interface AuthContextType {
+   user: User | null;
+   loading: boolean;
+
+[0m

@@ -2,8 +2,9 @@ import React, { createContext, useContext, useState, useEffect, type ReactNode }
 import {
   onAuthStateChangedListener,
   signInAnonymouslyLocally,
-  type User,
+  signInWithGoogle,
 } from '../services/firebase';
+import type { User } from '../types';
 
 interface AuthContextType {
   user: User | null;
