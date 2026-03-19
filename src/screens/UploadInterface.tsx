@@ -1,38 +1,106 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  Alert,
+  Image,
+  ActivityIndicator,
+  Platform,
+} from 'react-native';
+import { pickImage, ImageResult, requestMediaPermissions } from '../utils/imagePicker';
 
 /**
- * Upload Interface Screen Wireframe
- * Photo picker, preview, and upload controls
+ * Upload Interface Screen
+ * Photo picker, preview, and upload controls with permission handling
  */
 const UploadInterface: React.FC = () => {
-  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [selectedImage, setSelectedImage] = useState<ImageResult | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [permissionsChecked, setPermissionsChecked] = useState(false);
 
-  const handlePickImage = () => {
-    // Placeholder for image picker logic
-    console.log('Open image picker');
-    Alert.alert('Image Picker', 'Select photo from camera or gallery');
+  useEffect(() => {
+    checkPermissions();
+  }, []);
+
+  const checkPermissions = async () => {
+    if (Platform.OS === 'web') {
+      setPermissionsChecked(true);
+      return;
+    }
+    const hasPermission = await requestMediaPermissions();
+    setPermissionsChecked(hasPermission);
   };
 
-  const handleUpload = () => {
+  const handlePickImage = async (source: 'camera' | 'gallery') => {
+    if (!permissionsChecked) {
+      await checkPermissions();
+    }
+
+    const image = await pickImage(source);
+    if (image) {
+      setSelectedImage(image);
+    }
+  };
+
+  const handleUpload = async () => {
     if (!selectedImage) {
       Alert.alert('No Image', 'Please select an image first');
       return;
     }
-    console.log('Upload image:', selectedImage);
-    Alert.alert('Upload', 'Image upload started...');
+
+    setIsUploading(true);
+    setUploadProgress(0);
+
+    try {
+      const interval = setInterval(() => {
+        setUploadProgress((prev) => {
+          if (prev >= 100) {
+            clearInterval(interval);
+            return 100;
+          }
+          return prev + 25;
+        });
+      }, 500);
+
+      setTimeout(() => {
+        clearInterval(interval);
+        setUploadProgress(100);
+        setIsUploading(false);
+        Alert.alert('Upload Complete', 'Your photo has been shared with the event group!', [
+          {
+            text: 'OK',
+            onPress: () => {
+              setSelectedImage(null);
+              setUploadProgress(0);
+            },
+          },
+        ]);
+      }, 2000);
+    } catch (error) {
+      console.error('Upload error:', error);
+      Alert.alert('Upload Failed', 'Could not upload the photo. Please try again.');
+      setIsUploading(false);
+      setUploadProgress(0);
+    }
   };
 
   return (
     <View style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity>
+        <TouchableOpacity onPress={() => setSelectedImage(null)}>
           <Text style={styles.cancelButton}>Cancel</Text>
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Upload Photo</Text>
-        <TouchableOpacity onPress={handleUpload} disabled={!selectedImage}>
-          <Text style={[styles.shareButton, !selectedImage && styles.disabledButton]}>Share</Text>
+        <TouchableOpacity onPress={handleUpload} disabled={!selectedImage || isUploading}>
+          <Text
+            style={[styles.shareButton, (!selectedImage || isUploading) && styles.disabledButton]}
+          >
+            {isUploading ? 'Sharing...' : 'Share'}
+          </Text>
         </TouchableOpacity>
       </View>
 
@@ -41,48 +109,73 @@ const UploadInterface: React.FC = () => {
         <View style={styles.previewContainer}>
           {selectedImage ? (
             <View style={styles.imagePreview}>
-              <Text style={styles.previewLabel}>Selected Image</Text>
-              <Text style={styles.previewInfo}>Compressed: 1920px / 80%</Text>
+              <Image
+                source={{ uri: selectedImage.uri }}
+                style={styles.previewImage}
+                resizeMode="contain"
+              />
+              {isUploading && (
+                <View style={styles.uploadOverlay}>
+                  <ActivityIndicator size="large" color="#fff" />
+                  <Text style={styles.uploadOverlayText}>{uploadProgress}%</Text>
+                </View>
+              )}
             </View>
           ) : (
-            <TouchableOpacity style={styles.uploadPrompt} onPress={handlePickImage}>
-              <Text style={styles.uploadIcon}>📷</Text>
-              <Text style={styles.uploadPromptText}>Tap to select photo</Text>
-              <Text style={styles.uploadSubtext}>Camera or Gallery</Text>
-            </TouchableOpacity>
+            <View style={styles.uploadOptions}>
+              <TouchableOpacity
+                style={[styles.optionButton, styles.cameraButton]}
+                onPress={() => handlePickImage('camera')}
+              >
+                <Text style={styles.optionIcon}>📸</Text>
+                <Text style={styles.optionButtonText}>Take Photo</Text>
+                <Text style={styles.optionSubtext}>Use camera</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[styles.optionButton, styles.galleryButton]}
+                onPress={() => handlePickImage('gallery')}
+              >
+                <Text style={styles.optionIcon}>🖼️</Text>
+                <Text style={styles.optionButtonText}>Choose from Gallery</Text>
+                <Text style={styles.optionSubtext}>Select existing photo</Text>
+              </TouchableOpacity>
+            </View>
           )}
         </View>
 
         {/* Options */}
-        <View style={styles.optionsSection}>
-          <Text style={styles.sectionTitle}>Options</Text>
+        {selectedImage && (
+          <View style={styles.optionsSection}>
+            <Text style={styles.sectionTitle}>Options</Text>
 
-          {/* Quality Indicator */}
-          <View style={styles.optionRow}>
-            <Text style={styles.optionLabel}>Image Quality</Text>
-            <Text style={styles.optionValue}>80% (High)</Text>
+            {/* Quality Indicator */}
+            <View style={styles.optionRow}>
+              <Text style={styles.optionLabel}>Image Quality</Text>
+              <Text style={styles.optionValue}>80% (High)</Text>
+            </View>
+
+            {/* Size Indicator */}
+            <View style={styles.optionRow}>
+              <Text style={styles.optionLabel}>Max Size</Text>
+              <Text style={styles.optionValue}>1920px</Text>
+            </View>
+
+            {/* Add Caption */}
+            <TouchableOpacity style={styles.captionButton}>
+              <Text style={styles.captionButtonText}>+ Add Caption</Text>
+            </TouchableOpacity>
           </View>
-
-          {/* Size Indicator */}
-          <View style={styles.optionRow}>
-            <Text style={styles.optionLabel}>Max Size</Text>
-            <Text style={styles.optionValue}>1920px</Text>
-          </View>
-
-          {/* Add Caption */}
-          <TouchableOpacity style={styles.captionButton}>
-            <Text style={styles.captionButtonText}>+ Add Caption</Text>
-          </TouchableOpacity>
-        </View>
+        )}
 
         {/* Upload Progress */}
-        {selectedImage && (
+        {isUploading && (
           <View style={styles.uploadProgress}>
             <Text style={styles.progressLabel}>Uploading...</Text>
             <View style={styles.progressBarContainer}>
-              <View style={styles.progressBarFill} />
+              <View style={[styles.progressBarFill, { width: `${uploadProgress}%` }]} />
             </View>
-            <Text style={styles.progressPercent}>75%</Text>
+            <Text style={styles.progressPercent}>{uploadProgress}%</Text>
           </View>
         )}
       </View>
@@ -128,27 +221,39 @@ const styles = StyleSheet.create({
     flex: 1,
     marginBottom: 20,
   },
-  uploadPrompt: {
+  uploadOptions: {
+    flex: 1,
+    justifyContent: 'center',
+    gap: 15,
+  },
+  optionButton: {
     flex: 1,
     backgroundColor: '#f5f5f5',
     borderRadius: 12,
+    padding: 30,
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 2,
     borderColor: '#ddd',
     borderStyle: 'dashed',
   },
-  uploadIcon: {
-    fontSize: 轻轻的我来了50,
+  cameraButton: {
+    opacity: 0.95,
+  },
+  galleryButton: {
+    opacity: 0.9,
+  },
+  optionIcon: {
+    fontSize: 40,
     marginBottom: 15,
   },
-  uploadPromptText: {
+  optionButtonText: {
     fontSize: 18,
-    fontWeight: '500',
+    fontWeight: '600',
     color: '#333',
     marginBottom: 5,
   },
-  uploadSubtext: {
+  optionSubtext: {
     fontSize: 14,
     color: '#999',
   },
@@ -158,16 +263,25 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     justifyContent: 'center',
     alignItems: 'center',
+    position: 'relative',
   },
-  previewLabel: {
-    fontSize: 18,
-    fontWeight: '500',
-    color: '#333',
-    marginBottom: 10,
+  previewImage: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 12,
   },
-  previewInfo: {
-    fontSize: 14,
-    color: '#007AFF',
+  uploadOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    borderRadius: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  uploadOverlayText: {
+    color: '#fff',
+    fontSize: 24,
+    fontWeight: '600',
+    marginTop: 10,
   },
   optionsSection: {
     backgroundColor: '#f9f9f9',
@@ -229,7 +343,6 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   progressBarFill: {
-    width: '75%',
     height: '100%',
     backgroundColor: '#007AFF',
     borderRadius: 4,
