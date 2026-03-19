@@ -1,7 +1,7 @@
 # Iteration 28 - pictureshare
 
-**Timestamp:** Thu Mar 19 07:34:43 PM EDT 2026
-**Task:** Add likes: create `likes` subcollection under each photo; toggle like on press; update aggregated like count
+**Timestamp:** Thu Mar 19 07:42:51 PM EDT 2026
+**Task:** Create lightweight comments: allow short text on photos; store in `comments` subcollection; real-time updates
 
 ## Prompt Sent
 
@@ -384,7 +384,7 @@ All participants scan a written code and pictures they sent will be accessible t
 ## Phase 5: Group Permissions & Interactions
 
 - [x] Enable deletion: only photo owner or event creator can delete; remove from Storage and Firestore
-- [ ] Add likes: create `likes` subcollection under each photo; toggle like on press; update aggregated like count
+- [x] Add likes: create `likes` subcollection under each photo; toggle like on press; update aggregated like count
 - [ ] Create lightweight comments: allow short text on photos; store in `comments` subcollection; real-time updates
 - [ ] Show participant list per event with avatars (from Google Auth) and photo count; differentiate current user
 
@@ -403,7 +403,7 @@ All participants scan a written code and pictures they sent will be accessible t
 ```
 
 ## NEXT TASK TO COMPLETE:
-Add likes: create `likes` subcollection under each photo; toggle like on press; update aggregated like count
+Create lightweight comments: allow short text on photos; store in `comments` subcollection; real-time updates
 
 **Instructions:** Complete this task. Mark [x] in TASKS.md when done. Create, modify, or delete files as needed. Execute commands as needed. Also update README.md to match this project (name, setup instructions, current progress). No permission needed—just act.
 ```
@@ -414,59 +414,132 @@ Add likes: create `likes` subcollection under each photo; toggle like on press; 
 [0m
 > build · stepfun/step-3.5-flash:free
 [0m
-I'll help you implement the likes feature for the PictureShare app. Let me start by examining the current codebase structure to understand how to implement this feature consistently.
+I'll implement the comments feature for photos. First, let me check the current agent role and explore the codebase structure.
+[0m→ [0mRead .agent_role
 [0m→ [0mRead TASKS.md
+[0m✱ [0mGlob "**/*.{ts,tsx,js,jsx,json}"[90m 33 matches[0m
+Let me explore the existing code structure to understand how likes are implemented and then create a similar pattern for comments.
 [0m→ [0mRead README.md
-[0m✱ [0mGlob "**/*.{ts,tsx,js,jsx}"[90m 25 matches[0m
-Now let me examine the key files to understand the current implementation patterns:
 [0m→ [0mRead src/types/index.ts
+[0m→ [0mRead src/services/likeService.ts
 [0m→ [0mRead src/services/photoService.ts
 [0m→ [0mRead src/screens/PhotoFeedScreen.tsx
+Let me check the PhotoFeedScreen to understand how to integrate the comment UI:
 [0m
 [0m# [0mTodos
-[ ] Update Photo type to include likeCount field
-[ ] Create likeService.ts with toggleLike, getLikeCount, and hasUserLiked functions
-[ ] Update photoService to include likeCount in Photo mapping and add like/unlike methods
-[ ] Update PhotoFeedScreen to display like count and toggle like on press
-[ ] Test the likes feature locally
-[ ] Update README.md to document likes feature
-[ ] Mark task as complete in TASKS.md
+[ ] Add Comment type to types/index.ts and update Photo type with commentCount
+[ ] Create commentService.ts with CRUD operations and real-time subscriptions
+[ ] Update photoService.ts to include commentCount in Photo conversion
+[ ] Add comment UI components (CommentItem, CommentInput) to PhotoFeedScreen
+[ ] Implement comment display, adding, and deleting in PhotoFeedScreen
+[ ] Write unit tests for commentService
+[ ] Update TASKS.md and README.md
 [0m
-Now let me check the existing service patterns and then create the likes feature. I'll create a task list for this implementation:
-Let me start implementing the likes feature.
+Now I'll create a todo list for this task and implement the comments feature:
+[0m✗ [0medit failed
+[91m[1mError: [0mFile /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/types/index.ts has been modified since it was last read.
+Last modification: 2026-03-19T23:43:10.255Z
+Last read: 2026-03-19T23:43:02.769Z
 
-**Task 1: Update Photo type to include likeCount field**
+Please read the file again before modifying it.
+[0m→ [0mRead src/types/index.ts
+Good, the Photo type already has commentCount. Now I need to add the Comment type:
+[0m
 [0m← [0mEdit src/types/index.ts
 Index: /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/types/index.ts
 ===================================================================
 --- /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/types/index.ts
 +++ /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/types/index.ts
-@@ -26,6 +26,7 @@
-   thumbnailPath?: string;
-   createdAt: any;
-   width: number;
-   height: number;
-+  likeCount?: number; // Aggregated count of likes
+@@ -30,4 +30,12 @@
+   likeCount?: number; // Aggregated count of likes
+   commentCount?: number; // Aggregated count of comments
    localUri?: string; // Local URI for pending photos (optimistic UI)
  };
++
++export type Comment = {
++  id: string;
++  photoId: string;
++  userId: string;
++  text: string;
++  createdAt: any;
++};
 
 [0m
-**Task 2: Create likeService.ts**
-[0m← [0mWrite src/services/likeService.ts
-Wrote file successfully.
+[0m# [0mTodos
+[x] Add Comment type to types/index.ts and update Photo type with commentCount
+[ ] Create commentService.ts with CRUD operations and real-time subscriptions
+[ ] Update photoService.ts to include commentCount in Photo conversion
+[ ] Add comment UI components (CommentItem, CommentInput) to PhotoFeedScreen
+[ ] Implement comment display, adding, and deleting in PhotoFeedScreen
+[ ] Write unit tests for commentService
+[ ] Update TASKS.md and README.md
 [0m
-**Task 3: Update photoService to include likeCount in Photo mapping**
+[0m✗ [0mwrite failed
+[91m[1mError: [0mYou must read file /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/services/commentService.ts before overwriting it. Use the Read tool first
+[0m→ [0mRead src/services/commentService.ts
+Good, commentService.ts exists but needs minor improvements. I'll enhance it to use the proper Comment type from our types file and fix the generateCommentId. Then update photoService.ts to include commentCount:
+[0m
+[0m← [0mEdit src/services/commentService.ts
+Index: /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/services/commentService.ts
+===================================================================
+--- /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/services/commentService.ts
++++ /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/services/commentService.ts
+@@ -9,35 +9,26 @@
+   increment,
+   runTransaction,
+   query,
+   orderBy,
+-  Unsubscribe,
+-  DocumentData,
++  type Unsubscribe,
++  type DocumentData,
++  type QuerySnapshot,
+ } from 'firebase/firestore';
+ import { db } from './firebase';
++import type { Comment } from '../types';
+ 
+ const COMMENTS_SUBCOLLECTION = 'comments';
+ 
+ /**
+  * Generates a unique comment document ID
+- * Uses random ID to allow multiple comments from same user
++ * Uses auto-generated ID to allow multiple comments from same user
+  */
+ export function generateCommentId(): string {
+-  return doc(collection(db, 'placeholder')).id;
++  return doc(collection(db, 'photos', 'placeholder', COMMENTS_SUBCOLLECTION)).id;
+ }
+ 
+ /**
+- * Comment data interface
+- */
+-export interface Comment {
+-  id: string;
+-  photoId: string;
+-  userId: string;
+-  text: string;
+-  createdAt: any;
+-}
+-
+-/**
+  * Adds a comment to a photo
+  * Creates a comment document in the photo's comments subcollection and increments the photo's commentCount
+  */
+ export async function addComment(photoId: string, userId: string, text: string): Promise<string> {
+
+[0m
+Now update photoService.ts to include commentCount in Photo conversions. I'll update both subscribeToPhotos and loadPhotosBatch:
 [0m← [0mEdit src/services/photoService.ts
 Index: /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/services/photoService.ts
 ===================================================================
 --- /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/services/photoService.ts
 +++ /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/services/photoService.ts
-@@ -218,8 +218,9 @@
-       thumbnailPath: data.thumbnailPath,
+@@ -220,8 +220,9 @@
        createdAt: data.createdAt?.toDate() || new Date(),
        width: data.width,
        height: data.height,
-+      likeCount: data.likeCount || 0,
+       likeCount: data.likeCount || 0,
++      commentCount: data.commentCount || 0,
      } as Photo;
    });
    onPhotosUpdate(photos);
@@ -478,226 +551,43 @@ Index: /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/servi
 ===================================================================
 --- /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/services/photoService.ts
 +++ /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/services/photoService.ts
-@@ -271,8 +271,9 @@
-     thumbnailPath: data.thumbnailPath,
+@@ -274,8 +274,9 @@
      createdAt: data.createdAt?.toDate() || new Date(),
      width: data.width,
      height: data.height,
-+    likeCount: data.likeCount || 0,
+     likeCount: data.likeCount || 0,
++    commentCount: data.commentCount || 0,
    } as Photo;
  });
  
  // Get the last document for next pagination
 
 [0m
-**Task 4: Update PhotoFeedScreen to display likes and handle toggle**
-
-Now I'll update the PhotoFeedScreen component to integrate the likes functionality:
-[0m← [0mEdit src/screens/PhotoFeedScreen.tsx
-Index: /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/screens/PhotoFeedScreen.tsx
-===================================================================
---- /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/screens/PhotoFeedScreen.tsx
-+++ /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/screens/PhotoFeedScreen.tsx
-@@ -15,8 +15,15 @@
- import { useEvent } from '../contexts/EventContext';
- import { useNetwork } from '../contexts/NetworkContext';
- import { useAuth } from '../contexts/AuthContext';
- import { canDeletePhoto, deletePhotoWithPermission } from '../services/photoService';
-+import {
-+  toggleLike,
-+  getLikeCount,
-+  hasUserLiked,
-+  subscribeToLikeCount,
-+  subscribeToUserLike,
-+} from '../services/likeService';
- import type { Photo } from '../types';
- 
- interface PhotoFeedScreenProps {
-   eventId?: string;
-
+[0m# [0mTodos
+[x] Add Comment type to types/index.ts and update Photo type with commentCount
+[x] Create commentService.ts with CRUD operations and real-time subscriptions
+[x] Update photoService.ts to include commentCount in Photo conversion
+[ ] Add comment UI components (CommentItem, CommentInput) to PhotoFeedScreen
+[ ] Implement comment display, adding, and deleting in PhotoFeedScreen
+[ ] Write unit tests for commentService
+[ ] Update TASKS.md and README.md
 [0m
-Now I'll add state for managing likes:
-[0m← [0mEdit src/screens/PhotoFeedScreen.tsx
-Index: /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/screens/PhotoFeedScreen.tsx
-===================================================================
---- /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/screens/PhotoFeedScreen.tsx
-+++ /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/screens/PhotoFeedScreen.tsx
-@@ -57,8 +57,13 @@
- // Track delete permissions: photoId -> boolean
- const [deletePermissions, setDeletePermissions] = useState<Map<string, boolean>>(new Map());
- const [loadingPermissions, setLoadingPermissions] = useState<Set<string>>(new Set());
- 
-+// Track like counts and user like status
-+const [likeCounts, setLikeCounts] = useState<Map<string, number>>(new Map());
-+const [likedByUser, setLikedByUser] = useState<Map<string, boolean>>(new Map());
-+const [loadingLikes, setLoadingLikes] = useState<Set<string>>(new Set());
-+
- // Fetch URIs for newly added confirmed photos
- useEffect(() => {
-   const fetchUris = async () => {
-     // Find confirmed photos that don't have a cached URI yet
+Now I need to update PhotoFeedScreen.tsx to integrate comments UI. This will be a substantial change. Let me plan:
 
-[0m
-Now I'll add subscriptions for like counts and user like status. I'll add this after the existing useEffect hooks:
-[0m← [0mEdit src/screens/PhotoFeedScreen.tsx
-Index: /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/screens/PhotoFeedScreen.tsx
-===================================================================
---- /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/screens/PhotoFeedScreen.tsx
-+++ /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/screens/PhotoFeedScreen.tsx
-@@ -141,8 +141,49 @@
- 
-   checkPermissions();
- }, [user, effectiveEventId, confirmedPhotos, pendingIds, deletePermissions]);
- 
-+// Subscribe to like counts for confirmed photos
-+useEffect(() => {
-+  const unsubscribers: Unsubscribe[] = [];
-+
-+  confirmedPhotos.forEach((photo) => {
-+    if (pendingIds.has(photo.id)) return; // Skip pending photos
-+
-+    const unsubscribe = subscribeToLikeCount(photo.id, (count) => {
-+      setLikeCounts((prev) => new Map(prev.set(photo.id, count)));
-+    });
-+    unsubscribers.push(unsubscribe);
-+  });
-+
-+  return () => {
-+    unsubscribers.forEach((unsub) => unsub());
-+  };
-+}, [confirmedPhotos, pendingIds]);
-+
-+// Subscribe to user like status for each confirmed photo
-+useEffect(() => {
-+  if (!user) {
-+    setLikedByUser(new Map());
-+    return;
-+  }
-+
-+  const unsubscribers: Unsubscribe[] = [];
-+
-+  confirmedPhotos.forEach((photo) => {
-+    if (pendingIds.has(photo.id)) return;
-+
-+    const unsubscribe = subscribeToUserLike(photo.id, user.id, (hasLiked) => {
-+      setLikedByUser((prev) => new Map(prev.set(photo.id, hasLiked)));
-+    });
-+    unsubscribers.push(unsubscribe);
-+  });
-+
-+  return () => {
-+    unsubscribers.forEach((unsub) => unsub());
-+  };
-+}, [confirmedPhotos, pendingIds, user]);
-+
- // Build combined photos list with URIs
- const combinedPhotos = useMemo(() => {
-   const pendingWithUri: PhotoWithUri[] = pendingPhotos.map((p) => ({
-     ...p,
+1. Add imports for commentService and Comment type
+2. Add state for:
+   - commentCounts (Map<photoId, number>)
+   - comments (Map<photoId, Comment[]>)
+   - expandedPhotoId (which photo's comments are shown)
+   - newCommentText (Map<photoId, string>)
+   - pendingComments (Set<photoId>)
+   - unsubscribers for cleanup
+3. Add effects to subscribe to comment counts and comments for confirmed photos
+4. Update the comment button to show count and toggle expansion
+5. Add comment panel that shows:
+   - List of comments (user truncated ID, text, timestamp)
+   - Delete button if user owns comment
+   - Input field to add new comment
+   - Optimistic UI for adding comments
 
-[0m
-I need to import `Unsubscribe` from Firebase. Let me fix the import:
-[0m← [0mEdit src/screens/PhotoFeedScreen.tsx
-Index: /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/screens/PhotoFeedScreen.tsx
-===================================================================
---- /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/screens/PhotoFeedScreen.tsx
-+++ /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/screens/PhotoFeedScreen.tsx
-@@ -8,9 +8,9 @@
-   TouchableOpacity,
-   ActivityIndicator,
-   Alert,
- } from 'react-native';
--import { getDownloadURL, ref } from 'firebase/storage';
-+import { getDownloadURL, ref, type Unsubscribe } from 'firebase/storage';
- import { storage } from '../services/firebase';
- import { usePhotos } from '../contexts/PhotoContext';
- import { useEvent } from '../contexts/EventContext';
- import { useNetwork } from '../contexts/NetworkContext';
-
-[0m
-I need to import `Unsubscribe` from firebase/firestore instead. Let me fix:
-[0m← [0mEdit src/screens/PhotoFeedScreen.tsx
-Index: /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/screens/PhotoFeedScreen.tsx
-===================================================================
---- /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/screens/PhotoFeedScreen.tsx
-+++ /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/screens/PhotoFeedScreen.tsx
-@@ -8,9 +8,10 @@
-   TouchableOpacity,
-   ActivityIndicator,
-   Alert,
- } from 'react-native';
--import { getDownloadURL, ref, type Unsubscribe } from 'firebase/storage';
-+import { getDownloadURL, ref } from 'firebase/storage';
-+import { type Unsubscribe } from 'firebase/firestore';
- import { storage } from '../services/firebase';
- import { usePhotos } from '../contexts/PhotoContext';
- import { useEvent } from '../contexts/EventContext';
- import { useNetwork } from '../contexts/NetworkContext';
-
-[0m
-[0m✗ [0medit failed
-[91m[1mError: [0mNo changes to apply: oldString and newString are identical.
-Now I'll update the PhotoWithUri interface and add the like toggle handler:
-[0m✗ [0medit failed
-[91m[1mError: [0mCould not find oldString in the file. It must match exactly, including whitespace, indentation, and line endings.
-Now I'll add the handleLikeToggle function:
-```
-
-## TASKS.md After Iteration
-
-```markdown
-# pictureshare
-
-**Mission:** App for event photo sharing
-All participants scan a written code and pictures they sent will be accessible to all in da group n vice versa
-
-## Phase 1: Planning & Setup
-
-- [x] Choose tech stack: React Native (Expo), Firebase (Auth/Firestore/Storage), react-native-camera, qrcode library; document in ADR
-- [x] Initialize Expo project with TypeScript, configure ESLint/Prettier, and set up folder structure: components/, screens/, services/, utils/
-- [x] Create low-fidelity wireframes for: Event Join (QR scanner), Photo Feed, Upload Interface, Profile Screen
-- [x] Set up Firebase project with security rules baseline, initialize local emulators for development
-
-## Phase 2: Authentication & Event Code System
-
-- [x] Implement Firebase Anonymous Auth + Google Sign-In as fallback; store user mapping locally
-- [x] Build event creation screen: generates 6-digit alphanumeric code, optional time/visibility settings
-- [x] Integrate `react-native-qrcode-svg` to display event QR code for sharing; encode deep link with event ID
-- [x] Develop QR scanner screen using `expo-camera`; validate code against Firestore and join user to event document's participants array
-
-## Phase 3: Photo Capture, Compression & Upload
-
-- [x] Build camera/gallery picker with `expo-image-picker`; request permissions and handle denials with explanatory UI
-- [x] Add image compression pipeline: use `expo-image-manipulator` to resize to ≤1920px, compress to 80% quality
-- [x] Implement upload service: upload compressed image to Firebase Storage path `/events/{eventId}/photos/{photoId}.jpg`
-- [x] Save photo metadata to Firestore collection `photos` with fields: eventId, uploaderId, storagePath, createdAt, thumbnailPath
-
-## Phase 4: Real-Time Feed & Sync
-
-- [x] Subscribe to Firestore `photos` collection query `where eventId == current` with real-time listener; render in FlatList
-- [x] Implement optimistic UI: add photo to feed immediately after upload, mark pending, finalize on server confirmation
-- [x] Build infinite scroll pagination using Firestore cursor; load 20 initial photos, fetch more on scroll
-- [x] Add offline-first behavior: cache photos locally with `expo-file-system`; retry failed uploads when back online
-
-## Phase 5: Group Permissions & Interactions
-
-- [x] Enable deletion: only photo owner or event creator can delete; remove from Storage and Firestore
-- [ ] Add likes: create `likes` subcollection under each photo; toggle like on press; update aggregated like count
-- [ ] Create lightweight comments: allow short text on photos; store in `comments` subcollection; real-time updates
-- [ ] Show participant list per event with avatars (from Google Auth) and photo count; differentiate current user
-
-## Phase 6: Testing, Polish & Launch
-
-- [ ] Write unit tests for utilities (code generation, image compression) and service wrappers using Jest
-- [ ] Create integration tests with Firebase Emulators: test event join flow, upload, and real-time feed
-- [ ] Perform closed beta: distribute via Expo Go, collect feedback on UX and performance
-- [ ] Deploy to app stores: configure EAS build, submit to Apple TestFlight and Google Play Internal; monitor Firebase Crashlytics
-      </parameter>
-      <parameter=filePath>
-      /home/julien/Desktop/Free-Wiggum-opencode/pictureshare_TASKS.md
-      </parameter>
-      </function>
-      </tool_call>
-```
-
-**Completed at:** Thu Mar 19 07:36:47 PM EDT 2026
+Let me update the file step by step. First, I'll read it again to have the latest version, then apply changes incrementally:

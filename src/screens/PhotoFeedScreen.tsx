@@ -24,6 +24,8 @@ import {
   subscribeToLikeCount,
   subscribeToUserLike,
 } from '../services/likeService';
+import { subscribeToCommentCount } from '../services/commentService';
+import CommentsModal from '../components/CommentsModal';
 import type { Photo } from '../types';
 
 interface PhotoFeedScreenProps {
@@ -64,6 +66,13 @@ const PhotoFeedScreen: React.FC<PhotoFeedScreenProps> = ({ eventId: propEventId 
   const [likedByUser, setLikedByUser] = useState<Map<string, boolean>>(new Map());
   const [loadingLikes, setLoadingLikes] = useState<Set<string>>(new Set());
   const [pendingLikePhotos, setPendingLikePhotos] = useState<Set<string>>(new Set());
+
+  // Track comment counts
+  const [commentCounts, setCommentCounts] = useState<Map<string, number>>(new Map());
+
+  // Comments modal state
+  const [selectedPhotoId, setSelectedPhotoId] = useState<string | null>(null);
+  const [showCommentsModal, setShowCommentsModal] = useState(false);
 
   // Fetch URIs for newly added confirmed photos
   useEffect(() => {
@@ -184,6 +193,24 @@ const PhotoFeedScreen: React.FC<PhotoFeedScreenProps> = ({ eventId: propEventId 
       unsubscribers.forEach((unsub) => unsub());
     };
   }, [confirmedPhotos, pendingIds, user]);
+
+  // Subscribe to comment counts for confirmed photos
+  useEffect(() => {
+    const unsubscribers: Unsubscribe[] = [];
+
+    confirmedPhotos.forEach((photo) => {
+      if (pendingIds.has(photo.id)) return;
+
+      const unsubscribe = subscribeToCommentCount(photo.id, (count) => {
+        setCommentCounts((prev) => new Map(prev.set(photo.id, count)));
+      });
+      unsubscribers.push(unsubscribe);
+    });
+
+    return () => {
+      unsubscribers.forEach((unsub) => unsub());
+    };
+  }, [confirmedPhotos, pendingIds]);
 
   // Build combined photos list with URIs
   const combinedPhotos = useMemo(() => {

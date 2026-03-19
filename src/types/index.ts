@@ -28,5 +28,14 @@ export type Photo = {
   width: number;
   height: number;
   likeCount?: number; // Aggregated count of likes
+  commentCount?: number; // Aggregated count of comments
   localUri?: string; // Local URI for pending photos (optimistic UI)
+};
+
+export type Comment = {
+  id: string;
+  photoId: string;
+  userId: string;
+  text: string;
+  createdAt: any;
 };

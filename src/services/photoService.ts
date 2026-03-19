@@ -221,6 +221,7 @@ export function subscribeToPhotos(
           width: data.width,
           height: data.height,
           likeCount: data.likeCount || 0,
+          commentCount: data.commentCount || 0,
         } as Photo;
       });
       onPhotosUpdate(photos);
@@ -274,6 +275,7 @@ export async function loadPhotosBatch(
         width: data.width,
         height: data.height,
         likeCount: data.likeCount || 0,
+        commentCount: data.commentCount || 0,
       } as Photo;
     });
 
