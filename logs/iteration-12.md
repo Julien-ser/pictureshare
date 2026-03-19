@@ -1,6 +1,6 @@
-# Iteration 10 - pictureshare
+# Iteration 12 - pictureshare
 
-**Timestamp:** Thu Mar 19 06:48:58 PM EDT 2026
+**Timestamp:** Thu Mar 19 06:49:14 PM EDT 2026
 **Task:** Integrate `react-native-qrcode-svg` to display event QR code for sharing; encode deep link with event ID
 
 ## Prompt Sent
@@ -339,13 +339,13 @@ Switch back to `generic` when the specialist work is done.
 ---
 
 ### ⚠️ CRITICAL TOKEN CONSTRAINTS:
-- Iteration: 10 / 64k Token Budget
+- Iteration: 12 / 64k Token Budget
 - Attempt: 1 (previous attempts may have partial progress)
 - **Mandate:** Operate efficiently. Use partial edits, not full file rewrites when possible.
 - **Output:** Be concise and action-oriented.
 
 
-## CURRENT PROJECT STATE (Iteration 10)
+## CURRENT PROJECT STATE (Iteration 12)
 
 ```
 # pictureshare
@@ -414,54 +414,95 @@ Integrate `react-native-qrcode-svg` to display event QR code for sharing; encode
 [0m
 > build · stepfun/step-3.5-flash:free
 [0m
-I'll help you complete the task: "Integrate `react-native-qrcode-svg` to display event QR code for sharing; encode deep link with event ID"
-
-Let me start by exploring the project structure to understand the current codebase.
-[0m✱ [0mGlob "**/*.{js,jsx,ts,tsx}"[90m 18 matches[0m
+I'll start by checking the current project structure and understanding where to implement the QR code feature.
 [0m→ [0mRead package.json
 [0m→ [0mRead TASKS.md
+[0m
+[0m$ [0mfind . -type f -name "*.ts" -o -name "*.tsx" -o -name "*.js" -o -name "*.jsx" | head -20
+./App.tsx
+./babel.config.js
+./node_modules/which-typed-array/test/index.js
+./node_modules/which-typed-array/index.d.ts
+./node_modules/which-typed-array/index.js
+./node_modules/end-of-stream/index.js
+./node_modules/setprototypeof/test/index.js
+./node_modules/setprototypeof/index.d.ts
+./node_modules/setprototypeof/index.js
+./node_modules/websocket-driver/lib/websocket/driver/proxy.js
+./node_modules/websocket-driver/lib/websocket/driver/headers.js
+./node_modules/websocket-driver/lib/websocket/driver/draft76.js
+./node_modules/websocket-driver/lib/websocket/driver/base.js
+./node_modules/websocket-driver/lib/websocket/driver/server.js
+./node_modules/websocket-driver/lib/websocket/driver/stream_reader.js
+./node_modules/websocket-driver/lib/websocket/driver/client.js
+./node_modules/websocket-driver/lib/websocket/driver/hybi/frame.js
+./node_modules/websocket-driver/lib/websocket/driver/hybi/message.js
+./node_modules/websocket-driver/lib/websocket/driver/hybi.js
+./node_modules/websocket-driver/lib/websocket/driver/draft75.js
+[0m
+[0m→ [0mRead App.tsx
+[0m✱ [0mGlob "src/**/*.{ts,tsx}"[90m 15 matches[0m
 [0m→ [0mRead src/screens/EventCreationScreen.tsx
-[0m→ [0mRead src/utils/codeGenerator.ts
-[0m→ [0mRead README.md
 [0m→ [0mRead src/services/eventService.ts
-Let me check the types and EventJoinScreen to understand the full picture:
+[0m→ [0mRead src/utils/codeGenerator.ts
 [0m→ [0mRead src/types/index.ts
-[0m→ [0mRead src/screens/EventJoinScreen.tsx
-Now I'll implement the QR code display feature. First, I need to install the required dependencies:
-[0m
-[0m$ [0mnpm install react-native-qrcode-svg react-native-svg
-npm warn deprecated text-encoding@0.7.0: no longer maintained
+```
 
-added 29 packages, and audited 1549 packages in 9s
+## TASKS.md After Iteration
 
-223 packages are looking for funding
-  run `npm fund` for details
+```markdown
+# pictureshare
 
-27 vulnerabilities (7 low, 20 high)
+**Mission:** App for event photo sharing
+All participants scan a written code and pictures they sent will be accessible to all in da group n vice versa
 
-To address issues that do not require attention, run:
-  npm audit fix
+## Phase 1: Planning & Setup
 
-To address all issues (including breaking changes), run:
-  npm audit fix --force
+- [x] Choose tech stack: React Native (Expo), Firebase (Auth/Firestore/Storage), react-native-camera, qrcode library; document in ADR
+- [x] Initialize Expo project with TypeScript, configure ESLint/Prettier, and set up folder structure: components/, screens/, services/, utils/
+- [x] Create low-fidelity wireframes for: Event Join (QR scanner), Photo Feed, Upload Interface, Profile Screen
+- [x] Set up Firebase project with security rules baseline, initialize local emulators for development
 
-Run `npm audit` for details.
-[0m
-Now I'll create the QRCodeDisplay component:
-[0m← [0mWrite src/components/QRCodeDisplay.tsx
-Wrote file successfully.
-[0m
-Now let me update the components index file to export the new component:
-[0m→ [0mRead src/components/index.ts
-[0m
-[0m← [0mEdit src/components/index.ts
-Index: /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/components/index.ts
-===================================================================
---- /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/components/index.ts
-+++ /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/components/index.ts
-@@ -1,2 +1,3 @@
- // Components will be exported here
- export { default as Button } from './Button';
-+export { default as QRCodeDisplay } from './QRCodeDisplay';
+## Phase 2: Authentication & Event Code System
 
-[0m
+- [x] Implement Firebase Anonymous Auth + Google Sign-In as fallback; store user mapping locally
+- [x] Build event creation screen: generates 6-digit alphanumeric code, optional time/visibility settings
+- [ ] Integrate `react-native-qrcode-svg` to display event QR code for sharing; encode deep link with event ID
+- [ ] Develop QR scanner screen using `expo-camera`; validate code against Firestore and join user to event document's participants array
+
+## Phase 3: Photo Capture, Compression & Upload
+
+- [ ] Build camera/gallery picker with `expo-image-picker`; request permissions and handle denials with explanatory UI
+- [ ] Add image compression pipeline: use `expo-image-manipulator` to resize to ≤1920px, compress to 80% quality
+- [ ] Implement upload service: upload compressed image to Firebase Storage path `/events/{eventId}/photos/{photoId}.jpg`
+- [ ] Save photo metadata to Firestore collection `photos` with fields: eventId, uploaderId, storagePath, createdAt, thumbnailPath
+
+## Phase 4: Real-Time Feed & Sync
+
+- [ ] Subscribe to Firestore `photos` collection query `where eventId == current` with real-time listener; render in FlatList
+- [ ] Implement optimistic UI: add photo to feed immediately after upload, mark pending, finalize on server confirmation
+- [ ] Build infinite scroll pagination using Firestore cursor; load 20 initial photos, fetch more on scroll
+- [ ] Add offline-first behavior: cache photos locally with `expo-file-system`; retry failed uploads when back online
+
+## Phase 5: Group Permissions & Interactions
+
+- [ ] Enable deletion: only photo owner or event creator can delete; remove from Storage and Firestore
+- [ ] Add likes: create `likes` subcollection under each photo; toggle like on press; update aggregated like count
+- [ ] Create lightweight comments: allow short text on photos; store in `comments` subcollection; real-time updates
+- [ ] Show participant list per event with avatars (from Google Auth) and photo count; differentiate current user
+
+## Phase 6: Testing, Polish & Launch
+
+- [ ] Write unit tests for utilities (code generation, image compression) and service wrappers using Jest
+- [ ] Create integration tests with Firebase Emulators: test event join flow, upload, and real-time feed
+- [ ] Perform closed beta: distribute via Expo Go, collect feedback on UX and performance
+- [ ] Deploy to app stores: configure EAS build, submit to Apple TestFlight and Google Play Internal; monitor Firebase Crashlytics
+      </parameter>
+      <parameter=filePath>
+      /home/julien/Desktop/Free-Wiggum-opencode/pictureshare_TASKS.md
+      </parameter>
+      </function>
+      </tool_call>
+```
+
+**Completed at:** Thu Mar 19 06:49:50 PM EDT 2026
