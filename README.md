@@ -101,7 +101,7 @@ See [TASKS.md](./TASKS.md) for full roadmap.
 The app supports:
 
 - **Anonymous Authentication** - Quick sign-in without personal data
-- **Google Sign-In** - Fallback option (placeholder for future implementation)
+- **Google Sign-In** - Fallback option using OAuth
 
 User data is stored locally on the device using AsyncStorage for offline-first experience.
 

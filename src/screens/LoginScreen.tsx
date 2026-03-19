@@ -3,7 +3,7 @@ import { View, Text, TouchableOpacity, StyleSheet, ActivityIndicator, Alert } fr
 import { useAuth } from '../contexts/AuthContext';
 
 export default function LoginScreen() {
-  const { signInAnonymously } = useAuth();
+  const { signInAnonymously, signInWithGoogle } = useAuth();
   const [loading, setLoading] = React.useState(false);
 
   const handleAnonymousSignIn = async () => {
@@ -19,7 +19,15 @@ export default function LoginScreen() {
   };
 
   const handleGoogleSignIn = async () => {
-    Alert.alert('Not Available', 'Google Sign-In will be implemented in a future update.');
+    try {
+      setLoading(true);
+      await signInWithGoogle();
+    } catch (error) {
+      Alert.alert('Error', 'Failed to sign in with Google');
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (

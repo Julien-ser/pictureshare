@@ -11,6 +11,7 @@ export type Event = {
   createdAt: any;
   createdBy: string;
   participants: string[];
+  title?: string; // Optional event title
   settings?: {
     maxDuration?: number;
     isPublic?: boolean;
