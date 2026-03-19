@@ -491,3 +491,88 @@ Index: /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/README.md
  ## Authentication
 
 [0m
+[0m$ [0mgit add . && git commit -m "feat: implement real-time photo feed subscription with Firestore onSnapshot
+
+- PhotoFeedScreen now uses EventContext and subscribes to event photos
+- Real-time updates via subscribeToPhotos service
+- FlatList rendering with download URL caching
+- Updated docs to Phase 4: Real-Time Feed & Sync" && git push origin main
+[main 780e4bf] feat: implement real-time photo feed subscription with Firestore onSnapshot
+ 9 files changed, 1104 insertions(+), 123 deletions(-)
+ create mode 100644 logs/iteration-21.md
+ create mode 100644 logs/worker-session-20260319-190847.log
+ create mode 100644 src/contexts/EventContext.tsx
+To https://github.com/Julien-ser/pictureshare.git
+   654be55..780e4bf  main -> main
+[0m
+Let me verify the GitHub Actions workflow exists as required by Task 0:
+[0m✱ [0mGlob ".github/workflows/*.yml"[90m 5 matches[0m
+Perfect! The workflow file exists. The current task is complete:
+
+✅ **Real-time photo feed implemented** - PhotoFeedScreen subscribes to Firestore `photos` collection with `onSnapshot` listener, filters by eventId, and renders in FlatList with download URL caching
+
+✅ **Documentation updated** - README now shows Phase 4 in progress
+
+✅ **Committed & pushed** - Changes are on GitHub
+
+Next task: Implement optimistic UI for photo uploads.
+```
+
+## TASKS.md After Iteration
+
+```markdown
+# pictureshare
+
+**Mission:** App for event photo sharing
+All participants scan a written code and pictures they sent will be accessible to all in da group n vice versa
+
+## Phase 1: Planning & Setup
+
+- [x] Choose tech stack: React Native (Expo), Firebase (Auth/Firestore/Storage), react-native-camera, qrcode library; document in ADR
+- [x] Initialize Expo project with TypeScript, configure ESLint/Prettier, and set up folder structure: components/, screens/, services/, utils/
+- [x] Create low-fidelity wireframes for: Event Join (QR scanner), Photo Feed, Upload Interface, Profile Screen
+- [x] Set up Firebase project with security rules baseline, initialize local emulators for development
+
+## Phase 2: Authentication & Event Code System
+
+- [x] Implement Firebase Anonymous Auth + Google Sign-In as fallback; store user mapping locally
+- [x] Build event creation screen: generates 6-digit alphanumeric code, optional time/visibility settings
+- [x] Integrate `react-native-qrcode-svg` to display event QR code for sharing; encode deep link with event ID
+- [x] Develop QR scanner screen using `expo-camera`; validate code against Firestore and join user to event document's participants array
+
+## Phase 3: Photo Capture, Compression & Upload
+
+- [x] Build camera/gallery picker with `expo-image-picker`; request permissions and handle denials with explanatory UI
+- [x] Add image compression pipeline: use `expo-image-manipulator` to resize to ≤1920px, compress to 80% quality
+- [x] Implement upload service: upload compressed image to Firebase Storage path `/events/{eventId}/photos/{photoId}.jpg`
+- [x] Save photo metadata to Firestore collection `photos` with fields: eventId, uploaderId, storagePath, createdAt, thumbnailPath
+
+## Phase 4: Real-Time Feed & Sync
+
+- [x] Subscribe to Firestore `photos` collection query `where eventId == current` with real-time listener; render in FlatList
+- [ ] Implement optimistic UI: add photo to feed immediately after upload, mark pending, finalize on server confirmation
+- [ ] Build infinite scroll pagination using Firestore cursor; load 20 initial photos, fetch more on scroll
+- [ ] Add offline-first behavior: cache photos locally with `expo-file-system`; retry failed uploads when back online
+
+## Phase 5: Group Permissions & Interactions
+
+- [ ] Enable deletion: only photo owner or event creator can delete; remove from Storage and Firestore
+- [ ] Add likes: create `likes` subcollection under each photo; toggle like on press; update aggregated like count
+- [ ] Create lightweight comments: allow short text on photos; store in `comments` subcollection; real-time updates
+- [ ] Show participant list per event with avatars (from Google Auth) and photo count; differentiate current user
+
+## Phase 6: Testing, Polish & Launch
+
+- [ ] Write unit tests for utilities (code generation, image compression) and service wrappers using Jest
+- [ ] Create integration tests with Firebase Emulators: test event join flow, upload, and real-time feed
+- [ ] Perform closed beta: distribute via Expo Go, collect feedback on UX and performance
+- [ ] Deploy to app stores: configure EAS build, submit to Apple TestFlight and Google Play Internal; monitor Firebase Crashlytics
+      </parameter>
+      <parameter=filePath>
+      /home/julien/Desktop/Free-Wiggum-opencode/pictureshare_TASKS.md
+      </parameter>
+      </function>
+      </tool_call>
+```
+
+**Completed at:** Thu Mar 19 07:10:07 PM EDT 2026

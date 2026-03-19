@@ -67,5 +67,6 @@ const styles = StyleSheet.create({
   subtext: {
     fontSize: 16,
     color: '#666',
+    textAlign: 'center',
   },
 });

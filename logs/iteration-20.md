@@ -871,3 +871,20 @@ Index: /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/App.tsx
 [0m
 Let me read App.tsx:
 [0m→ [0mRead App.tsx
+Let me fix the App.tsx errors:
+[0m
+[0m← [0mEdit App.tsx
+Index: /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/App.tsx
+===================================================================
+--- /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/App.tsx
++++ /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/App.tsx
+@@ -66,6 +66,7 @@
+   },
+   subtext: {
+     fontSize: 16,
+     color: '#666',
++    textAlign: 'center',
+   },
+ });
+
+[0m
