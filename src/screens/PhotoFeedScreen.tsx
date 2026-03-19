@@ -63,6 +63,7 @@ const PhotoFeedScreen: React.FC<PhotoFeedScreenProps> = ({ eventId: propEventId 
   const [likeCounts, setLikeCounts] = useState<Map<string, number>>(new Map());
   const [likedByUser, setLikedByUser] = useState<Map<string, boolean>>(new Map());
   const [loadingLikes, setLoadingLikes] = useState<Set<string>>(new Set());
+  const [pendingLikePhotos, setPendingLikePhotos] = useState<Set<string>>(new Set());
 
   // Fetch URIs for newly added confirmed photos
   useEffect(() => {
@@ -257,6 +258,35 @@ const PhotoFeedScreen: React.FC<PhotoFeedScreenProps> = ({ eventId: propEventId 
     [user, deletePermissions, loadingPermissions]
   );
 
+  const handleToggleLike = useCallback(
+    async (photoId: string) => {
+      if (!user) {
+        Alert.alert('Error', 'You must be logged in to like photos');
+        return;
+      }
+
+      if (pendingLikePhotos.has(photoId)) {
+        return; // Prevent multiple toggles
+      }
+
+      setPendingLikePhotos((prev) => new Set(prev).add(photoId));
+
+      try {
+        await toggleLike(photoId, user.id);
+      } catch (error) {
+        console.error('Error toggling like:', error);
+        Alert.alert('Error', error instanceof Error ? error.message : 'Failed to update like');
+      } finally {
+        setPendingLikePhotos((prev) => {
+          const next = new Set(prev);
+          next.delete(photoId);
+          return next;
+        });
+      }
+    },
+    [user, pendingLikePhotos]
+  );
+
   const renderPhoto = ({ item }: { item: PhotoWithUri }) => {
     const isPending = pendingIds.has(item.id);
     const canDelete = canUserDeletePhoto(item.id);
@@ -290,10 +320,11 @@ const PhotoFeedScreen: React.FC<PhotoFeedScreenProps> = ({ eventId: propEventId 
         <View style={styles.photoActions}>
           <TouchableOpacity
             style={styles.actionButton}
-            onPress={() => Alert.alert('Info', 'Likes feature coming in Phase 5')}
+            onPress={() => handleToggleLike(item.id)}
+            disabled={pendingLikePhotos.has(item.id)}
           >
-            <Text style={styles.actionIcon}>❤️</Text>
-            <Text style={styles.actionText}>Like</Text>
+            <Text style={styles.actionIcon}>{likedByUser.get(item.id) ? '❤️' : '🤍'}</Text>
+            <Text style={styles.actionText}>{likeCounts.get(item.id) || 0}</Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.actionButton}
@@ -465,6 +496,7 @@ const styles = StyleSheet.create({
   },
   actionButton: { flexDirection: 'row', alignItems: 'center', marginRight: 20 },
   actionIcon: { fontSize: 18, marginRight: 5 },
+  likedIcon: { color: '#FF3B30' },
   actionText: { fontSize: 14, color: '#666' },
   deleteButton: { marginRight: 0 },
   deleteIcon: { fontSize: 18, marginRight: 5 },

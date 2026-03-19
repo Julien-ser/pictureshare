@@ -86,7 +86,13 @@ src/
 
 ## Current Phase
 
-**Phase 4: Real-Time Feed & Sync** - In Progress
+**Phase 5: Group Permissions & Interactions** - In Progress
+
+- [x] Add likes: create `likes` subcollection under each photo; toggle like on press; update aggregated like count
+- [ ] Create lightweight comments: allow short text on photos; store in `comments` subcollection; real-time updates
+- [ ] Show participant list per event with avatars (from Google Auth) and photo count; differentiate current user
+
+**Phase 4: Real-Time Feed & Sync** - Completed
 
 - [x] Real-time subscription to Firestore photos with onSnapshot listener
 - [x] FlatList rendering with download URL fetching
