@@ -444,3 +444,203 @@ To address all issues (including breaking changes), run:
 Run `npm audit` for details.
 [0m
 [0m→ [0mRead src/contexts/AuthContext.tsx
+Now I'll implement the complete QR scanner functionality with event joining:
+[0m
+[0m← [0mWrite src/screens/EventJoinScreen.tsx
+Wrote file successfully.
+
+LSP errors detected in this file, please fix:
+<diagnostics file="/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/screens/EventJoinScreen.tsx">
+ERROR [14:18] Module '"expo-camera"' has no exported member 'CameraView'.
+ERROR [14:30] Module '"expo-camera"' has no exported member 'useCameraPermissions'.
+ERROR [14:52] Module '"expo-camera"' has no exported member 'BarCodeScanner'.
+</diagnostics>
+[0m
+I need to fix the Expo Camera API. In SDK 50, we use `Camera` directly with different permissions. Let me update:
+[0m← [0mEdit src/screens/EventJoinScreen.tsx
+Index: /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/screens/EventJoinScreen.tsx
+===================================================================
+--- /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/screens/EventJoinScreen.tsx
++++ /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/screens/EventJoinScreen.tsx
+@@ -10,9 +10,9 @@
+   ActivityIndicator,
+   PermissionsAndroid,
+   Platform,
+ } from 'react-native';
+-import { Camera, CameraView, useCameraPermissions, BarCodeScanner } from 'expo-camera';
++import { Camera, useCameraPermissions, BarCodeScanner } from 'expo-camera';
+ import { useAuth } from '../contexts/AuthContext';
+ import { getEventByCode, joinEvent } from '../services/eventService';
+ 
+ type JoinStatus = 'idle' | 'scanning' | 'loading' | 'success' | 'error';
+
+[0m
+Let me check the correct Expo Camera API for SDK 50:
+[0m← [0mEdit src/screens/EventJoinScreen.tsx
+Index: /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/screens/EventJoinScreen.tsx
+===================================================================
+--- /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/screens/EventJoinScreen.tsx
++++ /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/screens/EventJoinScreen.tsx
+@@ -7,12 +7,10 @@
+   TextInput,
+   TouchableOpacity,
+   Alert,
+   ActivityIndicator,
+-  PermissionsAndroid,
+-  Platform,
+ } from 'react-native';
+-import { Camera, useCameraPermissions, BarCodeScanner } from 'expo-camera';
++import { Camera } from 'expo-camera';
+ import { useAuth } from '../contexts/AuthContext';
+ import { getEventByCode, joinEvent } from '../services/eventService';
+ 
+ type JoinStatus = 'idle' | 'scanning' | 'loading' | 'success' | 'error';
+
+[0m
+Let me rewrite the file with the correct Expo Camera API:
+[0m✗ [0mwrite failed
+[91m[1mError: [0mFile /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/screens/EventJoinScreen.tsx has been modified since it was last read.
+Last modification: 2026-03-19T22:54:54.608Z
+Last read: 2026-03-19T22:54:44.261Z
+
+Please read the file again before modifying it.
+[0m→ [0mRead src/screens/EventJoinScreen.tsx
+Let me fix the imports and Camera usage:
+[0m
+[0m← [0mEdit src/screens/EventJoinScreen.tsx
+Index: /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/screens/EventJoinScreen.tsx
+===================================================================
+--- /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/screens/EventJoinScreen.tsx
++++ /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/screens/EventJoinScreen.tsx
+@@ -1,5 +1,5 @@
+-import React, { useState, useEffect, useRef } from 'react';
++import React, { useState, useEffect } from 'react';
+ import {
+   View,
+   Text,
+   StyleSheet,
+@@ -8,9 +8,9 @@
+   TouchableOpacity,
+   Alert,
+   ActivityIndicator,
+ } from 'react-native';
+-import { CameraView, useCameraPermissions, BarcodeScanner } from 'expo-camera';
++import { Camera } from 'expo-camera';
+ import { useAuth } from '../contexts/AuthContext';
+ import { getEventByCode, joinEvent } from '../services/eventService';
+ 
+ type JoinStatus = 'idle' | 'scanning' | 'loading' | 'success' | 'error';
+
+[0m
+[0m← [0mEdit src/screens/EventJoinScreen.tsx
+Index: /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/screens/EventJoinScreen.tsx
+===================================================================
+--- /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/screens/EventJoinScreen.tsx
++++ /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/screens/EventJoinScreen.tsx
+@@ -20,10 +20,9 @@
+ const [manualCode, setManualCode] = useState('');
+ const [joinStatus, setJoinStatus] = useState<JoinStatus>('idle');
+ const [errorMessage, setErrorMessage] = useState<string | null>(null);
+ const [joinedEvent, setJoinedEvent] = useState<{ code: string; title?: string } | null>(null);
+-const cameraRef = useRef<CameraView>(null);
+-const [permission, requestPermission] = useCameraPermissions();
++const [permission, requestPermission] = Camera.useCameraPermissions();
+ 
+ useEffect(() => {
+   if (!permission?.granted) {
+     requestPermission();
+
+[0m
+[0m← [0mEdit src/screens/EventJoinScreen.tsx
+Index: /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/screens/EventJoinScreen.tsx
+===================================================================
+--- /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/screens/EventJoinScreen.tsx
++++ /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/screens/EventJoinScreen.tsx
+@@ -157,21 +157,21 @@
+ <View style={styles.section}>
+   <Text style={styles.sectionTitle}>Scan QR Code</Text>
+   {permission?.granted ? (
+     <View style={styles.cameraContainer}>
+-      <CameraView
+-        ref={cameraRef}
++      <Camera
+         style={styles.camera}
++        type={Camera.Constants.Type.back}
+         onBarcodeScanned={joinStatus === 'idle' ? handleBarCodeScanned : undefined}
+         barcodeScannerSettings={{
+-          barcodeTypes: [BarCodeScanner.Constants.BarcodeType.qr],
++          barcodeTypes: ['qr'],
+         }}
+       >
+         <View style={styles.cameraOverlay}>
+           <View style={styles.scanFrame} />
+           <Text style={styles.scanInstruction}>Position QR code within the frame</Text>
+         </View>
+-      </CameraView>
++      </Camera>
+     </View>
+   ) : (
+     <View style={styles.permissionContainer}>
+       <Text style={styles.permissionText}>Camera permission required</Text>
+
+[0m
+```
+
+## TASKS.md After Iteration
+
+```markdown
+# pictureshare
+
+**Mission:** App for event photo sharing
+All participants scan a written code and pictures they sent will be accessible to all in da group n vice versa
+
+## Phase 1: Planning & Setup
+
+- [x] Choose tech stack: React Native (Expo), Firebase (Auth/Firestore/Storage), react-native-camera, qrcode library; document in ADR
+- [x] Initialize Expo project with TypeScript, configure ESLint/Prettier, and set up folder structure: components/, screens/, services/, utils/
+- [x] Create low-fidelity wireframes for: Event Join (QR scanner), Photo Feed, Upload Interface, Profile Screen
+- [x] Set up Firebase project with security rules baseline, initialize local emulators for development
+
+## Phase 2: Authentication & Event Code System
+
+- [x] Implement Firebase Anonymous Auth + Google Sign-In as fallback; store user mapping locally
+- [x] Build event creation screen: generates 6-digit alphanumeric code, optional time/visibility settings
+- [x] Integrate `react-native-qrcode-svg` to display event QR code for sharing; encode deep link with event ID
+- [ ] Develop QR scanner screen using `expo-camera`; validate code against Firestore and join user to event document's participants array
+
+## Phase 3: Photo Capture, Compression & Upload
+
+- [ ] Build camera/gallery picker with `expo-image-picker`; request permissions and handle denials with explanatory UI
+- [ ] Add image compression pipeline: use `expo-image-manipulator` to resize to ≤1920px, compress to 80% quality
+- [ ] Implement upload service: upload compressed image to Firebase Storage path `/events/{eventId}/photos/{photoId}.jpg`
+- [ ] Save photo metadata to Firestore collection `photos` with fields: eventId, uploaderId, storagePath, createdAt, thumbnailPath
+
+## Phase 4: Real-Time Feed & Sync
+
+- [ ] Subscribe to Firestore `photos` collection query `where eventId == current` with real-time listener; render in FlatList
+- [ ] Implement optimistic UI: add photo to feed immediately after upload, mark pending, finalize on server confirmation
+- [ ] Build infinite scroll pagination using Firestore cursor; load 20 initial photos, fetch more on scroll
+- [ ] Add offline-first behavior: cache photos locally with `expo-file-system`; retry failed uploads when back online
+
+## Phase 5: Group Permissions & Interactions
+
+- [ ] Enable deletion: only photo owner or event creator can delete; remove from Storage and Firestore
+- [ ] Add likes: create `likes` subcollection under each photo; toggle like on press; update aggregated like count
+- [ ] Create lightweight comments: allow short text on photos; store in `comments` subcollection; real-time updates
+- [ ] Show participant list per event with avatars (from Google Auth) and photo count; differentiate current user
+
+## Phase 6: Testing, Polish & Launch
+
+- [ ] Write unit tests for utilities (code generation, image compression) and service wrappers using Jest
+- [ ] Create integration tests with Firebase Emulators: test event join flow, upload, and real-time feed
+- [ ] Perform closed beta: distribute via Expo Go, collect feedback on UX and performance
+- [ ] Deploy to app stores: configure EAS build, submit to Apple TestFlight and Google Play Internal; monitor Firebase Crashlytics
+      </parameter>
+      <parameter=filePath>
+      /home/julien/Desktop/Free-Wiggum-opencode/pictureshare_TASKS.md
+      </parameter>
+      </function>
+      </tool_call>
+```
+
+**Completed at:** Thu Mar 19 06:55:52 PM EDT 2026
