@@ -1,6 +1,6 @@
 # Iteration 6 - pictureshare
 
-**Timestamp:** Thu Mar 19 06:34:19 PM EDT 2026
+**Timestamp:** Thu Mar 19 06:34:40 PM EDT 2026
 **Task:** Implement Firebase Anonymous Auth + Google Sign-In as fallback; store user mapping locally
 
 ## Prompt Sent
@@ -414,14 +414,72 @@ Implement Firebase Anonymous Auth + Google Sign-In as fallback; store user mappi
 [0m
 > build · stepfun/step-3.5-flash:free
 [0m
-I'll help you implement Firebase Anonymous Auth + Google Sign-In. Let me first check the current project state and understand the tech stack.
-[0m✱ [0mGlob "**/*.{ts,tsx,js,jsx}"[90m 12 matches[0m
+I'll implement Firebase Anonymous Auth + Google Sign-In as fallback. Let me start by exploring the current project structure.
+[0m→ [0mRead .
 [0m→ [0mRead package.json
-[0m→ [0mRead .agent_role
-[0m→ [0mRead TASKS.md
+[0m✱ [0mGlob "**/*.{json,ts,tsx,js,jsx}"[90m 17 matches[0m
+Let me check the existing source files to understand the current structure:
 [0m→ [0mRead App.tsx
-[0m✱ [0mGlob "src/**/*.ts"[90m 5 matches[0m
-[0m✱ [0mGlob "src/**/*.tsx"[90m 4 matches[0m
-[0m→ [0mRead src/utils/index.ts
+[0m→ [0mRead README.md
 [0m→ [0mRead src/types/index.ts
 [0m→ [0mRead src/services/index.ts
+```
+
+## TASKS.md After Iteration
+
+```markdown
+# pictureshare
+
+**Mission:** App for event photo sharing
+All participants scan a written code and pictures they sent will be accessible to all in da group n vice versa
+
+## Phase 1: Planning & Setup
+
+- [x] Choose tech stack: React Native (Expo), Firebase (Auth/Firestore/Storage), react-native-camera, qrcode library; document in ADR
+- [x] Initialize Expo project with TypeScript, configure ESLint/Prettier, and set up folder structure: components/, screens/, services/, utils/
+- [x] Create low-fidelity wireframes for: Event Join (QR scanner), Photo Feed, Upload Interface, Profile Screen
+- [x] Set up Firebase project with security rules baseline, initialize local emulators for development
+
+## Phase 2: Authentication & Event Code System
+
+- [ ] Implement Firebase Anonymous Auth + Google Sign-In as fallback; store user mapping locally
+- [ ] Build event creation screen: generates 6-digit alphanumeric code, optional time/visibility settings
+- [ ] Integrate `react-native-qrcode-svg` to display event QR code for sharing; encode deep link with event ID
+- [ ] Develop QR scanner screen using `expo-camera`; validate code against Firestore and join user to event document's participants array
+
+## Phase 3: Photo Capture, Compression & Upload
+
+- [ ] Build camera/gallery picker with `expo-image-picker`; request permissions and handle denials with explanatory UI
+- [ ] Add image compression pipeline: use `expo-image-manipulator` to resize to ≤1920px, compress to 80% quality
+- [ ] Implement upload service: upload compressed image to Firebase Storage path `/events/{eventId}/photos/{photoId}.jpg`
+- [ ] Save photo metadata to Firestore collection `photos` with fields: eventId, uploaderId, storagePath, createdAt, thumbnailPath
+
+## Phase 4: Real-Time Feed & Sync
+
+- [ ] Subscribe to Firestore `photos` collection query `where eventId == current` with real-time listener; render in FlatList
+- [ ] Implement optimistic UI: add photo to feed immediately after upload, mark pending, finalize on server confirmation
+- [ ] Build infinite scroll pagination using Firestore cursor; load 20 initial photos, fetch more on scroll
+- [ ] Add offline-first behavior: cache photos locally with `expo-file-system`; retry failed uploads when back online
+
+## Phase 5: Group Permissions & Interactions
+
+- [ ] Enable deletion: only photo owner or event creator can delete; remove from Storage and Firestore
+- [ ] Add likes: create `likes` subcollection under each photo; toggle like on press; update aggregated like count
+- [ ] Create lightweight comments: allow short text on photos; store in `comments` subcollection; real-time updates
+- [ ] Show participant list per event with avatars (from Google Auth) and photo count; differentiate current user
+
+## Phase 6: Testing, Polish & Launch
+
+- [ ] Write unit tests for utilities (code generation, image compression) and service wrappers using Jest
+- [ ] Create integration tests with Firebase Emulators: test event join flow, upload, and real-time feed
+- [ ] Perform closed beta: distribute via Expo Go, collect feedback on UX and performance
+- [ ] Deploy to app stores: configure EAS build, submit to Apple TestFlight and Google Play Internal; monitor Firebase Crashlytics
+      </parameter>
+      <parameter=filePath>
+      /home/julien/Desktop/Free-Wiggum-opencode/pictureshare_TASKS.md
+      </parameter>
+      </function>
+      </tool_call>
+```
+
+**Completed at:** Thu Mar 19 06:35:02 PM EDT 2026
