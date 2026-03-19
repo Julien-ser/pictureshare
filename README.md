@@ -86,14 +86,41 @@ src/
 
 ## Current Phase
 
-**Phase 1: Planning & Setup** - In Progress
+**Phase 2: Authentication & Event Code System** - In Progress
 
-- [x] Tech stack documented in ADR
-- [x] Expo project initialization
-- [x] Wireframes (EventJoinScreen, PhotoFeedScreen, UploadInterface, ProfileScreen)
-- [ ] Firebase emulator setup
+- [x] Firebase Anonymous Auth + Google Sign-In (fallback)
+- [x] User mapping stored locally
+- [ ] Event creation screen with 6-digit code generation
+- [ ] QR code display for event sharing
+- [ ] QR scanner integration
 
 See [TASKS.md](./TASKS.md) for full roadmap.
+
+## Authentication
+
+The app supports:
+
+- **Anonymous Authentication** - Quick sign-in without personal data
+- **Google Sign-In** - Fallback option (placeholder for future implementation)
+
+User data is stored locally on the device using AsyncStorage for offline-first experience.
+
+## Firebase Configuration
+
+Before running, update `src/services/firebase.ts` with your Firebase project credentials:
+
+```typescript
+const firebaseConfig = {
+  apiKey: 'YOUR_API_KEY',
+  authDomain: 'YOUR_PROJECT_ID.firebaseapp.com',
+  projectId: 'YOUR_PROJECT_ID',
+  storageBucket: 'YOUR_PROJECT_ID.appspot.com',
+  messagingSenderId: 'YOUR_MESSAGING_SENDER_ID',
+  appId: 'YOUR_APP_ID',
+};
+```
+
+The app automatically connects to Firebase emulators when running in development mode (`__DEV__`).
 
 ## Contributing
 

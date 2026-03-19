@@ -1,2 +1,2 @@
-// Services will be exported here
-export { default as firebase } from './firebase';
+// Firebase authentication service
+export * from './firebase';

@@ -12,7 +12,7 @@ All participants scan a written code and pictures they sent will be accessible t
 
 ## Phase 2: Authentication & Event Code System
 
-- [ ] Implement Firebase Anonymous Auth + Google Sign-In as fallback; store user mapping locally
+- [x] Implement Firebase Anonymous Auth + Google Sign-In as fallback; store user mapping locally
 - [ ] Build event creation screen: generates 6-digit alphanumeric code, optional time/visibility settings
 - [ ] Integrate `react-native-qrcode-svg` to display event QR code for sharing; encode deep link with event ID
 - [ ] Develop QR scanner screen using `expo-camera`; validate code against Firestore and join user to event document's participants array

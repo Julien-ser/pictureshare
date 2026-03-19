@@ -728,3 +728,437 @@ To https://github.com/Julien-ser/pictureshare.git
 [0m
 > build · stepfun/step-3.5-flash:free
 [0m
+I'll implement the Firebase Anonymous Auth + Google Sign-In feature. Let me first explore the current project structure to understand what exists.
+[0m→ [0mRead .
+[0m✱ [0mGlob "**/*.{ts,tsx,js,jsx,json}"[90m 17 matches[0m
+[0m→ [0mRead package.json
+[0m→ [0mRead src/services/index.ts
+[0m→ [0mRead src/types/index.ts
+[0m→ [0mRead App.tsx
+[0m→ [0mRead README.md
+[0m✗ [0mread failed
+[91m[1mError: [0mFile not found: /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/services/firebase.ts
+Let me check the existing Firebase service and screen files to understand the current structure better.
+[0m→ [0mRead TASKS.md
+[0m→ [0mRead src/screens/EventJoinScreen.tsx
+[0m→ [0mRead firebase.json
+Let me check the Firebase configuration and see what dependencies we need to add.
+[0m→ [0mRead .firebaserc
+[0m
+[0m# [0mTodos
+[ ] Install Firebase and auth dependencies for Expo
+[ ] Create Firebase configuration service
+[ ] Implement anonymous authentication
+[ ] Implement Google Sign-In fallback
+[ ] Create local user storage with AsyncStorage
+[ ] Update App.tsx to integrate auth flow
+[ ] Update TASKS.md and README.md
+[0m
+Let me create a todo list to organize this implementation:
+Now let me install the required dependencies for Firebase Auth and Google Sign-In with Expo:
+[0m$ [0mnpm install firebase expo-auth-session expo-crypto @react-native-async-storage/async-storage
+npm error code ENOTEMPTY
+npm error syscall rmdir
+npm error path /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/@grpc/grpc-js/src/generated/grpc/channelz/v1
+npm error errno -39
+npm error ENOTEMPTY: directory not empty, rmdir '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/@grpc/grpc-js/src/generated/grpc/channelz/v1'
+npm error A complete log of this run can be found in: /home/julien/.npm/_logs/2026-03-19T22_35_47_097Z-debug-0.log
+[0m
+Let me clean the node_modules and reinstall dependencies properly:
+[0m$ [0mrm -rf node_modules package-lock.json && npm install
+npm warn deprecated @types/react-native@0.73.0: This is a stub types definition. react-native provides its own type definitions, so you do not need this installed.
+npm warn deprecated osenv@0.1.5: This package is no longer supported.
+npm warn deprecated inflight@1.0.6: This module is not supported, and leaks memory. Do not use it. Check out lru-cache if you want a good and tested way to coalesce async requests by a key value, which is much more comprehensive and powerful.
+npm warn deprecated @npmcli/move-file@1.1.2: This functionality has been moved to @npmcli/fs
+npm warn deprecated @babel/plugin-proposal-optional-catch-binding@7.18.6: This proposal has been merged to the ECMAScript standard and thus this plugin is no longer maintained. Please use @babel/plugin-transform-optional-catch-binding instead.
+npm warn deprecated @babel/plugin-proposal-numeric-separator@7.18.6: This proposal has been merged to the ECMAScript standard and thus this plugin is no longer maintained. Please use @babel/plugin-transform-numeric-separator instead.
+npm warn deprecated @babel/plugin-proposal-nullish-coalescing-operator@7.18.6: This proposal has been merged to the ECMAScript standard and thus this plugin is no longer maintained. Please use @babel/plugin-transform-nullish-coalescing-operator instead.
+npm warn deprecated @babel/plugin-proposal-class-properties@7.18.6: This proposal has been merged to the ECMAScript standard and thus this plugin is no longer maintained. Please use @babel/plugin-transform-class-properties instead.
+npm warn deprecated rimraf@2.6.3: Rimraf versions prior to v4 are no longer supported
+npm warn deprecated @humanwhocodes/config-array@0.13.0: Use @eslint/config-array instead
+npm warn deprecated @babel/plugin-proposal-optional-chaining@7.21.0: This proposal has been merged to the ECMAScript standard and thus this plugin is no longer maintained. Please use @babel/plugin-transform-optional-chaining instead.
+npm warn deprecated @babel/plugin-proposal-async-generator-functions@7.20.7: This proposal has been merged to the ECMAScript standard and thus this plugin is no longer maintained. Please use @babel/plugin-transform-async-generator-functions instead.
+npm warn deprecated whatwg-encoding@2.0.0: Use @exodus/bytes instead for a more spec-conformant and faster implementation
+npm warn deprecated abab@2.0.6: Use your platform's native atob() and btoa() methods instead
+npm warn deprecated rimraf@3.0.2: Rimraf versions prior to v4 are no longer supported
+npm warn deprecated glob@7.2.3: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
+npm warn deprecated @humanwhocodes/object-schema@2.0.3: Use @eslint/object-schema instead
+npm warn deprecated sudo-prompt@9.2.1: Package no longer supported. Contact Support at https://www.npmjs.com/support for more info.
+npm warn deprecated @babel/plugin-proposal-object-rest-spread@7.20.7: This proposal has been merged to the ECMAScript standard and thus this plugin is no longer maintained. Please use @babel/plugin-transform-object-rest-spread instead.
+npm warn deprecated glob@7.1.6: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
+npm warn deprecated glob@7.1.6: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
+npm warn deprecated glob@7.1.6: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
+npm warn deprecated domexception@4.0.0: Use your platform's native DOMException instead
+npm warn deprecated @xmldom/xmldom@0.7.13: this version is no longer supported, please update to at least 0.8.*
+npm warn deprecated tar@6.2.1: Old versions of tar are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
+npm warn deprecated eslint@8.57.1: This version is no longer supported. Please see https://eslint.org/version-support for other options.
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/build.gradle.kts'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, lstat '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/ReactAndroid/external-artifacts'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, lstat '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/ReactAndroid/flipper-integration'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/settings.gradle.kts'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, lstat '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/template/ios/HelloWorldTests'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/template/ios/HelloWorld/main.m'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/Libraries/Text/Text/NSTextStorage+FontScaling.m'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/ReactCommon/react/renderer/textlayoutmanager/platform/ios/react/renderer/textlayoutmanager/NSTextStorage+FontScaling.m'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/React/Views/RCTActivityIndicatorView.m'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/React/Views/RCTActivityIndicatorViewManager.m'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/React/Base/RCTAssert.m'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/React/Views/RCTBorderDrawing.m'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/React/Base/RCTBridgeConstants.m'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/React/Base/RCTBridgeModuleDecorator.m'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/React/Base/RCTBundleManager.m'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/React/Base/RCTCallableJSModules.m'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/React/Views/RCTComponentData.m'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/React/Base/RCTComponentEvent.m'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/React/Base/RCTConstants.m'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/React/Base/RCTConvert.m'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/React/Views/RCTConvert+CoreLocation.m'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/React/Views/RCTConvert+Transform.m'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/React/Base/RCTCxxConvert.m'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/React/DevSupport/RCTDevLoadingViewSetEnabled.m'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/React/Base/RCTDisplayLink.m'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/React/Base/RCTErrorInfo.m'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/React/Base/RCTEventDispatcher.m'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/React/Modules/RCTEventEmitter.m'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/React/Base/RCTFrameUpdate.m'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/React/Modules/RCTI18nUtil.m'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/React/Base/RCTImageSource.m'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/React/Inspector/RCTInspectorPackagerConnection.m'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/React/Base/RCTJSStackFrame.m'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/React/Base/RCTJSThread.m'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/React/Base/RCTKeyCommands.m'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/React/Views/RCTLayout.m'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/React/Modules/RCTLayoutAnimation.m'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/React/Modules/RCTLayoutAnimationGroup.m'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/ReactCommon/react/test_utils/ios/Memory/RCTMemoryUtils.m'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/React/Views/RCTModalHostView.m'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/React/Views/RCTModalHostViewController.m'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/React/Views/RCTModalHostViewManager.m'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/React/Views/RCTModalManager.m'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/React/Base/RCTModuleRegistry.m'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/React/Base/RCTMultipartDataTask.m'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/React/Base/RCTMultipartStreamReader.m'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/React/DevSupport/RCTPackagerClient.m'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/React/Base/RCTParserUtils.m'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/React/Base/RCTPerformanceLoggerLabels.m'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/React/Profiler/RCTProfile.m'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/Libraries/WebSocket/RCTReconnectingWebSocket.m'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/React/Modules/RCTRedBoxExtraDataViewController.m'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/React/Base/RCTRedBoxSetEnabled.m'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/React/Views/RefreshControl/RCTRefreshControl.m'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/React/Views/RefreshControl/RCTRefreshControlManager.m'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/React/Base/RCTReloadCommand.m'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/React/Base/RCTRootContentView.m'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/React/Views/RCTRootShadowView.m'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/React/Base/RCTRootView.m'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/React/Views/SafeAreaView/RCTSafeAreaShadowView.m'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/React/Views/SafeAreaView/RCTSafeAreaView.m'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/React/Views/SafeAreaView/RCTSafeAreaViewLocalData.m'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/React/Views/SafeAreaView/RCTSafeAreaViewManager.m'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/React/Views/ScrollView/RCTScrollContentShadowView.m'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/React/Views/ScrollView/RCTScrollContentView.m'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/React/Views/ScrollView/RCTScrollContentViewManager.m'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/React/Views/ScrollView/RCTScrollEvent.m'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/React/Views/ScrollView/RCTScrollView.m'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/React/Views/ScrollView/RCTScrollViewManager.m'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/React/Views/RCTSegmentedControl.m'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/React/Views/RCTSegmentedControlManager.m'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/React/Views/RCTShadowView.m'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/React/Views/RCTShadowView+Internal.m'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/React/Views/RCTShadowView+Layout.m'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/React/Modules/RCTSurfacePresenterStub.m'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/React/Base/Surface/RCTSurfaceRootShadowView.m'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/React/Base/Surface/RCTSurfaceStage.m'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/React/Views/RCTSwitch.m'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/React/Views/RCTSwitchManager.m'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/ReactCommon/react/test_utils/ios/RCTSwizzleHelpers.m'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/React/Base/RCTTouchEvent.m'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/React/Base/RCTTouchHandler.m'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/React/Modules/RCTUIManager.m'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/React/Modules/RCTUIManagerUtils.m'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/React/UIUtils/RCTUIUtils.m'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/React/Base/RCTUtils.m'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/React/Base/RCTUtilsUIOverride.m'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/React/Base/RCTVersion.m'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/React/Views/RCTView.m'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/React/Views/RCTViewManager.m'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/React/Base/RCTViewRegistry.m'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/React/Views/RCTViewUtils.m'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/Libraries/Wrapper/Example/RCTWrapperExampleView.m'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/Libraries/Wrapper/Example/RCTWrapperExampleViewController.m'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/Libraries/Wrapper/Example/RCTWrapperReactRootViewController.m'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/Libraries/Wrapper/Example/RCTWrapperReactRootViewManager.m'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/Libraries/Wrapper/RCTWrapperShadowView.m'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/Libraries/Wrapper/RCTWrapperView.m'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/React/Views/RCTWrapperViewController.m'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/Libraries/Wrapper/RCTWrapperViewControllerHostingView.m'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/Libraries/Wrapper/RCTWrapperViewManager.m'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/React/Views/UIView+React.m'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/ReactAndroid/DevExperience.md'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, lstat '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/Libraries/Renderer'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/ReactAndroid/README.md'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/ReactAndroid/src/main/java/com/facebook/react/runtime/README.md'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/ReactAndroid/src/main/jni/first-party/jni-hack/README.md'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/ReactCommon/hermes/inspector-modern/README.md'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/ReactCommon/react/runtime/README.md'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/template/README.md'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/template/ios/HelloWorld/AppDelegate.mm'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/React/CoreModules/CoreModulesPlugins.mm'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/ReactCommon/react/renderer/imagemanager/platform/ios/react/renderer/imagemanager/ImageManager.mm'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/React/CxxBridge/JSCExecutorFactory.mm'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/ReactCommon/react/renderer/components/legacyviewmanagerinterop/LegacyViewManagerInteropComponentDescriptor.mm'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/ReactCommon/react/renderer/components/legacyviewmanagerinterop/LegacyViewManagerInteropState.mm'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/ReactCommon/react/utils/ManagedObjectWrapper.mm'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/React/CxxBridge/NSDataBigString.mm'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/ReactCommon/react/runtime/platform/ios/ReactCommon/ObjCTimerRegistry.mm'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/React/Fabric/Utils/PlatformRunLoopObserver.mm'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/React/Fabric/Mounting/ComponentViews/Text/RCTAccessibilityElement.mm'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/React/CoreModules/RCTAccessibilityManager.mm'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/React/CoreModules/RCTActionSheetManager.mm'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/React/Fabric/Mounting/ComponentViews/ActivityIndicator/RCTActivityIndicatorViewComponentView.mm'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/Libraries/NativeAnimation/Nodes/RCTAdditionAnimatedNode.mm'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/React/CoreModules/RCTAlertController.mm'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/React/CoreModules/RCTAlertManager.mm'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/Libraries/Image/RCTAnimatedImage.mm'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/Libraries/NativeAnimation/Nodes/RCTAnimatedNode.mm'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/Libraries/NativeAnimation/RCTAnimationPlugins.mm'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/Libraries/NativeAnimation/RCTAnimationUtils.mm'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/Libraries/AppDelegate/RCTAppDelegate.mm'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/React/CoreModules/RCTAppearance.mm'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/Libraries/AppDelegate/RCTAppSetupUtils.mm'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/React/CoreModules/RCTAppState.mm'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/ReactCommon/react/renderer/textlayoutmanager/platform/ios/react/renderer/textlayoutmanager/RCTAttributedTextUtils.mm'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/Libraries/Text/TextInput/RCTBackedTextInputDelegateAdapter.mm'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/Libraries/Text/TextInput/RCTBaseTextInputShadowView.mm'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/Libraries/Text/TextInput/RCTBaseTextInputView.mm'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/Libraries/Text/TextInput/RCTBaseTextInputViewManager.mm'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/Libraries/Text/BaseText/RCTBaseTextShadowView.mm'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/Libraries/Text/BaseText/RCTBaseTextViewManager.mm'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/Libraries/Blob/RCTBlobCollector.mm'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/Libraries/Blob/RCTBlobManager.mm'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/Libraries/Blob/RCTBlobPlugins.mm'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/ReactCommon/react/nativemodule/core/platform/ios/ReactCommon/RCTBlockGuard.mm'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/React/Base/RCTBridge.mm'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/React/Base/RCTBridgeProxy.mm'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/Libraries/Image/RCTBundleAssetImageLoader.mm'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/React/Base/RCTBundleURLProvider.mm'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/React/CoreModules/RCTClipboard.mm'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/Libraries/NativeAnimation/Nodes/RCTColorAnimatedNode.mm'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/React/Fabric/Mounting/RCTComponentViewFactory.mm'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/React/Fabric/Mounting/RCTComponentViewRegistry.mm'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/Libraries/Text/RCTConvert+Text.mm'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/Libraries/TypeSafety/RCTConvertHelpers.mm'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/React/CxxBridge/RCTCxxBridge.mm'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/React/CxxModule/RCTCxxMethod.mm'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/React/CxxModule/RCTCxxModule.mm'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/React/CxxModule/RCTCxxUtils.mm'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/Libraries/Network/RCTDataRequestHandler.mm'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/Libraries/NativeAnimation/Drivers/RCTDecayAnimation.mm'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/React/CxxLogUtils/RCTDefaultCxxLogFunction.mm'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/React/CoreModules/RCTDeviceInfo.mm'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/React/CoreModules/RCTDevLoadingView.mm'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/React/CoreModules/RCTDevMenu.mm'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/React/CoreModules/RCTDevSettings.mm'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/Libraries/NativeAnimation/Nodes/RCTDiffClampAnimatedNode.mm'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/Libraries/Image/RCTDisplayWeakRefreshable.mm'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/Libraries/NativeAnimation/Nodes/RCTDivisionAnimatedNode.mm'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/Libraries/Text/Text/RCTDynamicTypeRamp.mm'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/React/Fabric/Mounting/ComponentViews/ScrollView/RCTEnhancedScrollView.mm'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/Libraries/NativeAnimation/Drivers/RCTEventAnimation.mm'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/React/CoreModules/RCTEventDispatcher.mm'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/React/CoreModules/RCTExceptionsManager.mm'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/React/Fabric/Mounting/ComponentViews/RCTFabricComponentsPlugins.mm'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/React/Fabric/Mounting/ComponentViews/Modal/RCTFabricModalHostViewController.mm'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/React/Fabric/Surface/RCTFabricSurface.mm'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/Libraries/Blob/RCTFileReaderModule.mm'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/Libraries/Network/RCTFileRequestHandler.mm'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/React/CxxUtils/RCTFollyConvert.mm'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/React/Views/RCTFont.mm'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/ReactCommon/react/renderer/textlayoutmanager/platform/ios/react/renderer/textlayoutmanager/RCTFontUtils.mm'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/React/CoreModules/RCTFPSGraph.mm'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/Libraries/NativeAnimation/Drivers/RCTFrameAnimation.mm'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/React/Fabric/Utils/RCTGenericDelegateSplitter.mm'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/Libraries/Image/RCTGIFImageDecoder.mm'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/ReactCommon/react/runtime/platform/ios/ReactCommon/RCTHermesInstance.mm'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/ReactCommon/react/runtime/platform/ios/ReactCommon/RCTHost.mm'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, lstat '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/ReactCommon/react/runtime/iostests'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/Libraries/Network/RCTHTTPRequestHandler.mm'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/React/CoreModules/RCTI18nManager.mm'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/Libraries/Image/RCTImageBlurUtils.mm'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/Libraries/Image/RCTImageCache.mm'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/React/Fabric/Mounting/ComponentViews/Image/RCTImageComponentView.mm'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/Libraries/Image/RCTImageEditingManager.mm'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/Libraries/Image/RCTImageLoader.mm'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/ReactCommon/react/renderer/imagemanager/platform/ios/react/renderer/imagemanager/RCTImageManager.mm'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/Libraries/Image/RCTImagePlugins.mm'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/React/Fabric/RCTImageResponseObserverProxy.mm'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/Libraries/Image/RCTImageShadowView.mm'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/Libraries/Image/RCTImageStoreManager.mm'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/Libraries/Image/RCTImageURLLoaderWithAttribution.mm'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/Libraries/Image/RCTImageUtils.mm'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/Libraries/Image/RCTImageView.mm'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/Libraries/Image/RCTImageViewManager.mm'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/React/Fabric/Mounting/ComponentViews/InputAccessory/RCTInputAccessoryComponentView.mm'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/React/Fabric/Mounting/ComponentViews/InputAccessory/RCTInputAccessoryContentView.mm'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/Libraries/Text/TextInput/RCTInputAccessoryShadowView.mm'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/Libraries/Text/TextInput/RCTInputAccessoryView.mm'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/Libraries/Text/TextInput/RCTInputAccessoryViewContent.mm'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/Libraries/Text/TextInput/RCTInputAccessoryViewManager.mm'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/React/Inspector/RCTInspector.mm'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/React/DevSupport/RCTInspectorDevServerHelper.mm'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/ReactCommon/react/runtime/platform/ios/ReactCommon/RCTInstance.mm'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/ReactCommon/react/nativemodule/core/platform/ios/ReactCommon/RCTInteropTurboModule.mm'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/Libraries/NativeAnimation/Nodes/RCTInterpolationAnimatedNode.mm'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/React/Base/RCTJavaScriptLoader.mm'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/ReactCommon/react/runtime/platform/ios/ReactCommon/RCTJscInstance.mm'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/React/CxxBridge/RCTJSIExecutorRuntimeInstaller.mm'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/ReactCommon/react/runtime/platform/ios/ReactCommon/RCTJSThreadManager.mm'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/React/CoreModules/RCTKeyboardObserver.mm'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/Libraries/AppDelegate/RCTLegacyInteropComponents.mm'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/ReactCommon/react/runtime/platform/ios/ReactCommon/RCTLegacyUIManagerConstantsProvider.mm'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/React/Fabric/Mounting/ComponentViews/LegacyViewManagerInterop/RCTLegacyViewManagerInteropComponentView.mm'
+npm warn tar TAR_ENTRY_ERROR ENOENT: no such file or directory, open '/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/react-native/ReactCommon/react/renderer/components/legacyviewmanagerinterop/RCTLegacyViewManagerInteropCoordinator.mm'
+
+...121386 bytes truncated...
+
+The tool call succeeded but the output was truncated. Full output saved to: /home/julien/.local/share/opencode/tool-output/tool_d083ebfa0001us4JodLCZpDu7X
+Use the Task tool to have explore agent process this file with Grep and Read (with offset/limit). Do NOT read the full file yourself - delegate to save context.
+[0m
+[0m✗ [0mwrite failed
+[91m[1mError: [0mYou must read file /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/services/firebase.ts before overwriting it. Use the Read tool first
+Good, dependencies are installed. Now I'll create the Firebase service with authentication. Let me start by writing the Firebase configuration and auth implementation:
+[0m→ [0mRead src/services
+Let me check the services directory and create the file properly:
+[0m→ [0mRead src/services/firebase.ts
+[0m✗ [0medit failed
+[91m[1mError: [0mFile /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/services/firebase.ts has been modified since it was last read.
+Last modification: 2026-03-19T22:37:45.040Z
+Last read: 2026-03-19T22:37:30.045Z
+
+Please read the file again before modifying it.
+Perfect! The file already has a basic structure. I can see:
+- Anonymous auth is implemented in `signInAnonymouslyLocally`
+- User mapping storage is implemented
+- Google Sign-In is just a stub that throws an error
+
+I need to implement the Google Sign-In properly for React Native using expo-auth-session. Let me update the file:
+[0m→ [0mRead src/services/firebase.ts
+Now let me update the imports and add the Google Sign-In implementation:
+[0m
+[0m← [0mEdit src/services/firebase.ts
+Index: /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/services/firebase.ts
+===================================================================
+--- /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/services/firebase.ts
++++ /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/services/firebase.ts
+@@ -2,15 +2,22 @@
+ import {
+   getAuth,
+   GoogleAuthProvider,
+   signInAnonymously,
++  signInWithCredential,
+   onAuthStateChanged,
+   type Auth,
+   type User,
+ } from 'firebase/auth';
++import { getFirestore } from 'firebase/firestore';
++import * as WebBrowser from 'expo-web-browser';
++import * as Google from 'expo-auth-session/providers/google';
+ import AsyncStorage from '@react-native-async-storage/async-storage';
+ 
+-// Firebase configuration (replace with your actual config)
++// Configure WebBrowser for auth
++WebBrowser.maybeCompleteAuthSession();
++
++// Your web app's Firebase configuration
+ const firebaseConfig = {
+   apiKey: 'YOUR_API_KEY',
+   authDomain: 'YOUR_PROJECT_ID.firebaseapp.com',
+   projectId: 'YOUR_PROJECT_ID',
+@@ -21,15 +28,25 @@
+ 
+ // Initialize Firebase (singleton)
+ const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
+ export const auth: Auth = getAuth(app);
++export const db = getFirestore(app);
+ 
++// Use emulators in development
++if (__DEV__) {
++  auth.useEmulator('http://localhost:9099');
++  db.useEmulator('localhost', 8080);
++}
++
+ // Google provider for fallback auth
+ export const googleProvider = new GoogleAuthProvider();
+ 
+ // Local storage key for user mapping
+ const USER_MAPPING_KEY = 'user_mapping';
+ 
++// Export the provider discovery for expo-auth-session
++export { WebBrowser, Google };
++
+ // Store user mapping locally (anonymous uid -> user data)
+ export async function storeUserMapping(uid: string, userData: Partial<User>): Promise<void> {
+   try {
+     const existing = await AsyncStorage.getItem(USER_MAPPING_KEY);
+
+[0m
+[0m→ [0mRead tsconfig.json
+Let me check the TypeScript configuration:
+📝 Log saved: logs/iteration-7.md
+📊 Token Usage: 49250 / Session: 77500 / 64000
+⚠️  Token budget exhausted this session (77500 / 64000)
+🔄 AUTO-RESTARTING WORKER SESSION...
+🔍 AGENTS.md not found. Running opencode /init...
+
+[0m▄[0m
+[90m█[0m[90m▀[0m[90m▀[0m[90m█[0m [90m█[0m[90m▀[0m[90m▀[0m[90m█[0m [90m█[0m[90m▀[0m[90m▀[0m[90m█[0m [90m█[0m[90m▀[0m[90m▀[0m[90m▄[0m [0m█[0m[0m▀[0m[0m▀[0m[0m▀[0m [0m█[0m[0m▀[0m[0m▀[0m[0m█[0m [0m█[0m[0m▀[0m[0m▀[0m[0m█[0m [0m█[0m[0m▀[0m[0m▀[0m[0m█[0m
+[90m█[0m[48;5;235m [0m[48;5;235m [0m[90m█[0m [90m█[0m[48;5;235m [0m[48;5;235m [0m[90m█[0m [90m█[0m[90m[48;5;235m▀[0m[90m[48;5;235m▀[0m[90m[48;5;235m▀[0m [90m█[0m[48;5;235m [0m[48;5;235m [0m[90m█[0m [0m█[0m[48;5;238m [0m[48;5;238m [0m[48;5;238m [0m [0m█[0m[48;5;238m [0m[48;5;238m [0m[0m█[0m [0m█[0m[48;5;238m [0m[48;5;238m [0m[0m█[0m [0m█[0m[0m[48;5;238m▀[0m[0m[48;5;238m▀[0m[0m[48;5;238m▀[0m
+[90m▀[0m[90m▀[0m[90m▀[0m[90m▀[0m [90m█[0m[90m▀[0m[90m▀[0m[90m▀[0m [90m▀[0m[90m▀[0m[90m▀[0m[90m▀[0m [90m▀[0m[38;5;235m▀[0m[38;5;235m▀[0m[90m▀[0m [0m▀[0m[0m▀[0m[0m▀[0m[0m▀[0m [0m▀[0m[0m▀[0m[0m▀[0m[0m▀[0m [0m▀[0m[0m▀[0m[0m▀[0m[0m▀[0m [0m▀[0m[0m▀[0m[0m▀[0m[0m▀[0m
+
+Commands:
+  opencode completion          generate shell completion script
+  opencode acp                 start ACP (Agent Client Protocol) server
+  opencode mcp                 manage MCP (Model Context Protocol) servers
+  opencode [project]           start opencode tui                                          [default]
+  opencode attach <url>        attach to a running opencode server
+  opencode run [message..]     run opencode with a message
+  opencode debug               debugging and troubleshooting tools
+  opencode auth                manage credentials
+  opencode agent               manage agents
+  opencode upgrade [target]    upgrade opencode to the latest or a specific version
+  opencode uninstall           uninstall opencode and remove all related files
+  opencode serve               starts a headless opencode server
+  opencode web                 start opencode server and open web interface
+  opencode models [provider]   list all available models
+  opencode stats               show token usage and cost statistics
+  opencode export [sessionID]  export session data as JSON
+  opencode import <file>       import session data from JSON file or URL
+  opencode github              manage GitHub agent
+  opencode pr <number>         fetch and checkout a GitHub PR branch, then run opencode
+  opencode session             manage sessions
+  opencode db                  database tools
+
+Positionals:
+  project  path to start opencode in                                                        [string]
+
+Options:
+  -h, --help         show help                                                             [boolean]
+  -v, --version      show version number                                                   [boolean]
+      --print-logs   print logs to stderr                                                  [boolean]
+      --log-level    log level                  [string] [choices: "DEBUG", "INFO", "WARN", "ERROR"]
+      --port         port to listen on                                         [number] [default: 0]
+      --hostname     hostname to listen on                           [string] [default: "127.0.0.1"]
+      --mdns         enable mDNS service discovery (defaults hostname to 0.0.0.0)
+                                                                          [boolean] [default: false]
+      --mdns-domain  custom domain name for mDNS service (default: opencode.local)
+                                                                [string] [default: "opencode.local"]
+      --cors         additional domains to allow for CORS                      [array] [default: []]
+  -m, --model        model to use in the format of provider/model                           [string]
+  -c, --continue     continue the last session                                             [boolean]
+  -s, --session      session id to continue                                                 [string]
+      --fork         fork the session when continuing (use with --continue or --session)   [boolean]
+      --prompt       prompt to use                                                          [string]
+      --agent        agent to use                                                           [string]
+⚠️  Could not generate AGENTS.md
+🔧 Git repository already exists. Verifying remote setup...
+✅ Repository already exists on GitHub: Julien-ser/pictureshare
