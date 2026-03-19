@@ -434,3 +434,22 @@ Now I'll implement the participant list feature. Based on the codebase, I'll:
 3. Create a ParticipantsList component with avatar display
 
 Let me start by creating the participant service:
+[0m
+[0m← [0mWrite src/services/participantService.ts
+Wrote file successfully.
+[0m
+Now let me create a component to display participant list. I'll place it in components/ParticipantsList.tsx:
+[0m← [0mWrite src/components/ParticipantsList.tsx
+Wrote file successfully.
+
+LSP errors detected in this file, please fix:
+<diagnostics file="/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/components/ParticipantsList.tsx">
+ERROR [95:29] Property 'emptyText' does not exist on type '{ list: { padding: number; }; listHeader: { fontSize: number; color: string; marginBottom: number; paddingHorizontal: number; }; participantItem: { flexDirection: "row"; alignItems: "center"; backgroundColor: string; ... 4 more ...; borderColor: string; }; ... 19 more ...; emptyMessage: { ...; }; }'.
+</diagnostics>
+[0m
+Let me fix the missing style and improve the component:
+[0m← [0mEdit src/components/ParticipantsList.tsx
+Index: /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/components/ParticipantsList.tsx
+===================================================================
+--- /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/components/ParticipantsList.tsx
++++ /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/components/ParticipantsList.tsx
