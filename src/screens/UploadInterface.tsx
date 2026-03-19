@@ -159,12 +159,13 @@ const UploadInterface: React.FC<UploadInterfaceProps> = ({ eventId }) => {
             'Upload Failed',
             'Could not upload the photo and failed to save for retry. Please try again.'
           );
-          removePendingPhoto(photoId);
+          // Keep pending photo visible so user knows upload state
+          // removePendingPhoto(photoId); // Removed - keep pending to show failure state
         }
       } else {
         // This shouldn't happen as we check isOnline above, but handle it
         Alert.alert('Upload Failed', 'Could not upload the photo. Please try again.');
-        removePendingPhoto(photoId);
+        // removePendingPhoto(photoId); // Removed - keep pending
       }
 
       setSelectedImage(null);

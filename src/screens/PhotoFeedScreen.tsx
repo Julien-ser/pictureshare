@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import {
   View,
   Text,
@@ -14,6 +14,8 @@ import { storage } from '../services/firebase';
 import { usePhotos } from '../contexts/PhotoContext';
 import { useEvent } from '../contexts/EventContext';
 import { useNetwork } from '../contexts/NetworkContext';
+import { useAuth } from '../contexts/AuthContext';
+import { canDeletePhoto, deletePhotoWithPermission } from '../services/photoService';
 import type { Photo } from '../types';
 
 interface PhotoFeedScreenProps {
@@ -25,6 +27,7 @@ interface PhotoWithUri extends Photo {
 }
 
 const PhotoFeedScreen: React.FC<PhotoFeedScreenProps> = ({ eventId: propEventId }) => {
+  const { user } = useAuth();
   const { currentEvent } = useEvent();
   const {
     photos: confirmedPhotos,
@@ -38,8 +41,15 @@ const PhotoFeedScreen: React.FC<PhotoFeedScreenProps> = ({ eventId: propEventId 
   const { isOnline, pendingUploads } = useNetwork();
   const effectiveEventId = propEventId || currentEvent?.id;
 
+  // Set of pending photo IDs for quick lookup
+  const pendingIds = useMemo(() => new Set(pendingPhotos.map((p) => p.id)), [pendingPhotos]);
+
   // Map to cache URIs for confirmed photos
   const [photoUrisMap, setPhotoUrisMap] = useState<Map<string, string>>(new Map());
+
+  // Track delete permissions: photoId -> boolean
+  const [deletePermissions, setDeletePermissions] = useState<Map<string, boolean>>(new Map());
+  const [loadingPermissions, setLoadingPermissions] = useState<Set<string>>(new Set());
 
   // Fetch URIs for newly added confirmed photos
   useEffect(() => {
@@ -74,6 +84,52 @@ const PhotoFeedScreen: React.FC<PhotoFeedScreenProps> = ({ eventId: propEventId 
     fetchUris();
   }, [confirmedPhotos]);
 
+  // Pre-check delete permissions for confirmed photos when user or event changes
+  useEffect(() => {
+    const checkPermissions = async () => {
+      if (!user || !effectiveEventId) return;
+
+      const newPermissions = new Map<string, boolean>();
+      const newLoading = new Set<string>();
+
+      // Check permissions for all confirmed photos that we haven't checked yet
+      const photosToCheck = confirmedPhotos.filter(
+        (p) => !pendingIds.has(p.id) && deletePermissions.get(p.id) === undefined
+      );
+
+      if (photosToCheck.length === 0) return;
+
+      setLoadingPermissions((prev) => {
+        const next = new Set(prev);
+        photosToCheck.forEach((p) => next.add(p.id));
+        return next;
+      });
+
+      await Promise.all(
+        photosToCheck.map(async (photo) => {
+          try {
+            const canDelete = await canDeletePhoto(photo.id, user.id, effectiveEventId!);
+            newPermissions.set(photo.id, canDelete);
+          } catch (error) {
+            console.error(`Error checking delete permission for photo ${photo.id}:`, error);
+            newPermissions.set(photo.id, false);
+          } finally {
+            newLoading.delete(photo.id);
+          }
+        })
+      );
+
+      setDeletePermissions((prev) => new Map([...prev, ...newPermissions]));
+      setLoadingPermissions((prev) => {
+        const next = new Set(prev);
+        photosToCheck.forEach((p) => next.delete(p.id));
+        return next;
+      });
+    };
+
+    checkPermissions();
+  }, [user, effectiveEventId, confirmedPhotos, pendingIds, deletePermissions]);
+
   // Build combined photos list with URIs
   const combinedPhotos = useMemo(() => {
     const pendingWithUri: PhotoWithUri[] = pendingPhotos.map((p) => ({
@@ -100,10 +156,56 @@ const PhotoFeedScreen: React.FC<PhotoFeedScreenProps> = ({ eventId: propEventId 
     return combined;
   }, [pendingPhotos, confirmedPhotos, photoUrisMap]);
 
-  const pendingIds = useMemo(() => new Set(pendingPhotos.map((p) => p.id)), [pendingPhotos]);
+  // Handle photo deletion
+  const handleDeletePhoto = useCallback(
+    async (photoId: string, uploaderId: string) => {
+      if (!user || !effectiveEventId) {
+        Alert.alert('Error', 'You must be logged in and in an event to delete photos');
+        return;
+      }
+
+      // Confirm deletion
+      Alert.alert(
+        'Delete Photo',
+        'Are you sure you want to delete this photo? This action cannot be undone.',
+        [
+          { text: 'Cancel', style: 'cancel' },
+          {
+            text: 'Delete',
+            style: 'destructive',
+            onPress: async () => {
+              try {
+                await deletePhotoWithPermission(photoId, effectiveEventId, user.id);
+                Alert.alert('Success', 'Photo deleted successfully');
+                // The real-time listener will update the UI automatically
+              } catch (error) {
+                Alert.alert(
+                  'Error',
+                  error instanceof Error ? error.message : 'Failed to delete photo'
+                );
+              }
+            },
+          },
+        ]
+      );
+    },
+    [user, effectiveEventId]
+  );
+
+  // Check if current user can delete a specific photo
+  const canUserDeletePhoto = useCallback(
+    (photoId: string) => {
+      if (!user) return false;
+      // If still loading permission, default to false
+      if (loadingPermissions.has(photoId)) return false;
+      return deletePermissions.get(photoId) || false;
+    },
+    [user, deletePermissions, loadingPermissions]
+  );
 
   const renderPhoto = ({ item }: { item: PhotoWithUri }) => {
     const isPending = pendingIds.has(item.id);
+    const canDelete = canUserDeletePhoto(item.id);
 
     return (
       <View style={styles.photoCard}>
@@ -146,6 +248,15 @@ const PhotoFeedScreen: React.FC<PhotoFeedScreenProps> = ({ eventId: propEventId 
             <Text style={styles.actionIcon}>💬</Text>
             <Text style={styles.actionText}>Comment</Text>
           </TouchableOpacity>
+          {!isPending && canDelete && (
+            <TouchableOpacity
+              style={[styles.actionButton, styles.deleteButton]}
+              onPress={() => handleDeletePhoto(item.id, item.uploaderId)}
+            >
+              <Text style={[styles.actionIcon, styles.deleteIcon]}>🗑️</Text>
+              <Text style={[styles.actionText, styles.deleteText]}>Delete</Text>
+            </TouchableOpacity>
+          )}
         </View>
       </View>
     );
@@ -301,6 +412,9 @@ const styles = StyleSheet.create({
   actionButton: { flexDirection: 'row', alignItems: 'center', marginRight: 20 },
   actionIcon: { fontSize: 18, marginRight: 5 },
   actionText: { fontSize: 14, color: '#666' },
+  deleteButton: { marginRight: 0 },
+  deleteIcon: { fontSize: 18, marginRight: 5 },
+  deleteText: { fontSize: 14, color: '#FF3B30', fontWeight: '600' },
   loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   loadingText: { marginTop: 15, fontSize: 16, color: '#666' },
   errorContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 40 },
