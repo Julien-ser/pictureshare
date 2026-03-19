@@ -614,3 +614,56 @@ To https://github.com/Julien-ser/pictureshare.git
    8dbf260..d327a6e  main -> main
 [0m
 Perfect! The Expo project is now initialized. Let me run lint to verify code quality:
+[0m$ [0mnpm install 2>&1 | tail -20
+npm warn deprecated @types/react-native@0.73.0: This is a stub types definition. react-native provides its own type definitions, so you do not need this installed.
+npm warn deprecated eslint@8.57.1: This version is no longer supported. Please see https://eslint.org/version-support for other options.
+npm warn deprecated glob@7.1.6: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
+npm warn deprecated glob@7.1.6: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
+npm warn deprecated glob@7.1.6: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
+
+added 1430 packages, and audited 1431 packages in 2m
+
+213 packages are looking for funding
+  run `npm fund` for details
+
+27 vulnerabilities (7 low, 20 high)
+
+To address issues that do not require attention, run:
+  npm audit fix
+
+To address all issues (including breaking changes), run:
+  npm audit fix --force
+
+Run `npm audit` for details.
+[0m
+[0m$ [0mnpm run lint 2>&1 | tail -30
+1:1   error    Definition for rule '@typescript-eslint/no-wrapper-object-types' was not found  @typescript-eslint/no-wrapper-object-types
+  2:64  warning  'Image' is defined but never used                                               @typescript-eslint/no-unused-vars
+
+/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/screens/UploadInterface.tsx
+  1:1   error    Definition for rule '@typescript-eslint/no-empty-object-type' was not found     @typescript-eslint/no-empty-object-type
+  1:1   error    Definition for rule '@typescript-eslint/no-wrapper-object-types' was not found  @typescript-eslint/no-wrapper-object-types
+  9:25  warning  'setSelectedImage' is assigned a value but never used                           @typescript-eslint/no-unused-vars
+
+/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/screens/index.ts
+  1:1  error  Definition for rule '@typescript-eslint/no-empty-object-type' was not found     @typescript-eslint/no-empty-object-type
+  1:1  error  Definition for rule '@typescript-eslint/no-wrapper-object-types' was not found  @typescript-eslint/no-wrapper-object-types
+
+/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/services/index.ts
+  1:1   error  Definition for rule '@typescript-eslint/no-empty-object-type' was not found     @typescript-eslint/no-empty-object-type
+  1:1   error  Definition for rule '@typescript-eslint/no-wrapper-object-types' was not found  @typescript-eslint/no-wrapper-object-types
+  1:1   error  Resolve error: typescript with invalid interface loaded as resolver             import/no-unresolved
+  2:37  error  Unable to resolve path to module './firebase'                                   import/no-unresolved
+
+/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/types/index.ts
+  1:1  error  Definition for rule '@typescript-eslint/no-empty-object-type' was not found     @typescript-eslint/no-empty-object-type
+  1:1  error  Definition for rule '@typescript-eslint/no-wrapper-object-types' was not found  @typescript-eslint/no-wrapper-object-types
+
+/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/utils/index.ts
+  1:1   error  Definition for rule '@typescript-eslint/no-empty-object-type' was not found     @typescript-eslint/no-empty-object-type
+  1:1   error  Definition for rule '@typescript-eslint/no-wrapper-object-types' was not found  @typescript-eslint/no-wrapper-object-types
+  1:1   error  Resolve error: typescript with invalid interface loaded as resolver             import/no-unresolved
+  2:35  error  Unable to resolve path to module './codeGenerator'                              import/no-unresolved
+
+✖ 29 problems (26 errors, 3 warnings)
+[0m
