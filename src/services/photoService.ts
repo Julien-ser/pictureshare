@@ -140,6 +140,7 @@ export async function deletePhoto(
  * @param eventId - Event ID to upload to
  * @param uploaderId - User ID of the uploader
  * @param imageResult - Compressed image result from image picker
+ * @param photoId - Optional pre-generated photo ID for optimistic UI
  * @param onProgress - Optional progress callback (0-100)
  * @returns The saved Photo object
  */
@@ -151,13 +152,14 @@ export async function uploadAndSavePhoto(
     width: number;
     height: number;
   },
+  photoId?: string,
   onProgress?: (progress: number) => void
 ): Promise<Photo> {
-  // Generate unique photo ID
-  const photoId = generatePhotoId();
+  // Use provided photoId or generate a new one
+  const id = photoId || generatePhotoId();
 
   // Upload image to Firebase Storage with progress
-  const storagePath = await uploadPhotoToStorage(eventId, photoId, imageResult.uri, onProgress);
+  const storagePath = await uploadPhotoToStorage(eventId, id, imageResult.uri, onProgress);
 
   // Create photo metadata
   const photo: Omit<Photo, 'id' | 'createdAt'> = {
@@ -174,7 +176,7 @@ export async function uploadAndSavePhoto(
   // Return complete Photo object
   return {
     ...photo,
-    id: photoId,
+    id,
     createdAt: new Date(),
   };
 }

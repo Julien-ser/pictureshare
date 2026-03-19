@@ -27,4 +27,5 @@ export type Photo = {
   createdAt: any;
   width: number;
   height: number;
+  localUri?: string; // Local URI for pending photos (optimistic UI)
 };

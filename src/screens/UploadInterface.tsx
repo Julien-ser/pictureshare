@@ -10,8 +10,9 @@ import {
   Platform,
 } from 'react-native';
 import { pickImage, ImageResult, requestMediaPermissions } from '../utils/imagePicker';
-import { uploadAndSavePhoto } from '../services/photoService';
+import { uploadAndSavePhoto, generatePhotoId } from '../services/photoService';
 import { auth } from '../services/firebase';
+import { usePhotos } from '../contexts/PhotoContext';
 import type { Photo } from '../types';
 
 /**
@@ -23,6 +24,7 @@ interface UploadInterfaceProps {
 }
 
 const UploadInterface: React.FC<UploadInterfaceProps> = ({ eventId }) => {
+  const { addPendingPhoto, removePendingPhoto } = usePhotos();
   const [selectedImage, setSelectedImage] = useState<ImageResult | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
@@ -64,12 +66,28 @@ const UploadInterface: React.FC<UploadInterfaceProps> = ({ eventId }) => {
       return;
     }
 
+    // Generate photo ID and create pending photo for optimistic UI
+    const photoId = generatePhotoId();
+    const pendingPhoto: Photo = {
+      id: photoId,
+      eventId,
+      uploaderId: user.uid,
+      storagePath: `events/${eventId}/photos/${photoId}.jpg`,
+      width: selectedImage.width,
+      height: selectedImage.height,
+      createdAt: new Date(),
+      localUri: selectedImage.uri, // Use local URI for immediate display
+    };
+
+    // Add to pending state (optimistic UI)
+    addPendingPhoto(pendingPhoto);
+
     setIsUploading(true);
     setUploadProgress(0);
 
     try {
-      // Start upload with progress callback
-      await uploadAndSavePhoto(eventId, user.uid, selectedImage, (progress) => {
+      // Start upload with progress callback, passing the photoId for consistency
+      await uploadAndSavePhoto(eventId, user.uid, selectedImage, photoId, (progress) => {
         setUploadProgress(progress);
       });
 
@@ -87,6 +105,8 @@ const UploadInterface: React.FC<UploadInterfaceProps> = ({ eventId }) => {
       ]);
     } catch (error) {
       console.error('Upload error:', error);
+      // Remove pending photo on failure
+      removePendingPhoto(photoId);
       Alert.alert('Upload Failed', 'Could not upload the photo. Please try again.');
       setIsUploading(false);
       setUploadProgress(0);
