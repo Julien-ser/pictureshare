@@ -89,7 +89,8 @@ src/
 **Phase 4: Real-Time Feed & Sync** - In Progress
 
 - [x] Real-time subscription to Firestore photos with onSnapshot listener
-- [x] FlatList rendering with download URL caching
+- [x] FlatList rendering with download URL fetching
+- [x] Event context for managing current event state
 - [ ] Optimistic UI updates after upload
 - [ ] Infinite scroll pagination
 - [ ] Offline-first behavior with local caching

@@ -11,12 +11,14 @@ import {
 } from 'react-native';
 import { Camera, CameraType } from 'expo-camera';
 import { useAuth } from '../contexts/AuthContext';
+import { useEvent } from '../contexts/EventContext';
 import { getEventByCode, joinEvent } from '../services/eventService';
 
 type JoinStatus = 'idle' | 'scanning' | 'loading' | 'success' | 'error';
 
 const EventJoinScreen: React.FC = () => {
   const { user } = useAuth();
+  const { setCurrentEvent } = useEvent();
   const [manualCode, setManualCode] = useState('');
   const [joinStatus, setJoinStatus] = useState<JoinStatus>('idle');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -81,6 +83,7 @@ const EventJoinScreen: React.FC = () => {
       // Check if user is already a participant
       if (event.participants.includes(user.id)) {
         setJoinedEvent({ code: event.code, title: event.title });
+        setCurrentEvent(event); // Set current event in context
         setJoinStatus('success');
         return;
       }
@@ -89,6 +92,7 @@ const EventJoinScreen: React.FC = () => {
       await joinEvent(event.id, user.id);
 
       setJoinedEvent({ code: event.code, title: event.title });
+      setCurrentEvent(event); // Set current event in context
       setJoinStatus('success');
     } catch (error) {
       console.error('Error joining event:', error);

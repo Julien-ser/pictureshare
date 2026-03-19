@@ -32,12 +32,7 @@ function MainNavigator() {
     <SafeAreaView style={styles.container}>
       <StatusBar style="auto" />
       <Text style={styles.text}>Welcome, {user.displayName || 'User'}!</Text>
-      <Text style={styles.subtext}>
-        {currentEvent
-          ? `Viewing: ${currentEvent.title || currentEvent.code}`
-          : 'No active event. Scan QR or create event.'}
-      </Text>
-      <Text style={styles.placeholder}>Event Join Screen would go here</Text>
+      <Text style={styles.subtext}>No active event. Scan QR or create event.</Text>
     </SafeAreaView>
   );
 }

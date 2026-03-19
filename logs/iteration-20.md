@@ -888,3 +888,197 @@ Index: /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/App.tsx
  });
 
 [0m
+Let me fix the logic in App.tsx. The issue is that after checking `if (currentEvent)`, the remaining code knows `currentEvent` is null, so the ternary is unreachable. I'll simplify:
+[0m← [0mEdit App.tsx
+Index: /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/App.tsx
+===================================================================
+--- /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/App.tsx
++++ /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/App.tsx
+@@ -31,14 +31,9 @@
+   return (
+     <SafeAreaView style={styles.container}>
+       <StatusBar style="auto" />
+       <Text style={styles.text}>Welcome, {user.displayName || 'User'}!</Text>
+-      <Text style={styles.subtext}>
+-        {currentEvent
+-          ? `Viewing: ${currentEvent.title || currentEvent.code}`
+-          : 'No active event. Scan QR or create event.'}
+-      </Text>
+-      <Text style={styles.placeholder}>Event Join Screen would go here</Text>
++      <Text style={styles.subtext}>No active event. Scan QR or create event.</Text>
+     </SafeAreaView>
+   );
+ }
+ 
+
+[0m
+[0m# [0mTodos
+[x] Implement real-time photo listener in photoService
+[x] Update PhotoFeedScreen to use real-time listener with eventId prop
+[x] Create simple EventContext for current event tracking
+[x] Update App.tsx to provide EventContext and show PhotoFeedScreen
+[ ] Update EventJoinScreen to set current event
+[ ] Update README.md with current progress
+[ ] Mark task as complete in TASKS.md
+[0m
+Now let me update the todo list and then modify EventJoinScreen to set the current event when joining:
+[0m← [0mEdit src/screens/EventJoinScreen.tsx
+Index: /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/screens/EventJoinScreen.tsx
+===================================================================
+--- /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/screens/EventJoinScreen.tsx
++++ /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/screens/EventJoinScreen.tsx
+@@ -10,8 +10,9 @@
+   ActivityIndicator,
+ } from 'react-native';
+ import { Camera, CameraType } from 'expo-camera';
+ import { useAuth } from '../contexts/AuthContext';
++import { useEvent } from '../contexts/EventContext';
+ import { getEventByCode, joinEvent } from '../services/eventService';
+ 
+ type JoinStatus = 'idle' | 'scanning' | 'loading' | 'success' | 'error';
+ 
+
+[0m
+Let me read the EventJoinScreen to update it properly:
+[0m→ [0mRead src/screens/EventJoinScreen.tsx[90m [limit=100][0m
+Now let me add the setCurrentEvent call to EventJoinScreen. I'll first add the hook:
+[0m
+[0m← [0mEdit src/screens/EventJoinScreen.tsx
+Index: /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/screens/EventJoinScreen.tsx
+===================================================================
+--- /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/screens/EventJoinScreen.tsx
++++ /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/screens/EventJoinScreen.tsx
+@@ -17,8 +17,9 @@
+ type JoinStatus = 'idle' | 'scanning' | 'loading' | 'success' | 'error';
+ 
+ const EventJoinScreen: React.FC = () => {
+   const { user } = useAuth();
++  const { setCurrentEvent } = useEvent();
+   const [manualCode, setManualCode] = useState('');
+   const [joinStatus, setJoinStatus] = useState<JoinStatus>('idle');
+   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+   const [joinedEvent, setJoinedEvent] = useState<{ code: string; title?: string } | null>(null);
+
+[0m
+Now let me read lines 63-99 to see the joinEventByCode function:
+[0m→ [0mRead src/screens/EventJoinScreen.tsx[90m [limit=40, offset=63][0m
+Now let me update the joinEventByCode to set current event on success:
+[0m
+[0m← [0mEdit src/screens/EventJoinScreen.tsx
+Index: /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/screens/EventJoinScreen.tsx
+===================================================================
+--- /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/screens/EventJoinScreen.tsx
++++ /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/screens/EventJoinScreen.tsx
+@@ -82,16 +82,18 @@
+ 
+   // Check if user is already a participant
+   if (event.participants.includes(user.id)) {
+     setJoinedEvent({ code: event.code, title: event.title });
++    setCurrentEvent(event); // Set current event in context
+     setJoinStatus('success');
+     return;
+   }
+ 
+   // Join the event
+   await joinEvent(event.id, user.id);
+ 
+   setJoinedEvent({ code: event.code, title: event.title });
++  setCurrentEvent(event); // Set current event in context
+   setJoinStatus('success');
+ } catch (error) {
+   console.error('Error joining event:', error);
+   setErrorMessage('Failed to join event. Please try again.');
+
+[0m
+[0m# [0mTodos
+[x] Implement real-time photo listener in photoService
+[x] Update PhotoFeedScreen to use real-time listener with eventId prop
+[x] Create simple EventContext for current event tracking
+[x] Update App.tsx to provide EventContext and show PhotoFeedScreen
+[x] Update EventJoinScreen to set current event
+[ ] Update README.md with current progress
+[ ] Mark task as complete in TASKS.md
+[0m
+Excellent! Now let me mark the task as complete in TASKS.md and update README.md:
+[0m→ [0mRead README.md
+Now let me update README.md:
+[0m
+[0m← [0mEdit README.md
+Index: /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/README.md
+===================================================================
+--- /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/README.md
++++ /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/README.md
+@@ -88,9 +88,10 @@
+ 
+ **Phase 4: Real-Time Feed & Sync** - In Progress
+ 
+ - [x] Real-time subscription to Firestore photos with onSnapshot listener
+-- [x] FlatList rendering with download URL caching
++- [x] FlatList rendering with download URL fetching
++- [x] Event context for managing current event state
+ - [ ] Optimistic UI updates after upload
+ - [ ] Infinite scroll pagination
+ - [ ] Offline-first behavior with local caching
+ 
+
+[0m
+```
+
+## TASKS.md After Iteration
+
+```markdown
+# pictureshare
+
+**Mission:** App for event photo sharing
+All participants scan a written code and pictures they sent will be accessible to all in da group n vice versa
+
+## Phase 1: Planning & Setup
+
+- [x] Choose tech stack: React Native (Expo), Firebase (Auth/Firestore/Storage), react-native-camera, qrcode library; document in ADR
+- [x] Initialize Expo project with TypeScript, configure ESLint/Prettier, and set up folder structure: components/, screens/, services/, utils/
+- [x] Create low-fidelity wireframes for: Event Join (QR scanner), Photo Feed, Upload Interface, Profile Screen
+- [x] Set up Firebase project with security rules baseline, initialize local emulators for development
+
+## Phase 2: Authentication & Event Code System
+
+- [x] Implement Firebase Anonymous Auth + Google Sign-In as fallback; store user mapping locally
+- [x] Build event creation screen: generates 6-digit alphanumeric code, optional time/visibility settings
+- [x] Integrate `react-native-qrcode-svg` to display event QR code for sharing; encode deep link with event ID
+- [x] Develop QR scanner screen using `expo-camera`; validate code against Firestore and join user to event document's participants array
+
+## Phase 3: Photo Capture, Compression & Upload
+
+- [x] Build camera/gallery picker with `expo-image-picker`; request permissions and handle denials with explanatory UI
+- [x] Add image compression pipeline: use `expo-image-manipulator` to resize to ≤1920px, compress to 80% quality
+- [x] Implement upload service: upload compressed image to Firebase Storage path `/events/{eventId}/photos/{photoId}.jpg`
+- [x] Save photo metadata to Firestore collection `photos` with fields: eventId, uploaderId, storagePath, createdAt, thumbnailPath
+
+## Phase 4: Real-Time Feed & Sync
+
+- [x] Subscribe to Firestore `photos` collection query `where eventId == current` with real-time listener; render in FlatList
+- [ ] Implement optimistic UI: add photo to feed immediately after upload, mark pending, finalize on server confirmation
+- [ ] Build infinite scroll pagination using Firestore cursor; load 20 initial photos, fetch more on scroll
+- [ ] Add offline-first behavior: cache photos locally with `expo-file-system`; retry failed uploads when back online
+
+## Phase 5: Group Permissions & Interactions
+
+- [ ] Enable deletion: only photo owner or event creator can delete; remove from Storage and Firestore
+- [ ] Add likes: create `likes` subcollection under each photo; toggle like on press; update aggregated like count
+- [ ] Create lightweight comments: allow short text on photos; store in `comments` subcollection; real-time updates
+- [ ] Show participant list per event with avatars (from Google Auth) and photo count; differentiate current user
+
+## Phase 6: Testing, Polish & Launch
+
+- [ ] Write unit tests for utilities (code generation, image compression) and service wrappers using Jest
+- [ ] Create integration tests with Firebase Emulators: test event join flow, upload, and real-time feed
+- [ ] Perform closed beta: distribute via Expo Go, collect feedback on UX and performance
+- [ ] Deploy to app stores: configure EAS build, submit to Apple TestFlight and Google Play Internal; monitor Firebase Crashlytics
+      </parameter>
+      <parameter=filePath>
+      /home/julien/Desktop/Free-Wiggum-opencode/pictureshare_TASKS.md
+      </parameter>
+      </function>
+      </tool_call>
+```
+
+**Completed at:** Thu Mar 19 07:11:39 PM EDT 2026
