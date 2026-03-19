@@ -55,7 +55,7 @@ async function cacheImageLocally(originalUri: string, itemId: string): Promise<s
  */
 export async function getOfflineQueue(): Promise<OfflineQueueItem[]> {
   try {
-    const queueJson = await AsyncStorage.getItem(OFFFLINE_QUEUE_KEY);
+    const queueJson = await AsyncStorage.getItem(OFFLINE_QUEUE_KEY);
     return queueJson ? JSON.parse(queueJson) : [];
   } catch (error) {
     console.error('Error reading offline queue:', error);
@@ -85,7 +85,7 @@ export async function addToOfflineQueue(
   }
 
   queue.push(fullItem);
-  await AsyncStorage.setItem(OFFFLINE_QUEUE_KEY, JSON.stringify(queue));
+  await AsyncStorage.setItem(OFFLINE_QUEUE_KEY, JSON.stringify(queue));
 }
 
 /**
@@ -94,7 +94,7 @@ export async function addToOfflineQueue(
 export async function removeFromOfflineQueue(itemId: string): Promise<void> {
   const queue = await getOfflineQueue();
   const filtered = queue.filter((item) => item.id !== itemId);
-  await AsyncStorage.setItem(OFFFLINE_QUEUE_KEY, JSON.stringify(filtered));
+  await AsyncStorage.setItem(OFFLINE_QUEUE_KEY, JSON.stringify(filtered));
 }
 
 /**
@@ -109,7 +109,7 @@ async function updateItemRetry(itemId: string, error?: string): Promise<void> {
     if (error) {
       item.error = error;
     }
-    await AsyncStorage.setItem(OFFFLINE_QUEUE_KEY, JSON.stringify(queue));
+    await AsyncStorage.setItem(OFFLINE_QUEUE_KEY, JSON.stringify(queue));
   }
 }
 
@@ -117,7 +117,7 @@ async function updateItemRetry(itemId: string, error?: string): Promise<void> {
  * Clear the entire offline queue (use with caution)
  */
 export async function clearOfflineQueue(): Promise<void> {
-  await AsyncStorage.removeItem(OFFFLINE_QUEUE_KEY);
+  await AsyncStorage.removeItem(OFFLINE_QUEUE_KEY);
 }
 
 /**

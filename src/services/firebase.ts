@@ -8,7 +8,7 @@ import {
   type Auth,
   type User as FirebaseUser,
 } from 'firebase/auth';
-import { getFirestore, connectFirestoreEmulator } from 'firebase/firestore';
+import { getFirestore, connectFirestoreEmulator, doc, setDoc, Timestamp } from 'firebase/firestore';
 import { getStorage, connectStorageEmulator, ref, type FirebaseStorage } from 'firebase/storage';
 import { connectAuthEmulator } from 'firebase/auth';
 import * as WebBrowser from 'expo-web-browser';
@@ -98,6 +98,16 @@ export async function signInAnonymouslyLocally(): Promise<User> {
   // Store minimal user info
   await storeUserMapping(appUser);
 
+  // Ensure user profile exists in Firestore
+  const userRef = doc(db, 'users', appUser.id);
+  await setDoc(userRef, {
+    id: appUser.id,
+    email: appUser.email || null,
+    displayName: appUser.displayName || null,
+    photoURL: appUser.photoURL || null,
+    updatedAt: Timestamp.now(),
+  });
+
   return appUser;
 }
 
@@ -145,6 +155,16 @@ export async function signInWithGoogle(): Promise<User> {
 
     // Store local user mapping
     await storeUserMapping(appUser);
+
+    // Ensure user profile exists in Firestore
+    const userRef = doc(db, 'users', appUser.id);
+    await setDoc(userRef, {
+      id: appUser.id,
+      email: appUser.email || null,
+      displayName: appUser.displayName || null,
+      photoURL: appUser.photoURL || null,
+      updatedAt: Timestamp.now(),
+    });
 
     return appUser;
   } catch (error) {
