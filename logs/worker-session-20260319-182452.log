@@ -39,3 +39,14 @@ generic
 [0m✱ [0mGlob "build.gradle"[90m 0 matches[0m
 [0m✱ [0mGlob "Dockerfile"[90m 0 matches[0m
 [0m→ [0mRead TASKS.md
+[0m
+[0m$ [0mls -la .github/
+total 12
+drwxr-xr-x 3 julien julien 4096 Mar 19 18:24 .
+drwxr-xr-x 5 julien julien 4096 Mar 19 18:25 ..
+drwxr-xr-x 2 julien julien 4096 Mar 19 18:24 workflows
+[0m
+[0m✱ [0mGlob "**/*.py"[90m 0 matches[0m
+[0m→ [0mRead README.md
+[0m✱ [0mGlob "**/*.js"[90m 0 matches[0m
+[0m✱ [0mGlob "**/*.ts"[90m 0 matches[0m
