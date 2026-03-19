@@ -502,3 +502,158 @@ Index: /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/compo
          <QRCode value={deepLink} size={size} color="black" backgroundColor="white" quietZone={10} />
 
 [0m
+[0m✗ [0medit failed
+[91m[1mError: [0mFile /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/screens/EventCreationScreen.tsx has been modified since it was last read.
+Last modification: 2026-03-19T22:50:41.447Z
+Last read: 2026-03-19T22:50:06.752Z
+
+Please read the file again before modifying it.
+Let me re-read the file:
+[0m→ [0mRead src/screens/EventCreationScreen.tsx
+Great! I can see the EventCreationScreen already has the QR code integration code. It appears the previous iteration already added it. Let me verify the deep link implementation in QRCodeDisplay after my edit: it now uses eventId when available. That's the key requirement.
+
+Now I need to:
+1. Mark the task as complete in TASKS.md
+2. Update README.md to reflect the feature is complete
+3. Commit and push
+
+Let me update TASKS.md:
+[0m
+[0m← [0mEdit TASKS.md
+Index: /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/TASKS.md
+===================================================================
+--- /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/TASKS.md
++++ /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/TASKS.md
+@@ -13,9 +13,9 @@
+ ## Phase 2: Authentication & Event Code System
+ 
+ - [x] Implement Firebase Anonymous Auth + Google Sign-In as fallback; store user mapping locally
+ - [x] Build event creation screen: generates 6-digit alphanumeric code, optional time/visibility settings
+-- [ ] Integrate `react-native-qrcode-svg` to display event QR code for sharing; encode deep link with event ID
++- [x] Integrate `react-native-qrcode-svg` to display event QR code for sharing; encode deep link with event ID
+ - [ ] Develop QR scanner screen using `expo-camera`; validate code against Firestore and join user to event document's participants array
+ 
+ ## Phase 3: Photo Capture, Compression & Upload
+ 
+
+[0m
+Now update README.md to mark the feature as complete:
+[0m→ [0mRead README.md[90m [limit=15, offset=85][0m
+[0m
+[0m← [0mEdit README.md
+Index: /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/README.md
+===================================================================
+--- /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/README.md
++++ /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/README.md
+@@ -90,9 +90,9 @@
+ 
+ - [x] Firebase Anonymous Auth + Google Sign-In (fallback)
+ - [x] User mapping stored locally
+ - [x] Event creation screen with 6-digit code generation, time/visibility settings
+-- [ ] QR code display for event sharing
++- [x] QR code display for event sharing (deep link with event ID)
+ - [ ] QR scanner integration
+ 
+ See [TASKS.md](./TASKS.md) for full roadmap.
+ 
+
+[0m
+Let me verify if the CI workflow was already set up. The instructions say Task 0 (CI setup) must be done before other tasks. Let me check:
+[0m✱ [0mGlob ".github/workflows/*.yml"[90m 5 matches[0m
+Good, the CI workflows exist. Now let's commit the changes I made:
+
+1. Updated QRCodeDisplay to use eventId deep link
+2. Marked task as complete in TASKS.md
+3. Updated README.md
+
+Let me verify what files changed and commit:
+[0m
+[0m$ [0mgit status
+On branch main
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+	modified:   README.md
+	modified:   TASKS.md
+	modified:   app.json
+	modified:   logs/iteration-11.md
+	modified:   logs/iteration-13.md
+
+no changes added to commit (use "git add" and/or "git commit -a")
+[0m
+Let me check if the QRCodeDisplay.tsx changes are there:
+[0m→ [0mRead src/components/QRCodeDisplay.tsx[90m [limit=25][0m
+The changes are there. Let me see why git status didn't list it. Let me check git diff:
+[0m
+[0m$ [0mgit diff --name-only
+README.md
+TASKS.md
+app.json
+logs/iteration-11.md
+logs/iteration-13.md
+[0m
+[0m$ [0mgit ls-files --stage | grep QRCodeDisplay
+100644 1ae0ec45229a437c3e36668dc88244aeac9e9c99 0	src/components/QRCodeDisplay.tsx
+[0m
+It seems QRCodeDisplay.tsx is not showing as modified. Let me check if it's tracked:
+[0m$ [0mgit diff src/components/QRCodeDisplay.tsx
+Let me check the diff explicitly:
+Strange. Let me read the file again to confirm my changes are there:
+[0m
+[0m$ [0mhead -20 src/components/QRCodeDisplay.tsx
+import React from 'react';
+import { View, Text, StyleSheet, Dimensions } from 'react-native';
+import QRCode from 'react-native-qrcode-svg';
+
+interface Props {
+  eventCode: string;
+  eventId?: string;
+  size?: number;
+}
+
+const QRCodeDisplay: React.FC<Props> = ({ eventCode, eventId, size = 200 }) => {
+  // Use eventId for deep link if available (preferred), fallback to eventCode
+  const deepLink = eventId
+    ? `pictureshare://event/${eventId}`
+    : `pictureshare://join?code=${eventCode}`;
+
+  return (
+    <View style={styles.container}>
+      <View style={styles.qrContainer}>
+        <QRCode value={deepLink} size={size} color="black" backgroundColor="white" quietZone={10} />
+[0m
+Let me check file timestamp:
+[0m$ [0mls -l src/components/QRCodeDisplay.tsx
+-rw-r--r-- 1 julien julien 1730 Mar 19 18:50 src/components/QRCodeDisplay.tsx
+[0m
+Let me compare with HEAD to see if the file actually differs:
+[0m$ [0mgit show HEAD:src/components/QRCodeDisplay.tsx | head -20
+import React from 'react';
+import { View, Text, StyleSheet, Dimensions } from 'react-native';
+import QRCode from 'react-native-qrcode-svg';
+
+interface Props {
+  eventCode: string;
+  eventId?: string;
+  size?: number;
+}
+
+const QRCodeDisplay: React.FC<Props> = ({ eventCode, eventId, size = 200 }) => {
+  // Use eventId for deep link if available (preferred), fallback to eventCode
+  const deepLink = eventId
+    ? `pictureshare://event/${eventId}`
+    : `pictureshare://join?code=${eventCode}`;
+
+  return (
+    <View style={styles.container}>
+      <View style={styles.qrContainer}>
+        <QRCode value={deepLink} size={size} color="black" backgroundColor="white" quietZone={10} />
+[0m
+HEAD already has my changes? That's odd. Let me check the actual HEAD diff:
+[0m$ [0mgit diff HEAD src/components/QRCodeDisplay.tsx
+Let me check git log for recent changes to this file:
+[0m
+[0m$ [0mgit log -5 --oneline -- src/components/QRCodeDisplay.tsx
+c7ccc1b Iteration 10: Integrate `react-native-qrcode-svg` to display event QR code for sharing; encode deep link with event ID
+cd5a64b Iteration 12: Integrate `react-native-qrcode-svg` to display event QR code for sharing; encode deep link with event ID
+[0m
