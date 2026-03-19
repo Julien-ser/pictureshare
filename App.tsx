@@ -42,7 +42,9 @@ export default function App() {
   return (
     <AuthProvider>
       <EventProvider>
-        <MainNavigator />
+        <PhotoProvider>
+          <MainNavigator />
+        </PhotoProvider>
       </EventProvider>
     </AuthProvider>
   );

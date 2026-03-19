@@ -625,3 +625,129 @@ Index: /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/README.md
 
 [0m
 Now I'll commit and push the changes to GitHub:
+[0m$ [0mgit status
+On branch main
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+	modified:   README.md
+	modified:   TASKS.md
+	modified:   logs/iteration-22.md
+	modified:   logs/iteration-23.md
+	modified:   src/screens/PhotoFeedScreen.tsx
+	modified:   src/screens/UploadInterface.tsx
+	modified:   src/services/photoService.ts
+	modified:   src/types/index.ts
+
+no changes added to commit (use "git add" and/or "git commit -a")
+[0m
+[0m$ [0mgit add .
+[0m
+[0m$ [0mgit commit -m "feat: implement optimistic UI for photo uploads"
+[main 76f325b] feat: implement optimistic UI for photo uploads
+ 8 files changed, 931 insertions(+), 310 deletions(-)
+[0m
+[0m$ [0mgit push origin main
+Everything up-to-date
+[0m
+Let's check if there are lint/typecheck commands defined in package.json and run them:
+[0m→ [0mRead package.json
+[0m
+[0m$ [0mnpm run lint
+> pictureshare@1.0.0 lint
+> eslint .
+
+
+/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/App.tsx
+   1:1   error    Definition for rule '@typescript-eslint/no-empty-object-type' was not found     @typescript-eslint/no-empty-object-type
+   1:1   error    Definition for rule '@typescript-eslint/no-wrapper-object-types' was not found  @typescript-eslint/no-wrapper-object-types
+   6:10  warning  'PhotoProvider' is defined but never used                                       @typescript-eslint/no-unused-vars
+  12:25  warning  'setCurrentEvent' is assigned a value but never used                            @typescript-eslint/no-unused-vars
+
+/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/components/QRCodeDisplay.tsx
+  1:1  error  Definition for rule '@typescript-eslint/no-empty-object-type' was not found     @typescript-eslint/no-empty-object-type
+  1:1  error  Definition for rule '@typescript-eslint/no-wrapper-object-types' was not found  @typescript-eslint/no-wrapper-object-types
+
+/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/components/index.ts
+  1:1  error  Definition for rule '@typescript-eslint/no-empty-object-type' was not found     @typescript-eslint/no-empty-object-type
+  1:1  error  Definition for rule '@typescript-eslint/no-wrapper-object-types' was not found  @typescript-eslint/no-wrapper-object-types
+
+/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/contexts/AuthContext.tsx
+  1:1  error  Definition for rule '@typescript-eslint/no-empty-object-type' was not found     @typescript-eslint/no-empty-object-type
+  1:1  error  Definition for rule '@typescript-eslint/no-wrapper-object-types' was not found  @typescript-eslint/no-wrapper-object-types
+
+/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/contexts/EventContext.tsx
+  1:1  error  Definition for rule '@typescript-eslint/no-empty-object-type' was not found     @typescript-eslint/no-empty-object-type
+  1:1  error  Definition for rule '@typescript-eslint/no-wrapper-object-types' was not found  @typescript-eslint/no-wrapper-object-types
+
+/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/contexts/PhotoContext.tsx
+  1:1  error  Definition for rule '@typescript-eslint/no-empty-object-type' was not found     @typescript-eslint/no-empty-object-type
+  1:1  error  Definition for rule '@typescript-eslint/no-wrapper-object-types' was not found  @typescript-eslint/no-wrapper-object-types
+
+/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/screens/EventCreationScreen.tsx
+   1:1  error    Definition for rule '@typescript-eslint/no-empty-object-type' was not found                                         @typescript-eslint/no-empty-object-type
+   1:1  error    Definition for rule '@typescript-eslint/no-wrapper-object-types' was not found                                      @typescript-eslint/no-wrapper-object-types
+  36:6  warning  React Hook useEffect has a missing dependency: 'generateNewCode'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/screens/EventJoinScreen.tsx
+  1:1  error  Definition for rule '@typescript-eslint/no-empty-object-type' was not found     @typescript-eslint/no-empty-object-type
+  1:1  error  Definition for rule '@typescript-eslint/no-wrapper-object-types' was not found  @typescript-eslint/no-wrapper-object-types
+
+/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/screens/LoginScreen.tsx
+  1:1  error  Definition for rule '@typescript-eslint/no-empty-object-type' was not found     @typescript-eslint/no-empty-object-type
+  1:1  error  Definition for rule '@typescript-eslint/no-wrapper-object-types' was not found  @typescript-eslint/no-wrapper-object-types
+
+/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/screens/PhotoFeedScreen.tsx
+  1:1  error  Definition for rule '@typescript-eslint/no-empty-object-type' was not found     @typescript-eslint/no-empty-object-type
+  1:1  error  Definition for rule '@typescript-eslint/no-wrapper-object-types' was not found  @typescript-eslint/no-wrapper-object-types
+
+/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/screens/ProfileScreen.tsx
+  1:1   error    Definition for rule '@typescript-eslint/no-empty-object-type' was not found     @typescript-eslint/no-empty-object-type
+  1:1   error    Definition for rule '@typescript-eslint/no-wrapper-object-types' was not found  @typescript-eslint/no-wrapper-object-types
+  2:64  warning  'Image' is defined but never used                                               @typescript-eslint/no-unused-vars
+
+/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/screens/UploadInterface.tsx
+  1:1  error  Definition for rule '@typescript-eslint/no-empty-object-type' was not found     @typescript-eslint/no-empty-object-type
+  1:1  error  Definition for rule '@typescript-eslint/no-wrapper-object-types' was not found  @typescript-eslint/no-wrapper-object-types
+
+/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/screens/index.ts
+  1:1  error  Definition for rule '@typescript-eslint/no-empty-object-type' was not found     @typescript-eslint/no-empty-object-type
+  1:1  error  Definition for rule '@typescript-eslint/no-wrapper-object-types' was not found  @typescript-eslint/no-wrapper-object-types
+
+/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/services/eventService.ts
+  1:1  error  Definition for rule '@typescript-eslint/no-empty-object-type' was not found     @typescript-eslint/no-empty-object-type
+  1:1  error  Definition for rule '@typescript-eslint/no-wrapper-object-types' was not found  @typescript-eslint/no-wrapper-object-types
+
+/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/services/firebase.ts
+   1:1   error    Definition for rule '@typescript-eslint/no-empty-object-type' was not found     @typescript-eslint/no-empty-object-type
+   1:1   error    Definition for rule '@typescript-eslint/no-wrapper-object-types' was not found  @typescript-eslint/no-wrapper-object-types
+  12:46  warning  'ref' is defined but never used                                                 @typescript-eslint/no-unused-vars
+
+/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/services/index.ts
+  1:1  error  Definition for rule '@typescript-eslint/no-empty-object-type' was not found     @typescript-eslint/no-empty-object-type
+  1:1  error  Definition for rule '@typescript-eslint/no-wrapper-object-types' was not found  @typescript-eslint/no-wrapper-object-types
+
+/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/services/photoService.ts
+  1:1  error    Definition for rule '@typescript-eslint/no-empty-object-type' was not found     @typescript-eslint/no-empty-object-type
+  1:1  error    Definition for rule '@typescript-eslint/no-wrapper-object-types' was not found  @typescript-eslint/no-wrapper-object-types
+  2:3  warning  'getStorage' is defined but never used                                          @typescript-eslint/no-unused-vars
+  5:3  warning  'getDownloadURL' is defined but never used                                      @typescript-eslint/no-unused-vars
+
+/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/types/index.ts
+  1:1  error  Definition for rule '@typescript-eslint/no-empty-object-type' was not found     @typescript-eslint/no-empty-object-type
+  1:1  error  Definition for rule '@typescript-eslint/no-wrapper-object-types' was not found  @typescript-eslint/no-wrapper-object-types
+
+/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/utils/codeGenerator.ts
+  1:1  error  Definition for rule '@typescript-eslint/no-empty-object-type' was not found     @typescript-eslint/no-empty-object-type
+  1:1  error  Definition for rule '@typescript-eslint/no-wrapper-object-types' was not found  @typescript-eslint/no-wrapper-object-types
+
+/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/utils/imagePicker.ts
+  1:1  error  Definition for rule '@typescript-eslint/no-empty-object-type' was not found     @typescript-eslint/no-empty-object-type
+  1:1  error  Definition for rule '@typescript-eslint/no-wrapper-object-types' was not found  @typescript-eslint/no-wrapper-object-types
+
+/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/utils/index.ts
+  1:1  error  Definition for rule '@typescript-eslint/no-empty-object-type' was not found     @typescript-eslint/no-empty-object-type
+  1:1  error  Definition for rule '@typescript-eslint/no-wrapper-object-types' was not found  @typescript-eslint/no-wrapper-object-types
+
+✖ 49 problems (42 errors, 7 warnings)
+[0m
