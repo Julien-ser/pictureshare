@@ -553,3 +553,52 @@ Last read: 2026-03-19T22:54:54.978Z
 Please read the file again before modifying it.
 Looking at the type definitions, the `barCodeTypes` expects an array of strings. The example references `BarCodeScanner.Constants.BarCodeType.qr` but since BarCodeScanner is not directly exported, we can use the string literal 'qr' or define constants. Let me fix the code with the correct expo-camera v14+ API:
 [0m→ [0mRead src/screens/EventJoinScreen.tsx[90m [limit=200][0m
+Perfect! The file is now using the correct expo-camera API:
+- `Camera.useCameraPermissions()` - correct
+- `barcodeTypes: ['qr']` - correct simple string
+- No unused imports
+
+Now let me check the current state of TASKS.md and mark this task as complete:
+[0m→ [0mRead TASKS.md
+Now let me mark the QR scanner task as complete in TASKS.md:
+[0m
+[0m← [0mEdit TASKS.md
+Index: /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/TASKS.md
+===================================================================
+--- /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/TASKS.md
++++ /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/TASKS.md
+@@ -14,9 +14,9 @@
+ 
+ - [x] Implement Firebase Anonymous Auth + Google Sign-In as fallback; store user mapping locally
+ - [x] Build event creation screen: generates 6-digit alphanumeric code, optional time/visibility settings
+ - [x] Integrate `react-native-qrcode-svg` to display event QR code for sharing; encode deep link with event ID
+-- [ ] Develop QR scanner screen using `expo-camera`; validate code against Firestore and join user to event document's participants array
++- [x] Develop QR scanner screen using `expo-camera`; validate code against Firestore and join user to event document's participants array
+ 
+ ## Phase 3: Photo Capture, Compression & Upload
+ 
+ - [ ] Build camera/gallery picker with `expo-image-picker`; request permissions and handle denials with explanatory UI
+
+[0m
+Now let me check the README to see if it needs updating:
+[0m→ [0mRead README.md
+I need to update the README to reflect that QR scanner integration is now complete:
+[0m
+[0m← [0mEdit README.md
+Index: /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/README.md
+===================================================================
+--- /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/README.md
++++ /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/README.md
+@@ -91,9 +91,9 @@
+ - [x] Firebase Anonymous Auth + Google Sign-In (fallback)
+ - [x] User mapping stored locally
+ - [x] Event creation screen with 6-digit code generation, time/visibility settings
+ - [x] QR code display for event sharing (deep link with event ID)
+-- [ ] QR scanner integration
++- [x] QR scanner integration with event validation
+ 
+ See [TASKS.md](./TASKS.md) for full roadmap.
+ 
+ ## Authentication
+
+[0m

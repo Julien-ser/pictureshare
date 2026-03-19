@@ -92,7 +92,7 @@ src/
 - [x] User mapping stored locally
 - [x] Event creation screen with 6-digit code generation, time/visibility settings
 - [x] QR code display for event sharing (deep link with event ID)
-- [ ] QR scanner integration
+- [x] QR scanner integration with event validation
 
 See [TASKS.md](./TASKS.md) for full roadmap.
 
