@@ -27,8 +27,7 @@ describe('codeGenerator', () => {
         callCount++;
         // First 3 calls return false, then true
         return callCount > 3;
-     });
-   });
+      });
 
       const code = await generateEventCode(checkUnique);
       expect(code).toMatch(/^[A-Z]{3}\d{3}$/);
