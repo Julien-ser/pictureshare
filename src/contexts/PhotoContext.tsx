@@ -153,6 +153,23 @@ export function PhotoProvider({ children }: PhotoProviderProps) {
     return combined;
   }, [pendingPhotos, photos]);
 
+  // Clean up pending photos that have been confirmed (uploaded successfully)
+  useEffect(() => {
+    if (photos.length === 0) return;
+    const confirmedIds = new Set(photos.map((p) => p.id));
+    setPendingPhotos((prev) => {
+      const next = new Map(prev);
+      let changed = false;
+      for (const [id] of next) {
+        if (confirmedIds.has(id)) {
+          next.delete(id);
+          changed = true;
+        }
+      }
+      return changed ? next : prev;
+    });
+  }, [photos]);
+
   return (
     <PhotoContext.Provider
       value={{

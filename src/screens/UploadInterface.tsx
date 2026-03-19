@@ -120,6 +120,9 @@ const UploadInterface: React.FC<UploadInterfaceProps> = ({ eventId }) => {
       // Ensure progress shows 100% after completion
       setUploadProgress(100);
 
+      // Remove from pending state now that upload succeeded
+      removePendingPhoto(photoId);
+
       Alert.alert('Upload Complete', 'Your photo has been shared with the event group!', [
         {
           text: 'OK',

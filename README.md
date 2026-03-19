@@ -92,8 +92,8 @@ src/
 - [x] FlatList rendering with download URL fetching
 - [x] Event context for managing current event state
 - [x] Optimistic UI updates after upload
-- [ ] Infinite scroll pagination
-- [ ] Offline-first behavior with local caching
+- [x] Infinite scroll pagination
+- [x] Offline-first behavior with local caching
 
 See [TASKS.md](./TASKS.md) for full roadmap.
 
