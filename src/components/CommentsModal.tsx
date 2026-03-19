@@ -27,7 +27,7 @@ interface CommentsModalProps {
 
 const CommentsModal: React.FC<CommentsModalProps> = ({ visible, photoId, onClose }) => {
   const { user } = useAuth();
-  const [comments, setComments] = useState<CommentType[]>([]);
+  const [comments, setComments] = useState<Comment[]>([]);
   const [newCommentText, setNewCommentText] = useState('');
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -79,7 +79,7 @@ const CommentsModal: React.FC<CommentsModalProps> = ({ visible, photoId, onClose
     setComments((prev) => prev.filter((c) => c.id !== commentId));
   }, []);
 
-  const renderComment = ({ item }: { item: CommentType }) => (
+  const renderComment = ({ item }: { item: Comment }) => (
     <CommentItem comment={item} onDelete={() => handleDeleteComment(item.id)} />
   );
 

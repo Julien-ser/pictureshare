@@ -325,6 +325,55 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
   },
+  // QR Code styles
+  qrSection: {
+    marginTop: 30,
+    padding: 20,
+    backgroundColor: '#f0f8ff',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#007AFF',
+    alignItems: 'center',
+  },
+  qrHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    width: '100%',
+    marginBottom: 15,
+  },
+  qrTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#333',
+  },
+  closeButton: {
+    padding: 5,
+  },
+  closeButtonText: {
+    fontSize: 24,
+    color: '#666',
+    fontWeight: '300',
+  },
+  eventTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#333',
+    marginTop: 10,
+    marginBottom: 10,
+  },
+  shareInstructions: {
+    fontSize: 14,
+    color: '#666',
+    textAlign: 'center',
+    marginTop: 10,
+    marginBottom: 20,
+    paddingHorizontal: 10,
+  },
+  createAnotherButton: {
+    backgroundColor: '#34C759',
+    marginTop: 10,
+  },
 });
 
 export default EventCreationScreen;

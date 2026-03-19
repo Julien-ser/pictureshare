@@ -17,6 +17,8 @@ import {
 import { db } from './firebase';
 import type { Comment } from '../types';
 
+export type { Comment };
+
 const COMMENTS_SUBCOLLECTION = 'comments';
 
 /**
