@@ -129,8 +129,8 @@ export function subscribeToCommentCount(
   return onSnapshot(
     photoRef,
     (snap: DocumentSnapshot) => {
-      if (snap.exists) {
-        const data = snap.data() as DocumentData;
+      const data = snap.data();
+      if (data) {
         const commentCount = data.commentCount || 0;
         onCommentCountUpdate(commentCount);
       } else {

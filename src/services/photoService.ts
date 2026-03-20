@@ -313,11 +313,14 @@ export async function canDeletePhoto(
     const photoRef = doc(db, PHOTOS_COLLECTION, photoId);
     const photoDoc = await getDoc(photoRef);
 
-    if (!photoDoc.exists) {
+    if (!photoDoc.data()) {
       return false;
     }
 
-    const photoData = photoDoc.data();
+    const photoData = photoDoc.data()!;
+    if (!photoData) {
+      return false;
+    }
 
     // Check if user is the uploader
     if (photoData.uploaderId === userId) {
@@ -328,8 +331,8 @@ export async function canDeletePhoto(
     const eventRef = doc(db, 'events', eventId);
     const eventDoc = await getDoc(eventRef);
 
-    if (eventDoc.exists) {
-      const eventData = eventDoc.data() as Event;
+    const eventData = eventDoc.data();
+    if (eventData) {
       if (eventData.createdBy === userId) {
         return true;
       }

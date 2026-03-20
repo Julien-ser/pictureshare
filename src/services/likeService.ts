@@ -11,6 +11,7 @@ import {
   type Unsubscribe,
   type DocumentData,
   type DocumentSnapshot,
+  type DocumentReference,
 } from 'firebase/firestore';
 import { db } from './firebase';
 
@@ -39,7 +40,8 @@ export async function likePhoto(photoId: string, userId: string): Promise<void> 
   const photoRef = doc(db, 'photos', photoId);
   await runTransaction(db, async (transaction) => {
     const photoDoc = await transaction.get(photoRef);
-    if (!photoDoc.exists) {
+    const data = photoDoc.data();
+    if (!data) {
       throw new Error('Photo not found');
     }
     transaction.update(photoRef, {
@@ -57,7 +59,7 @@ export async function unlikePhoto(photoId: string, userId: string): Promise<void
 
   // Check if like exists before deleting
   const likeDoc = await getDoc(likeRef);
-  if (!likeDoc.exists) {
+  if (!likeDoc.data()) {
     return; // Already unliked
   }
 
@@ -67,10 +69,10 @@ export async function unlikePhoto(photoId: string, userId: string): Promise<void
   const photoRef = doc(db, 'photos', photoId);
   await runTransaction(db, async (transaction) => {
     const photoDoc = await transaction.get(photoRef);
-    if (!photoDoc.exists) {
+    const data = photoDoc.data();
+    if (!data) {
       throw new Error('Photo not found');
     }
-    const data = photoDoc.data() as DocumentData;
     const currentCount = data.likeCount || 0;
     const newCount = Math.max(0, currentCount - 1); // Prevent negative
     transaction.update(photoRef, {
@@ -102,11 +104,11 @@ export async function getLikeCount(photoId: string): Promise<number> {
   const photoRef = doc(db, 'photos', photoId);
   const photoDoc = await getDoc(photoRef);
 
-  if (!photoDoc.exists) {
+  const data = photoDoc.data();
+  if (!data) {
     return 0;
   }
 
-  const data = photoDoc.data() as DocumentData;
   return data.likeCount ?? 0;
 }
 
@@ -115,8 +117,8 @@ export async function getLikeCount(photoId: string): Promise<number> {
  */
 export async function hasUserLiked(photoId: string, userId: string): Promise<boolean> {
   const likeRef = doc(collection(db, 'photos', photoId, LIKES_SUBCOLLECTION), userId);
-  const likeDoc: DocumentSnapshot<DocumentData> = await getDoc(likeRef);
-  return likeDoc.exists;
+  const likeDoc = await getDoc(likeRef);
+  return !!likeDoc.data();
 }
 
 /**
@@ -132,8 +134,8 @@ export function subscribeToLikeCount(
   return onSnapshot(
     photoRef,
     (snapshot) => {
-      if (snapshot.exists) {
-        const data = snapshot.data() as DocumentData;
+      const data = snapshot.data();
+      if (data) {
         const likeCount = data.likeCount || 0;
         onLikeCountUpdate(likeCount);
       } else {
@@ -161,7 +163,7 @@ export function subscribeToUserLike(
   return onSnapshot(
     likeRef,
     (doc) => {
-      onUserLikedUpdate(doc.exists);
+      onUserLikedUpdate(!!doc.data());
     },
     (error) => {
       console.error('Error in user like subscription:', error);
