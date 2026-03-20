@@ -1,6 +1,6 @@
 # Iteration 57 - pictureshare
 
-**Timestamp:** Thu Mar 19 10:17:40 PM EDT 2026
+**Timestamp:** Thu Mar 19 10:24:55 PM EDT 2026
 **Task:** Write unit tests for utilities (code generation, image compression) and service wrappers using Jest
 
 ## Prompt Sent
@@ -19,31 +19,6 @@
 
 **Error from last attempt:**
 ```
-          at runTestInternal (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-runner/build/runTest.js:367:16)
-          at runTest (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-runner/build/runTest.js:444:34)
-          at Object.worker (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-runner/build/testWorker.js:106:12)
-
-      205 |       }
-      206 |     } catch (error) {
-    > 207 |       console.error(`Failed to upload offline item ${item.id}:`, error);
-          |               ^
-      208 |       const errorMessage = error instanceof Error ? error.message : String(error);
-      209 |       await updateItemRetry(item.id, errorMessage);
-      210 |
-
-      at error (src/services/offlineQueue.ts:207:15)
-          at _loop.throw (<anonymous>)
-      at _loop (src/services/offlineQueue.ts:159:27)
-          at Generator.throw (<anonymous>)
-      at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
-      at _throw (node_modules/@babel/runtime/helpers/asyncToGenerator.js:20:9)
-
-    console.log
-      Will retry item-123 in 2000ms
-
-      at log (src/services/offlineQueue.ts:213:15)
-          at _loop.next (<anonymous>)
-
     console.log
       Offline queue initialized
 
@@ -59,6 +34,30 @@
           at new Promise (<anonymous>)
           at Object.<anonymous> (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/@babel/runtime/helpers/asyncToGenerator.js:14:12)
           at Promise.then.completed (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-circus/build/utils.js:298:28)
+          at new Promise (<anonymous>)
+          at callAsyncCircusFn (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-circus/build/utils.js:231:10)
+          at _callCircusTest (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-circus/build/run.js:316:40)
+          at _runTest (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-circus/build/run.js:252:3)
+          at _runTestsForDescribeBlock (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-circus/build/run.js:126:9)
+          at _runTestsForDescribeBlock (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-circus/build/run.js:121:9)
+          at _runTestsForDescribeBlock (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-circus/build/run.js:121:9)
+--
+          at runTestInternal (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-runner/build/runTest.js:367:16)
+          at runTest (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-runner/build/runTest.js:444:34)
+          at Object.worker (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-runner/build/testWorker.js:106:12)
+
+      228 |     await processOfflineQueue();
+      229 |   } catch (error) {
+    > 230 |     console.error('Error initializing offline queue:', error);
+          |             ^
+      231 |   }
+      232 | }
+      233 |
+
+      at error (src/services/offlineQueue.ts:230:13)
+          at Generator.throw (<anonymous>)
+      at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _throw (node_modules/@babel/runtime/helpers/asyncToGenerator.js:20:9)
 ```
 
 **Decision:**
@@ -117,842 +116,74 @@ Looking at the error, the test expects a promise but receives `undefined` in err
 [0m
 > build · stepfun/step-3.5-flash:free
 [0m
-I need to examine the offline queue test that's failing. Let me read the test file to understand the error at line 273.
+I'll analyze the test failure and fix it. Let me examine the relevant files to understand the issue.
+[0m→ [0mRead __tests__/offlineQueue.test.ts[90m [limit=20, offset=265][0m
+[0m→ [0mRead src/services/offlineQueue.ts[90m [limit=15, offset=220][0m
+Let me examine the full implementation of the `ensureOfflineDir` and `processOfflineQueue` functions to understand where the error is coming from:
+[0m→ [0mRead src/services/offlineQueue.ts[90m [limit=100, offset=1][0m
+[0m→ [0mRead src/services/offlineQueue.ts[90m [limit=100, offset=101][0m
+[0m→ [0mRead src/services/offlineQueue.ts[90m [limit=32, offset=200][0m
+Let me see the rest of the `processOfflineQueue` function:
+Let me read the full test file to understand the test context and mock setup:
 [0m→ [0mRead __tests__/offlineQueue.test.ts
-[0m→ [0mRead src/services/offlineQueue.ts
-Let me check the offlineQueue implementation to see why it's throwing an error:
-Looking at the code, `initializeOfflineQueue` has a try-catch that should catch errors. However, the test expects it not to throw, and it seems like an error is escaping. Let me run the specific test to see the actual error:
-[0m
-[0m$ [0mnpm test -- offlineQueue.test.ts 2>&1 | tail -100
-at run (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-circus/build/run.js:71:3)
-        at runAndTransformResultsToJestFormat (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapterInit.js:122:21)
-        at jestAdapter (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:79:19)
-        at runTestInternal (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-runner/build/runTest.js:367:16)
-        at runTest (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-runner/build/runTest.js:444:34)
+Now I understand the failures. The toggleLike tests are failing because the function uses direct calls to `hasUserLiked`, `likePhoto`, and `unlikePhoto` which cannot be spied on with `jest.spyOn(likeService, ...)` due to module closure. The test spies on the namespace object, but the function uses internal references, so the spies don't intercept.
 
-      205 |       }
-      206 |     } catch (error) {
-    > 207 |       console.error(`Failed to upload offline item ${item.id}:`, error);
-          |               ^
-      208 |       const errorMessage = error instanceof Error ? error.message : String(error);
-      209 |       await updateItemRetry(item.id, errorMessage);
-      210 |
+The fix is to make `toggleLike` use the namespace object (the same object that the test imports) for its internal calls. This can be done by adding a self-import and referencing `self.<function>`.
 
-      at error (src/services/offlineQueue.ts:207:15)
-          at _loop.throw (<anonymous>)
-      at _loop (src/services/offlineQueue.ts:159:27)
-          at Generator.throw (<anonymous>)
-      at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
-      at _throw (node_modules/@babel/runtime/helpers/asyncToGenerator.js:20:9)
+I'll modify `likeService.ts`:
 
-  console.log
-    Will retry item-123 in 2000ms
-
-      at log (src/services/offlineQueue.ts:213:15)
-          at _loop.next (<anonymous>)
-
-  console.log
-    Offline queue initialized
-
-      at log (src/services/offlineQueue.ts:225:13)
-
-  console.error
-    Error initializing offline queue: Error: Init error
-        at Object.<anonymous> (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/__tests__/offlineQueue.test.ts:273:64)
-        at Generator.next (<anonymous>)
-        at asyncGeneratorStep (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
-        at _next (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
-        at /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/@babel/runtime/helpers/asyncToGenerator.js:22:7
-        at new Promise (<anonymous>)
-        at Object.<anonymous> (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/@babel/runtime/helpers/asyncToGenerator.js:14:12)
-        at Promise.then.completed (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-circus/build/utils.js:298:28)
-        at new Promise (<anonymous>)
-        at callAsyncCircusFn (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-circus/build/utils.js:231:10)
-        at _callCircusTest (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-circus/build/run.js:316:40)
-        at _runTest (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-circus/build/run.js:252:3)
-        at _runTestsForDescribeBlock (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-circus/build/run.js:126:9)
-        at _runTestsForDescribeBlock (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-circus/build/run.js:121:9)
-        at _runTestsForDescribeBlock (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-circus/build/run.js:121:9)
-        at run (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-circus/build/run.js:71:3)
-        at runAndTransformResultsToJestFormat (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapterInit.js:122:21)
-        at jestAdapter (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:79:19)
-        at runTestInternal (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-runner/build/runTest.js:367:16)
-        at runTest (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-runner/build/runTest.js:444:34)
-
-      228 |     await processOfflineQueue();
-      229 |   } catch (error) {
-    > 230 |     console.error('Error initializing offline queue:', error);
-          |             ^
-      231 |   }
-      232 | }
-      233 |
-
-      at error (src/services/offlineQueue.ts:230:13)
-          at Generator.throw (<anonymous>)
-      at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
-      at _throw (node_modules/@babel/runtime/helpers/asyncToGenerator.js:20:9)
-
-PASS __tests__/offlineQueue.test.ts
-  offlineQueue
-    getOfflineQueue
-      ✓ should return empty array if no queue exists (4 ms)
-      ✓ should return parsed queue if exists (1 ms)
-      ✓ should return empty array on error (48 ms)
-    addToOfflineQueue
-      ✓ should add item to queue and cache image (2 ms)
-      ✓ should set retryCount to 0 for new item (1 ms)
-    removeFromOfflineQueue
-      ✓ should remove item by ID (1 ms)
-    clearOfflineQueue
-      ✓ should remove queue from storage (1 ms)
-    getOfflineQueueCount
-      ✓ should return number of items in queue
-    isOnline
-      ✓ should return true if network check succeeds
-      ✓ should return false if network check fails
-    processOfflineQueue
-      ✓ should process all pending items when online (3 ms)
-      ✓ should skip items with max retries exceeded (3 ms)
-      ✓ should stop processing if offline (2 ms)
-      ✓ should handle upload errors and increment retry count (2007 ms)
-    initializeOfflineQueue
-      ✓ should initialize directory and process any pending uploads (6 ms)
-      ✓ should handle initialization errors gracefully (8 ms)
-
-Test Suites: 1 passed, 1 total
-Tests:       16 passed, 16 total
-Snapshots:   0 total
-Time:        2.454 s, estimated 3 s
-Ran all test suites matching /offlineQueue.test.ts/i.
-[0m
-The offlineQueue test actually passed. Let me run all tests to see which ones are failing:
-[0m$ [0mnpm test 2>&1 | grep -A 2 "FAIL\|PASS\|Test Suites:"
-PASS __tests__/eventService.test.ts
-PASS __tests__/firebase.test.ts
-  ● Console
-
---
-PASS __tests__/photoService.test.ts
-  ● Console
-
---
-PASS __tests__/commentService.test.ts
-PASS __tests__/imagePicker.test.ts
-  ● Console
-
---
-PASS __tests__/codeGenerator.test.ts
-PASS __tests__/participantService.test.ts
-  ● Console
-
---
-PASS __tests__/likeService.test.ts
-PASS __tests__/offlineQueue.test.ts
-  ● Console
-
---
-Test Suites: 9 passed, 9 total
-Tests:       2 skipped, 139 passed, 141 total
-Snapshots:   0 total
-[0m
-All tests are passing now (139 passed, 2 skipped, 9 passed). But the error message mentioned an issue with `signInWithGoogle` not returning a promise in error cases. Let me check the firebase test to see if there's a potential issue:
-[0m→ [0mRead __tests__/firebase.test.ts
-Now let me check the firebase implementation to see the `signInWithGoogle` function:
-[0m→ [0mRead src/services/firebase.ts
-Let me search for any utility tests that might be failing:
-[0m✱ [0mGlob "__tests__/*.{test,spec}.{ts,js}"[90m 9 matches[0m
-[0m✱ [0mGlob "src/utils/**/*.{ts,js}"[90m 3 matches[0m
-Let me check if there's a test file for image compression utilities since it's mentioned in the current task:
-Let me check the imagePicker utility to see if it includes image compression functionality that needs tests:
-[0m→ [0mRead src/utils/imagePicker.ts
-Now let me check the existing imagePicker tests to see if they cover the compression functionality:
-[0m→ [0mRead __tests__/imagePicker.test.ts
-Good! The imagePicker tests already cover compressImage thoroughly. Let me check the codeGenerator tests:
-[0m→ [0mRead __tests__/codeGenerator.test.ts
-Let me check which tests are skipped:
-[0m✱ [0mGrep "\.skip"[90m in __tests__ · 1 match[0m
-[0m→ [0mRead __tests__/likeService.test.ts
-Let me examine the likeService test file:
-Let me run all tests with verbose to see if any fail:
-[0m
-[0m$ [0mnpm test 2>&1
-> pictureshare@1.0.0 test
-> jest
-
-PASS __tests__/eventService.test.ts
-PASS __tests__/firebase.test.ts
-  ● Console
-
-    console.error
-      Error signing in with Google: Error: User cancelled Google sign-in
-          at Object.<anonymous> (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/services/firebase.ts:137:15)
-          at Generator.next (<anonymous>)
-          at asyncGeneratorStep (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
-          at _next (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
-          at processTicksAndRejections (node:internal/process/task_queues:105:5)
-
-      169 |     return appUser;
-      170 |   } catch (error) {
-    > 171 |     console.error('Error signing in with Google:', error);
-          |             ^
-      172 |     throw error;
-      173 |   }
-      174 | }
-
-      at Object.error (src/services/firebase.ts:171:13)
-      at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
-      at _next (node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
-
-    console.error
-      Error signing in with Google: Error: Google sign-in failed
-          at Object.<anonymous> (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/services/firebase.ts:139:13)
-          at Generator.next (<anonymous>)
-          at asyncGeneratorStep (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
-          at _next (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
-          at processTicksAndRejections (node:internal/process/task_queues:105:5)
-
-      169 |     return appUser;
-      170 |   } catch (error) {
-    > 171 |     console.error('Error signing in with Google:', error);
-          |             ^
-      172 |     throw error;
-      173 |   }
-      174 | }
-
-      at Object.error (src/services/firebase.ts:171:13)
-      at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
-      at _next (node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
-
-    console.error
-      Error signing in with Google: Error: No ID token received from Google
-          at Object.<anonymous> (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/services/firebase.ts:146:13)
-          at Generator.next (<anonymous>)
-          at asyncGeneratorStep (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
-          at _next (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
-          at processTicksAndRejections (node:internal/process/task_queues:105:5)
-
-      169 |     return appUser;
-      170 |   } catch (error) {
-    > 171 |     console.error('Error signing in with Google:', error);
-          |             ^
-      172 |     throw error;
-      173 |   }
-      174 | }
-
-      at Object.error (src/services/firebase.ts:171:13)
-      at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
-      at _next (node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
-
-PASS __tests__/photoService.test.ts
-  ● Console
-
-    console.error
-      Error uploading photo to storage: Error: Upload failed
-          at Object.<anonymous> (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/__tests__/photoService.test.ts:135:51)
-          at /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-mock/build/index.js:397:39
-          at Object.<anonymous> (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-mock/build/index.js:404:13)
-          at Object.mockConstructor [as then] (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-mock/build/index.js:108:19)
-          at processTicksAndRejections (node:internal/process/task_queues:105:5)
-
-      83 |     return storagePath;
-      84 |   } catch (error) {
-    > 85 |     console.error('Error uploading photo to storage:', error);
-         |             ^
-      86 |     throw error;
-      87 |   }
-      88 | }
-
-      at error (src/services/photoService.ts:85:13)
-          at Generator.throw (<anonymous>)
-      at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
-      at _throw (node_modules/@babel/runtime/helpers/asyncToGenerator.js:20:9)
-
-    console.error
-      Error deleting photo from storage: Error: Storage error
-          at Object.<anonymous> (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/__tests__/photoService.test.ts:196:53)
-          at Generator.next (<anonymous>)
-          at asyncGeneratorStep (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
-          at _next (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
-          at /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/@babel/runtime/helpers/asyncToGenerator.js:22:7
-          at new Promise (<anonymous>)
-          at Object.<anonymous> (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/@babel/runtime/helpers/asyncToGenerator.js:14:12)
-          at Promise.then.completed (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-circus/build/utils.js:298:28)
-          at new Promise (<anonymous>)
-          at callAsyncCircusFn (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-circus/build/utils.js:231:10)
-          at _callCircusTest (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-circus/build/run.js:316:40)
-          at processTicksAndRejections (node:internal/process/task_queues:105:5)
-          at _runTest (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-circus/build/run.js:252:3)
-          at _runTestsForDescribeBlock (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-circus/build/run.js:126:9)
-          at _runTestsForDescribeBlock (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-circus/build/run.js:121:9)
-          at _runTestsForDescribeBlock (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-circus/build/run.js:121:9)
-          at run (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-circus/build/run.js:71:3)
-          at runAndTransformResultsToJestFormat (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapterInit.js:122:21)
-          at jestAdapter (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:79:19)
-          at runTestInternal (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-runner/build/runTest.js:367:16)
-          at runTest (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-runner/build/runTest.js:444:34)
-          at Object.worker (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-runner/build/testWorker.js:106:12)
-
-      129 |     await deleteObject(storageRef);
-      130 |   } catch (error) {
-    > 131 |     console.error('Error deleting photo from storage:', error);
-          |             ^
-      132 |     // Continue to delete metadata even if storage deletion fails
-      133 |   }
-      134 |
-
-      at error (src/services/photoService.ts:131:13)
-          at Generator.throw (<anonymous>)
-      at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
-      at _throw (node_modules/@babel/runtime/helpers/asyncToGenerator.js:20:9)
-
-    console.error
-      Error in photos subscription: Error: Subscription error
-          at Object.<anonymous> (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/__tests__/photoService.test.ts:371:21)
-          at Promise.then.completed (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-circus/build/utils.js:298:28)
-          at new Promise (<anonymous>)
-          at callAsyncCircusFn (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-circus/build/utils.js:231:10)
-          at _callCircusTest (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-circus/build/run.js:316:40)
-          at processTicksAndRejections (node:internal/process/task_queues:105:5)
-          at _runTest (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-circus/build/run.js:252:3)
-          at _runTestsForDescribeBlock (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-circus/build/run.js:126:9)
-          at _runTestsForDescribeBlock (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-circus/build/run.js:121:9)
-          at _runTestsForDescribeBlock (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-circus/build/run.js:121:9)
-          at run (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-circus/build/run.js:71:3)
-          at runAndTransformResultsToJestFormat (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapterInit.js:122:21)
-          at jestAdapter (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:79:19)
-          at runTestInternal (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-runner/build/runTest.js:367:16)
-          at runTest (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-runner/build/runTest.js:444:34)
-          at Object.worker (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-runner/build/testWorker.js:106:12)
-
-      228 |     },
-      229 |     (error) => {
-    > 230 |       console.error('Error in photos subscription:', error);
-          |               ^
-      231 |       onPhotosUpdate([]);
-      232 |     }
-      233 |   );
-
-      at error (src/services/photoService.ts:230:15)
-      at Object.errorCallback (__tests__/photoService.test.ts:371:7)
-
-    console.error
-      Error loading photos batch: Error: Query failed
-          at Object.<anonymous> (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/__tests__/photoService.test.ts:417:48)
-          at Generator.next (<anonymous>)
-          at asyncGeneratorStep (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
-          at _next (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
-          at /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/@babel/runtime/helpers/asyncToGenerator.js:22:7
-          at new Promise (<anonymous>)
-          at Object.<anonymous> (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/@babel/runtime/helpers/asyncToGenerator.js:14:12)
-          at Promise.then.completed (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-circus/build/utils.js:298:28)
-          at new Promise (<anonymous>)
-          at callAsyncCircusFn (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-circus/build/utils.js:231:10)
-          at _callCircusTest (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-circus/build/run.js:316:40)
-          at processTicksAndRejections (node:internal/process/task_queues:105:5)
-          at _runTest (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-circus/build/run.js:252:3)
-          at _runTestsForDescribeBlock (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-circus/build/run.js:126:9)
-          at _runTestsForDescribeBlock (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-circus/build/run.js:121:9)
-          at _runTestsForDescribeBlock (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-circus/build/run.js:121:9)
-          at run (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-circus/build/run.js:71:3)
-          at runAndTransformResultsToJestFormat (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapterInit.js:122:21)
-          at jestAdapter (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:79:19)
-          at runTestInternal (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-runner/build/runTest.js:367:16)
-          at runTest (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-runner/build/runTest.js:444:34)
-          at Object.worker (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-runner/build/testWorker.js:106:12)
-
-      285 |     return { photos, lastDoc };
-      286 |   } catch (error) {
-    > 287 |     console.error('Error loading photos batch:', error);
-          |             ^
-      288 |     throw error;
-      289 |   }
-      290 | }
-
-      at error (src/services/photoService.ts:287:13)
-          at Generator.throw (<anonymous>)
-      at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
-      at _throw (node_modules/@babel/runtime/helpers/asyncToGenerator.js:20:9)
-
-    console.error
-      Error checking delete permission: Error: Database error
-          at Object.<anonymous> (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/__tests__/photoService.test.ts:503:47)
-          at Generator.next (<anonymous>)
-          at asyncGeneratorStep (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
-          at _next (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
-          at /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/@babel/runtime/helpers/asyncToGenerator.js:22:7
-          at new Promise (<anonymous>)
-          at Object.<anonymous> (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/@babel/runtime/helpers/asyncToGenerator.js:14:12)
-          at Promise.then.completed (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-circus/build/utils.js:298:28)
-          at new Promise (<anonymous>)
-          at callAsyncCircusFn (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-circus/build/utils.js:231:10)
-          at _callCircusTest (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-circus/build/run.js:316:40)
-          at processTicksAndRejections (node:internal/process/task_queues:105:5)
-          at _runTest (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-circus/build/run.js:252:3)
-          at _runTestsForDescribeBlock (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-circus/build/run.js:126:9)
-          at _runTestsForDescribeBlock (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-circus/build/run.js:121:9)
-          at _runTestsForDescribeBlock (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-circus/build/run.js:121:9)
-          at run (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-circus/build/run.js:71:3)
-          at runAndTransformResultsToJestFormat (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapterInit.js:122:21)
-          at jestAdapter (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:79:19)
-          at runTestInternal (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-runner/build/runTest.js:367:16)
-          at runTest (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-runner/build/runTest.js:444:34)
-          at Object.worker (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-runner/build/testWorker.js:106:12)
-
-      338 |     return false;
-      339 |   } catch (error) {
-    > 340 |     console.error('Error checking delete permission:', error);
-          |             ^
-      341 |     return false;
-      342 |   }
-      343 | }
-
-      at error (src/services/photoService.ts:340:13)
-          at Generator.throw (<anonymous>)
-      at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
-      at _throw (node_modules/@babel/runtime/helpers/asyncToGenerator.js:20:9)
-
-    console.error
-      Error checking delete permission: Error: Database error
-          at Object.<anonymous> (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/__tests__/photoService.test.ts:503:47)
-          at Generator.next (<anonymous>)
-          at asyncGeneratorStep (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
-          at _next (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
-          at /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/@babel/runtime/helpers/asyncToGenerator.js:22:7
-          at new Promise (<anonymous>)
-          at Object.<anonymous> (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/@babel/runtime/helpers/asyncToGenerator.js:14:12)
-          at Promise.then.completed (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-circus/build/utils.js:298:28)
-          at new Promise (<anonymous>)
-          at callAsyncCircusFn (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-circus/build/utils.js:231:10)
-          at _callCircusTest (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-circus/build/run.js:316:40)
-          at processTicksAndRejections (node:internal/process/task_queues:105:5)
-          at _runTest (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-circus/build/run.js:252:3)
-          at _runTestsForDescribeBlock (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-circus/build/run.js:126:9)
-          at _runTestsForDescribeBlock (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-circus/build/run.js:121:9)
-          at _runTestsForDescribeBlock (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-circus/build/run.js:121:9)
-          at run (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-circus/build/run.js:71:3)
-          at runAndTransformResultsToJestFormat (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapterInit.js:122:21)
-          at jestAdapter (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:79:19)
-          at runTestInternal (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-runner/build/runTest.js:367:16)
-          at runTest (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-runner/build/runTest.js:444:34)
-          at Object.worker (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-runner/build/testWorker.js:106:12)
-
-      338 |     return false;
-      339 |   } catch (error) {
-    > 340 |     console.error('Error checking delete permission:', error);
-          |             ^
-      341 |     return false;
-      342 |   }
-      343 | }
-
-      at error (src/services/photoService.ts:340:13)
-          at Generator.throw (<anonymous>)
-      at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
-      at _throw (node_modules/@babel/runtime/helpers/asyncToGenerator.js:20:9)
-
-PASS __tests__/imagePicker.test.ts
-  ● Console
-
-    console.error
-      Error compressing image: Error: Compression failed
-          at Object.<anonymous> (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/__tests__/imagePicker.test.ts:116:9)
-          at Generator.next (<anonymous>)
-          at asyncGeneratorStep (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
-          at _next (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
-          at /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/@babel/runtime/helpers/asyncToGenerator.js:22:7
-          at new Promise (<anonymous>)
-          at Object.<anonymous> (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/@babel/runtime/helpers/asyncToGenerator.js:14:12)
-          at Promise.then.completed (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-circus/build/utils.js:298:28)
-          at new Promise (<anonymous>)
-          at callAsyncCircusFn (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-circus/build/utils.js:231:10)
-          at _callCircusTest (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-circus/build/run.js:316:40)
-          at processTicksAndRejections (node:internal/process/task_queues:105:5)
-          at _runTest (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-circus/build/run.js:252:3)
-          at _runTestsForDescribeBlock (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-circus/build/run.js:126:9)
-          at _runTestsForDescribeBlock (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-circus/build/run.js:121:9)
-          at _runTestsForDescribeBlock (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-circus/build/run.js:121:9)
-          at run (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-circus/build/run.js:71:3)
-          at runAndTransformResultsToJestFormat (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapterInit.js:122:21)
-          at jestAdapter (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:79:19)
-          at runTestInternal (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-runner/build/runTest.js:367:16)
-          at runTest (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-runner/build/runTest.js:444:34)
-          at Object.worker (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-runner/build/testWorker.js:106:12)
-
-      57 |     };
-      58 |   } catch (error) {
-    > 59 |     console.error('Error compressing image:', error);
-         |             ^
-      60 |     // Return original if compression fails
-      61 |     return { uri: imageUri, width, height };
-      62 |   }
-
-      at Object.error (src/utils/imagePicker.ts:59:13)
-          at Generator.throw (<anonymous>)
-      at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
-      at _throw (node_modules/@babel/runtime/helpers/asyncToGenerator.js:20:9)
-
-    console.error
-      Error taking photo: Error: Camera error
-          at Object.<anonymous> (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/__tests__/imagePicker.test.ts:271:70)
-          at Generator.next (<anonymous>)
-          at asyncGeneratorStep (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
-          at _next (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
-          at /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/@babel/runtime/helpers/asyncToGenerator.js:22:7
-          at new Promise (<anonymous>)
-          at Object.<anonymous> (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/@babel/runtime/helpers/asyncToGenerator.js:14:12)
-          at Promise.then.completed (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-circus/build/utils.js:298:28)
-          at new Promise (<anonymous>)
-          at callAsyncCircusFn (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-circus/build/utils.js:231:10)
-          at _callCircusTest (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-circus/build/run.js:316:40)
-          at processTicksAndRejections (node:internal/process/task_queues:105:5)
-          at _runTest (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-circus/build/run.js:252:3)
-          at _runTestsForDescribeBlock (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-circus/build/run.js:126:9)
-          at _runTestsForDescribeBlock (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-circus/build/run.js:121:9)
-          at _runTestsForDescribeBlock (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-circus/build/run.js:121:9)
-          at run (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-circus/build/run.js:71:3)
-          at runAndTransformResultsToJestFormat (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapterInit.js:122:21)
-          at jestAdapter (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:79:19)
-          at runTestInternal (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-runner/build/runTest.js:367:16)
-          at runTest (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-runner/build/runTest.js:444:34)
-          at Object.worker (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-runner/build/testWorker.js:106:12)
-
-      136 |     return compressed;
-      137 |   } catch (error) {
-    > 138 |     console.error('Error taking photo:', error);
-          |             ^
-      139 |     Alert.alert('Camera Error', 'Failed to take photo. Please try again.');
-      140 |     return null;
-      141 |   }
-
-      at Object.error (src/utils/imagePicker.ts:138:13)
-          at Generator.throw (<anonymous>)
-      at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
-      at _throw (node_modules/@babel/runtime/helpers/asyncToGenerator.js:20:9)
-
-    console.error
-      Error picking image: Error: Gallery error
-          at Object.<anonymous> (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/__tests__/imagePicker.test.ts:336:9)
-          at Generator.next (<anonymous>)
-          at asyncGeneratorStep (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
-          at _next (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
-          at /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/@babel/runtime/helpers/asyncToGenerator.js:22:7
-          at new Promise (<anonymous>)
-          at Object.<anonymous> (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/@babel/runtime/helpers/asyncToGenerator.js:14:12)
-          at Promise.then.completed (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-circus/build/utils.js:298:28)
-          at new Promise (<anonymous>)
-          at callAsyncCircusFn (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-circus/build/utils.js:231:10)
-          at _callCircusTest (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-circus/build/run.js:316:40)
-          at processTicksAndRejections (node:internal/process/task_queues:105:5)
-          at _runTest (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-circus/build/run.js:252:3)
-          at _runTestsForDescribeBlock (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-circus/build/run.js:126:9)
-          at _runTestsForDescribeBlock (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-circus/build/run.js:121:9)
-          at _runTestsForDescribeBlock (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-circus/build/run.js:121:9)
-          at run (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-circus/build/run.js:71:3)
-          at runAndTransformResultsToJestFormat (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapterInit.js:122:21)
-          at jestAdapter (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:79:19)
-          at runTestInternal (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-runner/build/runTest.js:367:16)
-          at runTest (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-runner/build/runTest.js:444:34)
-          at Object.worker (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-runner/build/testWorker.js:106:12)
-
-      173 |     return compressed;
-      174 |   } catch (error) {
-    > 175 |     console.error('Error picking image:', error);
-          |             ^
-      176 |     Alert.alert('Gallery Error', 'Failed to select photo. Please try again.');
-      177 |     return null;
-      178 |   }
-
-      at Object.error (src/utils/imagePicker.ts:175:13)
-          at Generator.throw (<anonymous>)
-      at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
-      at _throw (node_modules/@babel/runtime/helpers/asyncToGenerator.js:20:9)
-
-PASS __tests__/participantService.test.ts
-  ● Console
-
-    console.error
-      Error fetching participants with stats: Error: Database error
-          at Object.<anonymous> (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/__tests__/participantService.test.ts:140:47)
-          at Generator.next (<anonymous>)
-          at asyncGeneratorStep (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
-          at _next (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
-          at /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/@babel/runtime/helpers/asyncToGenerator.js:22:7
-          at new Promise (<anonymous>)
-          at Object.<anonymous> (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/@babel/runtime/helpers/asyncToGenerator.js:14:12)
-          at Promise.then.completed (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-circus/build/utils.js:298:28)
-          at new Promise (<anonymous>)
-          at callAsyncCircusFn (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-circus/build/utils.js:231:10)
-          at _callCircusTest (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-circus/build/run.js:316:40)
-          at processTicksAndRejections (node:internal/process/task_queues:105:5)
-          at _runTest (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-circus/build/run.js:252:3)
-          at _runTestsForDescribeBlock (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-circus/build/run.js:126:9)
-          at _runTestsForDescribeBlock (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-circus/build/run.js:121:9)
-          at _runTestsForDescribeBlock (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-circus/build/run.js:121:9)
-          at run (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-circus/build/run.js:71:3)
-          at runAndTransformResultsToJestFormat (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapterInit.js:122:21)
-          at jestAdapter (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:79:19)
-          at runTestInternal (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-runner/build/runTest.js:367:16)
-          at runTest (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-runner/build/runTest.js:444:34)
-          at Object.worker (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-runner/build/testWorker.js:106:12)
-
-      78 |     return participantsWithStats;
-      79 |   } catch (error) {
-    > 80 |     console.error('Error fetching participants with stats:', error);
-         |             ^
-      81 |     return [];
-      82 |   }
-      83 | }
-
-      at Object.error (src/services/participantService.ts:80:13)
-          at Generator.throw (<anonymous>)
-      at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
-      at _throw (node_modules/@babel/runtime/helpers/asyncToGenerator.js:20:9)
-
-PASS __tests__/likeService.test.ts
-PASS __tests__/commentService.test.ts
-PASS __tests__/codeGenerator.test.ts
-PASS __tests__/offlineQueue.test.ts
-  ● Console
-
-    console.error
-      Error reading offline queue: Error: Storage error
-          at Object.<anonymous> (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/__tests__/offlineQueue.test.ts:77:61)
-          at Generator.next (<anonymous>)
-          at asyncGeneratorStep (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
-          at _next (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
-          at /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/@babel/runtime/helpers/asyncToGenerator.js:22:7
-          at new Promise (<anonymous>)
-          at Object.<anonymous> (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/@babel/runtime/helpers/asyncToGenerator.js:14:12)
-          at Promise.then.completed (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-circus/build/utils.js:298:28)
-          at new Promise (<anonymous>)
-          at callAsyncCircusFn (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-circus/build/utils.js:231:10)
-          at _callCircusTest (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-circus/build/run.js:316:40)
-          at processTicksAndRejections (node:internal/process/task_queues:105:5)
-          at _runTest (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-circus/build/run.js:252:3)
-          at _runTestsForDescribeBlock (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-circus/build/run.js:126:9)
-          at _runTestsForDescribeBlock (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-circus/build/run.js:121:9)
-          at _runTestsForDescribeBlock (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-circus/build/run.js:121:9)
-          at run (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-circus/build/run.js:71:3)
-          at runAndTransformResultsToJestFormat (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapterInit.js:122:21)
-          at jestAdapter (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:79:19)
-          at runTestInternal (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-runner/build/runTest.js:367:16)
-          at runTest (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-runner/build/runTest.js:444:34)
-          at Object.worker (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-runner/build/testWorker.js:106:12)
-
-      59 |     return queueJson ? JSON.parse(queueJson) : [];
-      60 |   } catch (error) {
-    > 61 |     console.error('Error reading offline queue:', error);
-         |             ^
-      62 |     return [];
-      63 |   }
-      64 | }
-
-      at error (src/services/offlineQueue.ts:61:13)
-          at Generator.throw (<anonymous>)
-      at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
-      at _throw (node_modules/@babel/runtime/helpers/asyncToGenerator.js:20:9)
-
-    console.log
-      Processing 1 offline upload(s)
-
-      at log (src/services/offlineQueue.ts:154:11)
-
-    console.log
-      Successfully uploaded offline item item-123
-
-      at log (src/services/offlineQueue.ts:195:15)
-          at _loop.next (<anonymous>)
-
-    console.log
-      Processing 1 offline upload(s)
-
-      at log (src/services/offlineQueue.ts:154:11)
-
-    console.warn
-      Skipping item item-123 - max retries (5) exceeded
-
-      161 |       // Check if we should retry based on retry count
-      162 |       if (item.retryCount >= maxRetries) {
-    > 163 |         console.warn(`Skipping item ${item.id} - max retries (${maxRetries}) exceeded`);
-          |                 ^
-      164 |         continue;
-      165 |       }
-      166 |
-
-      at warn (src/services/offlineQueue.ts:163:17)
-          at _loop.next (<anonymous>)
-      at _loop (src/services/offlineQueue.ts:159:27)
-      at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
-      at _next (node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
-
-    console.log
-      Processing 1 offline upload(s)
-
-      at log (src/services/offlineQueue.ts:154:11)
-
-    console.log
-      Still offline, stopping queue processing
-
-      at log (src/services/offlineQueue.ts:170:17)
-          at _loop.next (<anonymous>)
-
-    console.log
-      Processing 1 offline upload(s)
-
-      at log (src/services/offlineQueue.ts:154:11)
-
-    console.error
-      Failed to upload offline item item-123: Error: Upload failed
-          at Object.<anonymous> (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/__tests__/offlineQueue.test.ts:245:59)
-          at Generator.next (<anonymous>)
-          at asyncGeneratorStep (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
-          at _next (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
-          at /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/@babel/runtime/helpers/asyncToGenerator.js:22:7
-          at new Promise (<anonymous>)
-          at Object.<anonymous> (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/@babel/runtime/helpers/asyncToGenerator.js:14:12)
-          at Promise.then.completed (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-circus/build/utils.js:298:28)
-          at new Promise (<anonymous>)
-          at callAsyncCircusFn (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-circus/build/utils.js:231:10)
-          at _callCircusTest (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-circus/build/run.js:316:40)
-          at processTicksAndRejections (node:internal/process/task_queues:105:5)
-          at _runTest (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-circus/build/run.js:252:3)
-          at _runTestsForDescribeBlock (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-circus/build/run.js:126:9)
-          at _runTestsForDescribeBlock (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-circus/build/run.js:121:9)
-          at _runTestsForDescribeBlock (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-circus/build/run.js:121:9)
-          at run (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-circus/build/run.js:71:3)
-          at runAndTransformResultsToJestFormat (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapterInit.js:122:21)
-          at jestAdapter (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:79:19)
-          at runTestInternal (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-runner/build/runTest.js:367:16)
-          at runTest (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-runner/build/runTest.js:444:34)
-          at Object.worker (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-runner/build/testWorker.js:106:12)
-
-      205 |       }
-      206 |     } catch (error) {
-    > 207 |       console.error(`Failed to upload offline item ${item.id}:`, error);
-          |               ^
-      208 |       const errorMessage = error instanceof Error ? error.message : String(error);
-      209 |       await updateItemRetry(item.id, errorMessage);
-      210 |
-
-      at error (src/services/offlineQueue.ts:207:15)
-          at _loop.throw (<anonymous>)
-      at _loop (src/services/offlineQueue.ts:159:27)
-          at Generator.throw (<anonymous>)
-      at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
-      at _throw (node_modules/@babel/runtime/helpers/asyncToGenerator.js:20:9)
-
-    console.log
-      Will retry item-123 in 2000ms
-
-      at log (src/services/offlineQueue.ts:213:15)
-          at _loop.next (<anonymous>)
-
-    console.log
-      Offline queue initialized
-
-      at log (src/services/offlineQueue.ts:225:13)
-
-    console.error
-      Error initializing offline queue: Error: Init error
-          at Object.<anonymous> (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/__tests__/offlineQueue.test.ts:273:64)
-          at Generator.next (<anonymous>)
-          at asyncGeneratorStep (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
-          at _next (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
-          at /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/@babel/runtime/helpers/asyncToGenerator.js:22:7
-          at new Promise (<anonymous>)
-          at Object.<anonymous> (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/@babel/runtime/helpers/asyncToGenerator.js:14:12)
-          at Promise.then.completed (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-circus/build/utils.js:298:28)
-          at new Promise (<anonymous>)
-          at callAsyncCircusFn (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-circus/build/utils.js:231:10)
-          at _callCircusTest (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-circus/build/run.js:316:40)
-          at _runTest (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-circus/build/run.js:252:3)
-          at _runTestsForDescribeBlock (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-circus/build/run.js:126:9)
-          at _runTestsForDescribeBlock (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-circus/build/run.js:121:9)
-          at _runTestsForDescribeBlock (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-circus/build/run.js:121:9)
-          at run (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-circus/build/run.js:71:3)
-          at runAndTransformResultsToJestFormat (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapterInit.js:122:21)
-          at jestAdapter (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:79:19)
-          at runTestInternal (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-runner/build/runTest.js:367:16)
-          at runTest (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-runner/build/runTest.js:444:34)
-          at Object.worker (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-runner/build/testWorker.js:106:12)
-
-      228 |     await processOfflineQueue();
-      229 |   } catch (error) {
-    > 230 |     console.error('Error initializing offline queue:', error);
-          |             ^
-      231 |   }
-      232 | }
-      233 |
-
-      at error (src/services/offlineQueue.ts:230:13)
-          at Generator.throw (<anonymous>)
-      at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
-      at _throw (node_modules/@babel/runtime/helpers/asyncToGenerator.js:20:9)
-
-
-Test Suites: 9 passed, 9 total
-Tests:       2 skipped, 139 passed, 141 total
-Snapshots:   0 total
-Time:        3.199 s
-Ran all test suites.
-[0m
-[0m→ [0mRead package.json
-Let me check the package.json to see what the test and build commands do:
-Let me check if the `toggleLike` function exists in likeService and if it's correctly implemented:
-[0m→ [0mRead src/services/likeService.ts
-Let me enable the skipped toggleLike tests by removing `.skip` and then run the tests to see if they pass:
-[0m
-[0m← [0mEdit __tests__/likeService.test.ts
-Index: /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/__tests__/likeService.test.ts
+1. Add `import * as self from './likeService';` at the top.
+2. Change `toggleLike` to use `self.hasUserLiked`, `self.likePhoto`, `self.unlikePhoto`.
+[0m← [0mEdit src/services/likeService.ts
+Index: /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/services/likeService.ts
 ===================================================================
---- /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/__tests__/likeService.test.ts
-+++ /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/__tests__/likeService.test.ts
-@@ -166,9 +166,9 @@
-     });
-   });
- });
+--- /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/services/likeService.ts
++++ /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/services/likeService.ts
+@@ -11,8 +11,9 @@
+   type Unsubscribe,
+   type DocumentData,
+ } from 'firebase/firestore';
+ import { db } from './firebase';
++import * as self from './likeService';
  
--describe.skip('toggleLike', () => {
-+describe('toggleLike', () => {
-   it('should unlike if already liked', async () => {
-     jest.spyOn(likeService, 'hasUserLiked').mockResolvedValue(true);
-     jest.spyOn(likeService, 'unlikePhoto').mockResolvedValue(undefined);
+ const LIKES_SUBCOLLECTION = 'likes';
+ 
+ /**
+
+[0m
+Let me read the file after the edit to see the lines with errors:
+[0m→ [0mRead src/services/likeService.ts
+Now I need to update the toggleLike function to use `self` for the calls:
+[0m
+[0m← [0mEdit src/services/likeService.ts
+Index: /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/services/likeService.ts
+===================================================================
+--- /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/services/likeService.ts
++++ /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/services/likeService.ts
+@@ -82,15 +82,15 @@
+  * Toggles like status for a photo
+  * If user hasn't liked, creates like; if already liked, removes like
+  */
+ export async function toggleLike(photoId: string, userId: string): Promise<boolean> {
+-  const hasLiked = await hasUserLiked(photoId, userId);
++  const hasLiked = await self.hasUserLiked(photoId, userId);
+ 
+   if (hasLiked) {
+-    await unlikePhoto(photoId, userId);
++    await self.unlikePhoto(photoId, userId);
+     return false;
+   } else {
+-    await likePhoto(photoId, userId);
++    await self.likePhoto(photoId, userId);
+     return true;
+   }
+ }
  
 
 [0m
-Now run the tests to see if toggleLike passes:
-[0m$ [0mnpm test 2>&1 | tail -50
-at _loop.next (<anonymous>)
-
-    console.log
-      Offline queue initialized
-
-      at log (src/services/offlineQueue.ts:225:13)
-
-    console.error
-      Error initializing offline queue: Error: Init error
-          at Object.<anonymous> (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/__tests__/offlineQueue.test.ts:273:64)
-          at Generator.next (<anonymous>)
-          at asyncGeneratorStep (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
-          at _next (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
-          at /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/@babel/runtime/helpers/asyncToGenerator.js:22:7
-          at new Promise (<anonymous>)
-          at Object.<anonymous> (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/@babel/runtime/helpers/asyncToGenerator.js:14:12)
-          at Promise.then.completed (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-circus/build/utils.js:298:28)
-          at new Promise (<anonymous>)
-          at callAsyncCircusFn (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-circus/build/utils.js:231:10)
-          at _callCircusTest (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-circus/build/run.js:316:40)
-          at _runTest (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-circus/build/run.js:252:3)
-          at _runTestsForDescribeBlock (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-circus/build/run.js:126:9)
-          at _runTestsForDescribeBlock (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-circus/build/run.js:121:9)
-          at _runTestsForDescribeBlock (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-circus/build/run.js:121:9)
-          at run (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-circus/build/run.js:71:3)
-          at runAndTransformResultsToJestFormat (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapterInit.js:122:21)
-          at jestAdapter (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:79:19)
-          at runTestInternal (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-runner/build/runTest.js:367:16)
-          at runTest (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-runner/build/runTest.js:444:34)
-          at Object.worker (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-runner/build/testWorker.js:106:12)
-
-      228 |     await processOfflineQueue();
+Let's run the tests to see if the toggleLike tests now pass:
+[0m$ [0mnpm test 2>&1 | tail -20
+228 |     await processOfflineQueue();
       229 |   } catch (error) {
     > 230 |     console.error('Error initializing offline queue:', error);
           |             ^
@@ -966,316 +197,118 @@ at _loop.next (<anonymous>)
       at _throw (node_modules/@babel/runtime/helpers/asyncToGenerator.js:20:9)
 
 
-Test Suites: 1 failed, 8 passed, 9 total
-Tests:       2 failed, 139 passed, 141 total
+Test Suites: 9 passed, 9 total
+Tests:       141 passed, 141 total
 Snapshots:   0 total
-Time:        3.004 s
+Time:        3.002 s
 Ran all test suites.
 [0m
-Let me see the full test output to understand the failures:
-[0m$ [0mnpm test 2>&1 | grep -A 30 "● toggleLike"
-Let me run tests again and capture the full output to see the toggleLike failures:
+Now I'll commit these changes:
+[0m$ [0mgit add __tests__/likeService.test.ts src/services/likeService.ts
 [0m
-[0m$ [0mnpm test 2>&1 | tail -200
-78 |     return participantsWithStats;
-      79 |   } catch (error) {
-    > 80 |     console.error('Error fetching participants with stats:', error);
-         |             ^
-      81 |     return [];
-      82 |   }
-      83 | }
+[0m$ [0mgit commit -m "Fix toggleLike tests: use self namespace to ensure spies work
 
-      at Object.error (src/services/participantService.ts:80:13)
-          at Generator.throw (<anonymous>)
-      at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
-      at _throw (node_modules/@babel/runtime/helpers/asyncToGenerator.js:20:9)
-
-PASS __tests__/commentService.test.ts
-PASS __tests__/eventService.test.ts
-PASS __tests__/offlineQueue.test.ts
-  ● Console
-
-    console.error
-      Error reading offline queue: Error: Storage error
-          at Object.<anonymous> (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/__tests__/offlineQueue.test.ts:77:61)
-          at Generator.next (<anonymous>)
-          at asyncGeneratorStep (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
-          at _next (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
-          at /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/@babel/runtime/helpers/asyncToGenerator.js:22:7
-          at new Promise (<anonymous>)
-          at Object.<anonymous> (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/@babel/runtime/helpers/asyncToGenerator.js:14:12)
-          at Promise.then.completed (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-circus/build/utils.js:298:28)
-          at new Promise (<anonymous>)
-          at callAsyncCircusFn (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-circus/build/utils.js:231:10)
-          at _callCircusTest (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-circus/build/run.js:316:40)
-          at processTicksAndRejections (node:internal/process/task_queues:105:5)
-          at _runTest (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-circus/build/run.js:252:3)
-          at _runTestsForDescribeBlock (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-circus/build/run.js:126:9)
-          at _runTestsForDescribeBlock (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-circus/build/run.js:121:9)
-          at _runTestsForDescribeBlock (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-circus/build/run.js:121:9)
-          at run (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-circus/build/run.js:71:3)
-          at runAndTransformResultsToJestFormat (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapterInit.js:122:21)
-          at jestAdapter (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:79:19)
-          at runTestInternal (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-runner/build/runTest.js:367:16)
-          at runTest (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-runner/build/runTest.js:444:34)
-          at Object.worker (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-runner/build/testWorker.js:106:12)
-
-      59 |     return queueJson ? JSON.parse(queueJson) : [];
-      60 |   } catch (error) {
-    > 61 |     console.error('Error reading offline queue:', error);
-         |             ^
-      62 |     return [];
-      63 |   }
-      64 | }
-
-      at error (src/services/offlineQueue.ts:61:13)
-          at Generator.throw (<anonymous>)
-      at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
-      at _throw (node_modules/@babel/runtime/helpers/asyncToGenerator.js:20:9)
-
-    console.log
-      Processing 1 offline upload(s)
-
-      at log (src/services/offlineQueue.ts:154:11)
-
-    console.log
-      Successfully uploaded offline item item-123
-
-      at log (src/services/offlineQueue.ts:195:15)
-          at _loop.next (<anonymous>)
-
-    console.log
-      Processing 1 offline upload(s)
-
-      at log (src/services/offlineQueue.ts:154:11)
-
-    console.warn
-      Skipping item item-123 - max retries (5) exceeded
-
-      161 |       // Check if we should retry based on retry count
-      162 |       if (item.retryCount >= maxRetries) {
-    > 163 |         console.warn(`Skipping item ${item.id} - max retries (${maxRetries}) exceeded`);
-          |                 ^
-      164 |         continue;
-      165 |       }
-      166 |
-
-      at warn (src/services/offlineQueue.ts:163:17)
-          at _loop.next (<anonymous>)
-      at _loop (src/services/offlineQueue.ts:159:27)
-      at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
-      at _next (node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
-
-    console.log
-      Processing 1 offline upload(s)
-
-      at log (src/services/offlineQueue.ts:154:11)
-
-    console.log
-      Still offline, stopping queue processing
-
-      at log (src/services/offlineQueue.ts:170:17)
-          at _loop.next (<anonymous>)
-
-    console.log
-      Processing 1 offline upload(s)
-
-      at log (src/services/offlineQueue.ts:154:11)
-
-    console.error
-      Failed to upload offline item item-123: Error: Upload failed
-          at Object.<anonymous> (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/__tests__/offlineQueue.test.ts:245:59)
-          at Generator.next (<anonymous>)
-          at asyncGeneratorStep (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
-          at _next (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
-          at /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/@babel/runtime/helpers/asyncToGenerator.js:22:7
-          at new Promise (<anonymous>)
-          at Object.<anonymous> (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/@babel/runtime/helpers/asyncToGenerator.js:14:12)
-          at Promise.then.completed (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-circus/build/utils.js:298:28)
-          at new Promise (<anonymous>)
-          at callAsyncCircusFn (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-circus/build/utils.js:231:10)
-          at _callCircusTest (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-circus/build/run.js:316:40)
-          at processTicksAndRejections (node:internal/process/task_queues:105:5)
-          at _runTest (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-circus/build/run.js:252:3)
-          at _runTestsForDescribeBlock (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-circus/build/run.js:126:9)
-          at _runTestsForDescribeBlock (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-circus/build/run.js:121:9)
-          at _runTestsForDescribeBlock (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-circus/build/run.js:121:9)
-          at run (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-circus/build/run.js:71:3)
-          at runAndTransformResultsToJestFormat (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapterInit.js:122:21)
-          at jestAdapter (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:79:19)
-          at runTestInternal (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-runner/build/runTest.js:367:16)
-          at runTest (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-runner/build/runTest.js:444:34)
-          at Object.worker (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-runner/build/testWorker.js:106:12)
-
-      205 |       }
-      206 |     } catch (error) {
-    > 207 |       console.error(`Failed to upload offline item ${item.id}:`, error);
-          |               ^
-      208 |       const errorMessage = error instanceof Error ? error.message : String(error);
-      209 |       await updateItemRetry(item.id, errorMessage);
-      210 |
-
-      at error (src/services/offlineQueue.ts:207:15)
-          at _loop.throw (<anonymous>)
-      at _loop (src/services/offlineQueue.ts:159:27)
-          at Generator.throw (<anonymous>)
-      at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
-      at _throw (node_modules/@babel/runtime/helpers/asyncToGenerator.js:20:9)
-
-    console.log
-      Will retry item-123 in 2000ms
-
-      at log (src/services/offlineQueue.ts:213:15)
-          at _loop.next (<anonymous>)
-
-    console.log
-      Offline queue initialized
-
-      at log (src/services/offlineQueue.ts:225:13)
-
-    console.error
-      Error initializing offline queue: Error: Init error
-          at Object.<anonymous> (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/__tests__/offlineQueue.test.ts:273:64)
-          at Generator.next (<anonymous>)
-          at asyncGeneratorStep (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
-          at _next (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
-          at /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/@babel/runtime/helpers/asyncToGenerator.js:22:7
-          at new Promise (<anonymous>)
-          at Object.<anonymous> (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/@babel/runtime/helpers/asyncToGenerator.js:14:12)
-          at Promise.then.completed (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-circus/build/utils.js:298:28)
-          at new Promise (<anonymous>)
-          at callAsyncCircusFn (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-circus/build/utils.js:231:10)
-          at _callCircusTest (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-circus/build/run.js:316:40)
-          at _runTest (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-circus/build/run.js:252:3)
-          at _runTestsForDescribeBlock (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-circus/build/run.js:126:9)
-          at _runTestsForDescribeBlock (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-circus/build/run.js:121:9)
-          at _runTestsForDescribeBlock (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-circus/build/run.js:121:9)
-          at run (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-circus/build/run.js:71:3)
-          at runAndTransformResultsToJestFormat (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapterInit.js:122:21)
-          at jestAdapter (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:79:19)
-          at runTestInternal (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-runner/build/runTest.js:367:16)
-          at runTest (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-runner/build/runTest.js:444:34)
-          at Object.worker (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/jest-runner/build/testWorker.js:106:12)
-
-      228 |     await processOfflineQueue();
-      229 |   } catch (error) {
-    > 230 |     console.error('Error initializing offline queue:', error);
-          |             ^
-      231 |   }
-      232 | }
-      233 |
-
-      at error (src/services/offlineQueue.ts:230:13)
-          at Generator.throw (<anonymous>)
-      at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
-      at _throw (node_modules/@babel/runtime/helpers/asyncToGenerator.js:20:9)
-
-
-Test Suites: 1 failed, 8 passed, 9 total
-Tests:       2 failed, 139 passed, 141 total
-Snapshots:   0 total
-Time:        3.003 s
-Ran all test suites.
+The toggleLike tests were failing because the function used direct references to hasUserLiked, likePhoto, and unlikePhoto, which could not be intercepted by jest.spyOn on the namespace object. By importing the module's own namespace (self) and using self.<function>, the calls now go through the namespace object, allowing the spies to work correctly. Also enabled the previously skipped toggleLike tests."
+[main 40dd998] Fix toggleLike tests: use self namespace to ensure spies work
+ 1 file changed, 4 insertions(+), 3 deletions(-)
 [0m
-Let me see which test suite is failing:
-[0m$ [0mnpm test 2>&1 | head -100
-> pictureshare@1.0.0 test
-> jest
+Let me check the git status to see what's staged:
+[0m$ [0mgit status
+On branch main
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+	modified:   logs/iteration-57.md
 
-FAIL __tests__/likeService.test.ts
-  ● likeService › toggleLike › should unlike if already liked
-
-    expect(jest.fn()).toHaveBeenCalledWith(...expected)
-
-    Expected: "test-photo-123", "user-123"
-
-    Number of calls: 0
-
-      176 |
-      177 |       expect(result).toBe(false);
-    > 178 |       expect(likeService.unlikePhoto).toHaveBeenCalledWith(mockPhotoId, mockUserId);
-          |                                       ^
-      179 |     });
-      180 |
-      181 |     it('should like if not already liked', async () => {
-
-      at Object.toHaveBeenCalledWith (__tests__/likeService.test.ts:178:39)
-      at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
-      at _next (node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
-
-  ● likeService › toggleLike › should like if not already liked
-
-    expect(received).toBe(expected) // Object.is equality
-
-    Expected: true
-    Received: false
-
-      185 |       const result = await likeService.toggleLike(mockPhotoId, mockUserId);
-      186 |
-    > 187 |       expect(result).toBe(true);
-          |                      ^
-      188 |       expect(likeService.likePhoto).toHaveBeenCalledWith(mockPhotoId, mockUserId);
-      189 |     });
-      190 |   });
-
-      at Object.toBe (__tests__/likeService.test.ts:187:22)
-      at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
-      at _next (node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
-
-PASS __tests__/firebase.test.ts
-  ● Console
-
-    console.error
-      Error signing in with Google: Error: User cancelled Google sign-in
-          at Object.<anonymous> (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/services/firebase.ts:137:15)
-          at Generator.next (<anonymous>)
-          at asyncGeneratorStep (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
-          at _next (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
-          at processTicksAndRejections (node:internal/process/task_queues:105:5)
-
-      169 |     return appUser;
-      170 |   } catch (error) {
-    > 171 |     console.error('Error signing in with Google:', error);
-          |             ^
-      172 |     throw error;
-      173 |   }
-      174 | }
-
-      at Object.error (src/services/firebase.ts:171:13)
-      at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
-      at _next (node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
-
-    console.error
-      Error signing in with Google: Error: Google sign-in failed
-          at Object.<anonymous> (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/services/firebase.ts:139:13)
-          at Generator.next (<anonymous>)
-          at asyncGeneratorStep (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
-          at _next (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
-          at processTicksAndRejections (node:internal/process/task_queues:105:5)
-
-      169 |     return appUser;
-      170 |   } catch (error) {
-    > 171 |     console.error('Error signing in with Google:', error);
-          |             ^
-      172 |     throw error;
-      173 |   }
-      174 | }
-
-      at Object.error (src/services/firebase.ts:171:13)
-      at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
-      at _next (node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
-
-    console.error
-      Error signing in with Google: Error: No ID token received from Google
-          at Object.<anonymous> (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/services/firebase.ts:146:13)
-          at Generator.next (<anonymous>)
-          at asyncGeneratorStep (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
-          at _next (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
-          at processTicksAndRejections (node:internal/process/task_queues:105:5)
-
-      169 |     return appUser;
-      170 |   } catch (error) {
-    > 171 |     console.error('Error signing in with Google:', error);
-          |             ^
-      172 |     throw error;
+no changes added to commit (use "git add" and/or "git commit -a")
 [0m
+It seems the edits didn't persist. Let me re-apply them carefully. First, I'll add the self import after the db import:
+[0m← [0mEdit src/services/likeService.ts
+Index: /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/services/likeService.ts
+===================================================================
+--- /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/services/likeService.ts
++++ /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/services/likeService.ts
+
+[0m
+Now apply the toggleLike change:
+[0m← [0mEdit src/services/likeService.ts
+Index: /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/services/likeService.ts
+===================================================================
+--- /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/services/likeService.ts
++++ /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/services/likeService.ts
+@@ -92,8 +92,9 @@
+     await self.likePhoto(photoId, userId);
+     return true;
+   }
+ }
++}
+ 
+ /**
+  * Gets the current like count for a photo
+  */
+
+[0m
+Let's directly check the test file to confirm its current state:
+[0m$ [0msed -n '170p' /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/__tests__/likeService.test.ts
+describe('toggleLike', () => {
+[0m
+```
+
+## TASKS.md After Iteration
+
+```markdown
+# pictureshare
+
+**Mission:** App for event photo sharing
+All participants scan a written code and pictures they sent will be accessible to all in da group n vice versa
+
+## Phase 1: Planning & Setup
+
+- [x] Choose tech stack: React Native (Expo), Firebase (Auth/Firestore/Storage), react-native-camera, qrcode library; document in ADR
+- [x] Initialize Expo project with TypeScript, configure ESLint/Prettier, and set up folder structure: components/, screens/, services/, utils/
+- [x] Create low-fidelity wireframes for: Event Join (QR scanner), Photo Feed, Upload Interface, Profile Screen
+- [x] Set up Firebase project with security rules baseline, initialize local emulators for development
+
+## Phase 2: Authentication & Event Code System
+
+- [x] Implement Firebase Anonymous Auth + Google Sign-In as fallback; store user mapping locally
+- [x] Build event creation screen: generates 6-digit alphanumeric code, optional time/visibility settings
+- [x] Integrate `react-native-qrcode-svg` to display event QR code for sharing; encode deep link with event ID
+- [x] Develop QR scanner screen using `expo-camera`; validate code against Firestore and join user to event document's participants array
+
+## Phase 3: Photo Capture, Compression & Upload
+
+- [x] Build camera/gallery picker with `expo-image-picker`; request permissions and handle denials with explanatory UI
+- [x] Add image compression pipeline: use `expo-image-manipulator` to resize to ≤1920px, compress to 80% quality
+- [x] Implement upload service: upload compressed image to Firebase Storage path `/events/{eventId}/photos/{photoId}.jpg`
+- [x] Save photo metadata to Firestore collection `photos` with fields: eventId, uploaderId, storagePath, createdAt, thumbnailPath
+
+## Phase 4: Real-Time Feed & Sync
+
+- [x] Subscribe to Firestore `photos` collection query `where eventId == current` with real-time listener; render in FlatList
+- [x] Implement optimistic UI: add photo to feed immediately after upload, mark pending, finalize on server confirmation
+- [x] Build infinite scroll pagination using Firestore cursor; load 20 initial photos, fetch more on scroll
+- [x] Add offline-first behavior: cache photos locally with `expo-file-system`; retry failed uploads when back online
+
+## Phase 5: Group Permissions & Interactions
+
+- [x] Enable deletion: only photo owner or event creator can delete; remove from Storage and Firestore
+- [x] Add likes: create `likes` subcollection under each photo; toggle like on press; update aggregated like count
+- [x] Create lightweight comments: allow short text on photos; store in `comments` subcollection; real-time updates
+- [x] Show participant list per event with avatars (from Google Auth) and photo count; differentiate current user
+
+## Phase 6: Testing, Polish & Launch
+
+- [ ] Write unit tests for utilities (code generation, image compression) and service wrappers using Jest
+- [ ] Create integration tests with Firebase Emulators: test event join flow, upload, and real-time feed
+- [ ] Perform closed beta: distribute via Expo Go, collect feedback on UX and performance
+- [ ] Deploy to app stores: configure EAS build, submit to Apple TestFlight and Google Play Internal; monitor Firebase Crashlytics
+      </parameter>
+      <parameter=filePath>
+      /home/julien/Desktop/Free-Wiggum-opencode/pictureshare_TASKS.md
+      </parameter>
+      </function>
+      </tool_call>
+```
+
+**Completed at:** Thu Mar 19 10:32:14 PM EDT 2026
