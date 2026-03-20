@@ -167,7 +167,7 @@ describe('likeService', () => {
     });
   });
 
-  describe.skip('toggleLike', () => {
+  describe('toggleLike', () => {
     it('should unlike if already liked', async () => {
       jest.spyOn(likeService, 'hasUserLiked').mockResolvedValue(true);
       jest.spyOn(likeService, 'unlikePhoto').mockResolvedValue(undefined);
