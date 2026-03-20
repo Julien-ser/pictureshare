@@ -22,18 +22,21 @@ export async function compressImage(
   height: number
 ): Promise<ImageResult> {
   try {
+    // If already within max dimensions, return original without manipulation
+    if (width <= MAX_DIMENSION && height <= MAX_DIMENSION) {
+      return { uri: imageUri, width, height };
+    }
+
     // Calculate target dimensions maintaining aspect ratio
     let targetWidth = width;
     let targetHeight = height;
 
-    if (width > MAX_DIMENSION || height > MAX_DIMENSION) {
-      if (width >= height) {
-        targetWidth = MAX_DIMENSION;
-        targetHeight = Math.round((height * MAX_DIMENSION) / width);
-      } else {
-        targetHeight = MAX_DIMENSION;
-        targetWidth = Math.round((width * MAX_DIMENSION) / height);
-      }
+    if (width >= height) {
+      targetWidth = MAX_DIMENSION;
+      targetHeight = Math.round((height * MAX_DIMENSION) / width);
+    } else {
+      targetHeight = MAX_DIMENSION;
+      targetWidth = Math.round((width * MAX_DIMENSION) / height);
     }
 
     // Perform compression and resizing

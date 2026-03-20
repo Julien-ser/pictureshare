@@ -1,8 +1,4 @@
-import {
-  getParticipantsWithStats,
-  getUserProfiles,
-  getEnrichedParticipants,
-} from '../src/services/participantService';
+import * as participantService from '../src/services/participantService';
 import { db } from '../src/services/firebase';
 import {
   collection,

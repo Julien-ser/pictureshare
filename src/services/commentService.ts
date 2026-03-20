@@ -49,7 +49,7 @@ export async function addComment(photoId: string, userId: string, text: string):
   const photoRef = doc(db, 'photos', photoId);
   await runTransaction(db, async (transaction) => {
     const photoDoc = await transaction.get(photoRef);
-    if (!photoDoc.exists()) {
+    if (!photoDoc.exists) {
       throw new Error('Photo not found');
     }
     transaction.update(photoRef, {
@@ -74,7 +74,7 @@ export async function deleteComment(
 
   // Check if comment exists and user has permission
   const commentDoc = await getDoc(commentRef);
-  if (!commentDoc.exists()) {
+  if (!commentDoc.exists) {
     throw new Error('Comment not found');
   }
 
@@ -89,7 +89,7 @@ export async function deleteComment(
   const photoRef = doc(db, 'photos', photoId);
   await runTransaction(db, async (transaction) => {
     const photoDoc = await transaction.get(photoRef);
-    if (!photoDoc.exists()) {
+    if (!photoDoc.exists) {
       throw new Error('Photo not found');
     }
     const currentCount = photoDoc.data().commentCount || 0;
@@ -107,7 +107,7 @@ export async function getCommentCount(photoId: string): Promise<number> {
   const photoRef = doc(db, 'photos', photoId);
   const photoDoc = await getDoc(photoRef);
 
-  if (!photoDoc.exists()) {
+  if (!photoDoc.exists) {
     return 0;
   }
 
@@ -128,7 +128,7 @@ export function subscribeToCommentCount(
   return onSnapshot(
     photoRef,
     (doc) => {
-      if (doc.exists()) {
+      if (doc.exists) {
         const data = doc.data() as DocumentData;
         const commentCount = data.commentCount || 0;
         onCommentCountUpdate(commentCount);

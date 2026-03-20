@@ -85,7 +85,7 @@ export async function joinEvent(eventId: string, userId: string): Promise<void> 
   // Note: In a real app, you'd use Firestore's arrayUnion but it's not available in the client SDK directly
   // For simplicity, we'll get the doc, update locally and save
   const eventDoc = await getDoc(eventRef);
-  if (eventDoc.exists()) {
+  if (eventDoc.exists) {
     const event = eventDoc.data() as Event;
     if (!event.participants.includes(userId)) {
       event.participants.push(userId);

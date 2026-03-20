@@ -216,7 +216,12 @@ describe('imagePicker', () => {
 
   describe('takePhoto', () => {
     it('should return null if permissions denied', async () => {
-      (requestMediaPermissions as jest.Mock).mockResolvedValue(false);
+      (ImagePicker.requestCameraPermissionsAsync as jest.Mock).mockResolvedValue({
+        status: 'denied',
+      });
+      (ImagePicker.requestMediaLibraryPermissionsAsync as jest.Mock).mockResolvedValue({
+        status: 'denied',
+      });
 
       const result = await takePhoto();
 
@@ -234,7 +239,12 @@ describe('imagePicker', () => {
     });
 
     it('should compress and return photo when successful', async () => {
-      (requestMediaPermissions as jest.Mock).mockResolvedValue(true);
+      (ImagePicker.requestCameraPermissionsAsync as jest.Mock).mockResolvedValue({
+        status: 'granted',
+      });
+      (ImagePicker.requestMediaLibraryPermissionsAsync as jest.Mock).mockResolvedValue({
+        status: 'granted',
+      });
       (ImagePicker.launchCameraAsync as jest.Mock).mockResolvedValue({
         canceled: false,
         assets: [{ uri: mockImageUri, width: mockWidth, height: mockHeight }],
@@ -278,7 +288,12 @@ describe('imagePicker', () => {
 
   describe('pickFromGallery', () => {
     it('should return null if permissions denied', async () => {
-      (requestMediaPermissions as jest.Mock).mockResolvedValue(false);
+      (ImagePicker.requestCameraPermissionsAsync as jest.Mock).mockResolvedValue({
+        status: 'denied',
+      });
+      (ImagePicker.requestMediaLibraryPermissionsAsync as jest.Mock).mockResolvedValue({
+        status: 'denied',
+      });
 
       const result = await pickFromGallery();
 
@@ -296,7 +311,12 @@ describe('imagePicker', () => {
     });
 
     it('should compress and return selected image', async () => {
-      (requestMediaPermissions as jest.Mock).mockResolvedValue(true);
+      (ImagePicker.requestCameraPermissionsAsync as jest.Mock).mockResolvedValue({
+        status: 'granted',
+      });
+      (ImagePicker.requestMediaLibraryPermissionsAsync as jest.Mock).mockResolvedValue({
+        status: 'granted',
+      });
       (ImagePicker.launchImageLibraryAsync as jest.Mock).mockResolvedValue({
         canceled: false,
         assets: [{ uri: mockImageUri, width: mockWidth, height: mockHeight }],
@@ -334,12 +354,22 @@ describe('imagePicker', () => {
 
   describe('pickImage', () => {
     it('should call takePhoto when source is camera', async () => {
-      (requestMediaPermissions as jest.Mock).mockResolvedValue(false);
+      (ImagePicker.requestCameraPermissionsAsync as jest.Mock).mockResolvedValue({
+        status: 'denied',
+      });
+      (ImagePicker.requestMediaLibraryPermissionsAsync as jest.Mock).mockResolvedValue({
+        status: 'denied',
+      });
       await pickImage('camera');
       expect(ImagePicker.launchCameraAsync).not.toHaveBeenCalled();
       expect(ImagePicker.launchImageLibraryAsync).not.toHaveBeenCalled();
 
-      (requestMediaPermissions as jest.Mock).mockResolvedValue(true);
+      (ImagePicker.requestCameraPermissionsAsync as jest.Mock).mockResolvedValue({
+        status: 'granted',
+      });
+      (ImagePicker.requestMediaLibraryPermissionsAsync as jest.Mock).mockResolvedValue({
+        status: 'granted',
+      });
       (ImagePicker.launchCameraAsync as jest.Mock).mockResolvedValue({
         canceled: false,
         assets: [{ uri: mockImageUri, width: 1000, height: 800 }],
@@ -356,7 +386,12 @@ describe('imagePicker', () => {
     });
 
     it('should call pickFromGallery when source is gallery', async () => {
-      (requestMediaPermissions as jest.Mock).mockResolvedValue(true);
+      (ImagePicker.requestCameraPermissionsAsync as jest.Mock).mockResolvedValue({
+        status: 'granted',
+      });
+      (ImagePicker.requestMediaLibraryPermissionsAsync as jest.Mock).mockResolvedValue({
+        status: 'granted',
+      });
       (ImagePicker.launchImageLibraryAsync as jest.Mock).mockResolvedValue({
         canceled: false,
         assets: [{ uri: mockImageUri, width: 1000, height: 800 }],

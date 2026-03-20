@@ -77,54 +77,6 @@ jest.mock('@react-native-async-storage/async-storage', () => ({
   setItem: jest.fn(),
 }));
 
-jest.mock('firebase/auth', () => ({
-  signInAnonymously: jest.fn(),
-  onAuthStateChanged: jest.fn(),
-  GoogleAuthProvider: {
-    credential: jest.fn(),
-  },
-  signInWithCredential: jest.fn(),
-  connectAuthEmulator: jest.fn(),
-}));
-
-jest.mock('firebase/firestore', () => ({
-  getFirestore: jest.fn(() => ({})),
-  connectFirestoreEmulator: jest.fn(),
-  doc: jest.fn(() => ({})),
-  setDoc: jest.fn(() => Promise.resolve()),
-  Timestamp: {
-    now: jest.fn(() => ({ toDate: () => new Date() })),
-  },
-}));
-
-jest.mock('firebase/storage', () => ({
-  getStorage: jest.fn(() => ({})),
-  connectStorageEmulator: jest.fn(),
-  ref: jest.fn(() => ({})),
-}));
-
-jest.mock('expo-web-browser', () => ({
-  maybeCompleteAuthSession: jest.fn(),
-}));
-
-jest.mock('expo-auth-session', () => ({
-  makeRedirectUri: jest.fn(() => 'pictureshare://redirect'),
-  AuthRequest: jest.fn().mockImplementation(() => ({
-    promptAsync: jest.fn(),
-  })),
-}));
-
-jest.mock('expo-auth-session/providers/google', () => ({
-  Google: {
-    discovery: {},
-  },
-}));
-
-jest.mock('@react-native-async-storage/async-storage', () => ({
-  getItem: jest.fn(),
-  setItem: jest.fn(),
-}));
-
 describe('firebase', () => {
   const mockUser = {
     uid: 'user-123',
