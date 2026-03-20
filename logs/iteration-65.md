@@ -141,3 +141,7 @@ These test files are already comprehensive! Now let me check the service test fi
 Let me check a few more service files to see if any functionality lacks test coverage:
 [0m→ [0mRead __tests__/photoService.test.ts[90m [limit=100][0m
 [0m→ [0mRead src/services/photoService.ts[90m [limit=100][0m
+[0m✱ [0mGrep "wrapper"[90m in src · 0 matches[0m
+Let me check eventService and participantService tests to ensure full coverage:
+[0m→ [0mRead __tests__/eventService.test.ts[90m [limit=80][0m
+[0m→ [0mRead src/services/eventService.ts[90m [limit=80][0m
