@@ -75,9 +75,23 @@ describe('imagePicker', () => {
     it('should resize image if height exceeds max dimension', async () => {
       (ImageManipulator.manipulateAsync as jest.Mock).mockResolvedValue({
         uri: 'compressed.jpg',
-        width: 960,
+        width: 1920,
+        height: 1440,
+      });
+
+      const result = await imagePicker.compressImage(mockImageUri, 800, 2500);
+
+      expect(ImageManipulator.manipulateAsync).toHaveBeenCalledWith(
+        mockImageUri,
+        [{ resize: { width: 614, height: 1920 } }],
+        expect.any(Object)
+      );
+      expect(result).toEqual({
+        uri: 'compressed.jpg',
+        width: 614,
         height: 1920,
       });
+    });
 
       const result = await imagePicker.compressImage(mockImageUri, 800, 2500);
 
