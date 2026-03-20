@@ -295,3 +295,69 @@ Index: /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/servi
  /**
 
 [0m
+Let me add the necessary imports and explicit types:
+[0m← [0mEdit src/services/likeService.ts
+Index: /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/services/likeService.ts
+===================================================================
+--- /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/services/likeService.ts
++++ /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/services/likeService.ts
+@@ -10,8 +10,9 @@
+   runTransaction,
+   type Unsubscribe,
+   type DocumentData,
+   type DocumentSnapshot,
++  type DocumentReference,
+ } from 'firebase/firestore';
+ import { db } from './firebase';
+ 
+ const LIKES_SUBCOLLECTION = 'likes';
+
+[0m
+Let me apply these fixes:
+[0m← [0mEdit src/services/likeService.ts
+Index: /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/services/likeService.ts
+===================================================================
+--- /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/services/likeService.ts
++++ /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/services/likeService.ts
+@@ -115,10 +115,9 @@
+  * Checks if a user has liked a photo
+  */
+ export async function hasUserLiked(photoId: string, userId: string): Promise<boolean> {
+   const likeRef = doc(collection(db, 'photos', photoId, LIKES_SUBCOLLECTION), userId);
+-  const likeDoc: DocumentSnapshot<DocumentData> = await getDoc(likeRef);
+-  return likeDoc.exists;
++  return (await getDoc(likeRef)).exists;
+ }
+ 
+ /**
+  * Subscribes to like count changes for a photo in real-time
+
+[0m
+Let me try using the `get()` method on the document reference instead of the top-level `getDoc` function:
+[0m← [0mEdit src/services/likeService.ts
+Index: /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/services/likeService.ts
+===================================================================
+--- /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/services/likeService.ts
++++ /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/services/likeService.ts
+@@ -115,9 +115,10 @@
+  * Checks if a user has liked a photo
+  */
+ export async function hasUserLiked(photoId: string, userId: string): Promise<boolean> {
+   const likeRef = doc(collection(db, 'photos', photoId, LIKES_SUBCOLLECTION), userId);
+-  return (await getDoc(likeRef)).exists;
++  const likeDoc = await likeRef.get();
++  return likeDoc.exists;
+ }
+ 
+ /**
+  * Subscribes to like count changes for a photo in real-time
+
+[0m
+[0m→ [0mRead package.json
+[0m✗ [0medit failed
+[91m[1mError: [0mFile /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/services/likeService.ts has been modified since it was last read.
+Last modification: 2026-03-20T03:14:36.305Z
+Last read: 2026-03-20T03:13:16.667Z
+
+Please read the file again before modifying it.
+Let me try a different approach - explicitly typing the `onSnapshot` callbacks as receiving `QueryDocumentSnapshot` since the errors mention that type:
