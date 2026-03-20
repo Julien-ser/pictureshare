@@ -42,9 +42,7 @@ All participants scan a written code and pictures they sent will be accessible t
 
 - [x] Write unit tests for utilities (code generation, image compression) and service wrappers using Jest
 - [x] Create integration tests with Firebase Emulators: test event join flow, upload, and real-time feed
-- [ ] Perform closed beta: distribute via Expo Go, collect feedback on UX and performance
-
-* - [x] Perform closed beta: distribute via Expo Go, collect feedback on UX and performance
+- [x] Perform closed beta: distribute via Expo Go, collect feedback on UX and performance
 
 - [ ] Deploy to app stores: configure EAS build, submit to Apple TestFlight and Google Play Internal; monitor Firebase Crashlytics
       </parameter>
