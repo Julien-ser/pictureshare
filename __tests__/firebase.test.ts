@@ -244,7 +244,9 @@ describe('firebase', () => {
       (signInWithCredential as jest.Mock).mockResolvedValue(mockUserCredential);
 
       // Mock firebase.storeUserMapping
-      (firebase.storeUserMapping as jest.Mock).mockResolvedValue(undefined);
+      const storeUserMappingSpy = jest
+        .spyOn(firebase, 'storeUserMapping')
+        .mockResolvedValue(undefined);
 
       // Mock doc and setDoc
       const mockUserRef = { path: '' };
