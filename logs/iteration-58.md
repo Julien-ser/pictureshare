@@ -1186,3 +1186,164 @@ Let me check the iteration log to understand what was done:
 Let me check the jest configuration to ensure it's correct:
 [0m→ [0mRead jest.config.js
 Let me run the lint command as recommended to ensure code quality:
+[0m
+[0m$ [0mnpm run lint 2>&1
+> pictureshare@1.0.0 lint
+> eslint .
+
+
+/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/App.tsx
+  13:25  warning  'setCurrentEvent' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/__tests__/commentService.test.ts
+   9:10  warning  'db' is defined but never used               @typescript-eslint/no-unused-vars
+  15:3   warning  'serverTimestamp' is defined but never used  @typescript-eslint/no-unused-vars
+  18:3   warning  'increment' is defined but never used        @typescript-eslint/no-unused-vars
+  20:8   warning  'Unsubscribe' is defined but never used      @typescript-eslint/no-unused-vars
+  23:8   warning  'QuerySnapshot' is defined but never used    @typescript-eslint/no-unused-vars
+
+/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/__tests__/eventService.test.ts
+    2:10  warning  'db' is defined but never used                     @typescript-eslint/no-unused-vars
+   12:3   warning  'Timestamp' is defined but never used              @typescript-eslint/no-unused-vars
+  123:13  warning  'mockEventRef' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/__tests__/firebase.test.ts
+    9:3   warning  'connectAuthEmulator' is defined but never used           @typescript-eslint/no-unused-vars
+   10:3   warning  'getAuth' is defined but never used                       @typescript-eslint/no-unused-vars
+   11:16  warning  'FirebaseUser' is defined but never used                  @typescript-eslint/no-unused-vars
+   13:10  warning  'getFirestore' is defined but never used                  @typescript-eslint/no-unused-vars
+   13:37  warning  'Timestamp' is defined but never used                     @typescript-eslint/no-unused-vars
+   13:48  warning  'connectFirestoreEmulator' is defined but never used      @typescript-eslint/no-unused-vars
+   14:10  warning  'getStorage' is defined but never used                    @typescript-eslint/no-unused-vars
+   14:22  warning  'connectStorageEmulator' is defined but never used        @typescript-eslint/no-unused-vars
+   14:46  warning  'ref' is defined but never used                           @typescript-eslint/no-unused-vars
+   15:13  warning  'WebBrowser' is defined but never used                    @typescript-eslint/no-unused-vars
+   16:10  warning  'makeRedirectUri' is defined but never used               @typescript-eslint/no-unused-vars
+   17:13  warning  'Google' is defined but never used                        @typescript-eslint/no-unused-vars
+  247:13  warning  'storeUserMappingSpy' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/__tests__/likeService.test.ts
+   2:10  warning  'db' is defined but never used                        @typescript-eslint/no-unused-vars
+   8:3   warning  'serverTimestamp' is defined but never used           @typescript-eslint/no-unused-vars
+  11:3   warning  'increment' is defined but never used                 @typescript-eslint/no-unused-vars
+  13:8   warning  'Unsubscribe' is defined but never used               @typescript-eslint/no-unused-vars
+  37:9   warning  'mockLikeId' is assigned a value but never used       @typescript-eslint/no-unused-vars
+  57:13  warning  'mockTransaction' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/__tests__/offlineQueue.test.ts
+  12:13  warning  'offlineQueueModule' is defined but never used  @typescript-eslint/no-unused-vars
+
+/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/__tests__/participantService.test.ts
+    2:10  warning  'db' is defined but never used                         @typescript-eslint/no-unused-vars
+    4:3   warning  'collection' is defined but never used                 @typescript-eslint/no-unused-vars
+    9:3   warning  'where' is defined but never used                      @typescript-eslint/no-unused-vars
+   10:8   warning  'QuerySnapshot' is defined but never used              @typescript-eslint/no-unused-vars
+   11:8   warning  'DocumentData' is defined but never used               @typescript-eslint/no-unused-vars
+   82:13  warning  'mockQuery1' is assigned a value but never used        @typescript-eslint/no-unused-vars
+   83:13  warning  'mockQuery2' is assigned a value but never used        @typescript-eslint/no-unused-vars
+  174:13  warning  'mockParticipants' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  212:13  warning  'mockParticipants' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/__tests__/photoService.test.ts
+  12:10  warning  'db' is defined but never used               @typescript-eslint/no-unused-vars
+  19:3   warning  'serverTimestamp' is defined but never used  @typescript-eslint/no-unused-vars
+  27:8   warning  'Query' is defined but never used            @typescript-eslint/no-unused-vars
+  29:8   warning  'Unsubscribe' is defined but never used      @typescript-eslint/no-unused-vars
+  31:8   warning  'QuerySnapshot' is defined but never used    @typescript-eslint/no-unused-vars
+
+/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/components/CommentsModal.tsx
+  34:10  warning  'unsubscribe' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/components/ParticipantsList.tsx
+  10:3  warning  'Alert' is defined but never used  @typescript-eslint/no-unused-vars
+
+/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/contexts/PhotoContext.tsx
+  12:3  warning  'collection' is defined but never used  @typescript-eslint/no-unused-vars
+  13:3  warning  'query' is defined but never used       @typescript-eslint/no-unused-vars
+  14:3  warning  'where' is defined but never used       @typescript-eslint/no-unused-vars
+  15:3  warning  'orderBy' is defined but never used     @typescript-eslint/no-unused-vars
+  16:3  warning  'limit' is defined but never used       @typescript-eslint/no-unused-vars
+  17:3  warning  'startAfter' is defined but never used  @typescript-eslint/no-unused-vars
+  18:3  warning  'getDocs' is defined but never used     @typescript-eslint/no-unused-vars
+  19:8  warning  'Query' is defined but never used       @typescript-eslint/no-unused-vars
+
+/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/screens/EventCreationScreen.tsx
+  36:6  warning  React Hook useEffect has a missing dependency: 'generateNewCode'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/screens/PhotoFeedScreen.tsx
+  104:6  warning  React Hook useEffect has a missing dependency: 'photoUrisMap'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/screens/ProfileScreen.tsx
+  2:64  warning  'Image' is defined but never used  @typescript-eslint/no-unused-vars
+
+/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/services/commentService.ts
+  15:8  warning  'QuerySnapshot' is defined but never used  @typescript-eslint/no-unused-vars
+
+/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/services/firebase.ts
+  12:46  warning  'ref' is defined but never used  @typescript-eslint/no-unused-vars
+
+/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/services/offlineQueue.ts
+  183:13  warning  'result' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/services/participantService.ts
+  12:15  warning  'User' is defined but never used  @typescript-eslint/no-unused-vars
+
+/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/services/photoService.ts
+  2:3  warning  'getStorage' is defined but never used      @typescript-eslint/no-unused-vars
+  5:3  warning  'getDownloadURL' is defined but never used  @typescript-eslint/no-unused-vars
+
+✖ 62 problems (0 errors, 62 warnings)
+[0m
+Let me run the tests with coverage to see if any source files lack test coverage:
+[0m$ [0mnpm test -- --coverage 2>&1 | tail -50
+at error (src/services/offlineQueue.ts:230:13)
+          at Generator.throw (<anonymous>)
+      at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _throw (node_modules/@babel/runtime/helpers/asyncToGenerator.js:20:9)
+
+--------------------------|---------|----------|---------|---------|-------------------------
+File                      | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #s       
+--------------------------|---------|----------|---------|---------|-------------------------
+All files                 |   39.27 |    31.87 |   33.04 |   40.03 |                         
+ components               |       0 |        0 |       0 |       0 |                         
+  CommentItem.tsx         |       0 |        0 |       0 |       0 | 12-52                   
+  CommentsModal.tsx       |       0 |        0 |       0 |       0 | 28-154                  
+  ParticipantsList.tsx    |       0 |        0 |       0 |       0 | 20-146                  
+  QRCodeDisplay.tsx       |       0 |        0 |       0 |       0 | 11-31                   
+  index.ts                |       0 |        0 |       0 |       0 |                         
+ contexts                 |       0 |        0 |       0 |       0 |                         
+  AuthContext.tsx         |       0 |        0 |       0 |       0 | 16-55                   
+  EventContext.tsx        |       0 |        0 |       0 |       0 | 10-35                   
+  NetworkContext.tsx      |       0 |        0 |       0 |       0 | 12-74                   
+  PhotoContext.tsx        |       0 |        0 |       0 |       0 | 38-198                  
+ screens                  |       0 |        0 |       0 |       0 |                         
+  EventCreationScreen.tsx |       0 |        0 |       0 |       0 | 22-214                  
+  EventJoinScreen.tsx     |       0 |        0 |       0 |       0 | 19-244                  
+  LoginScreen.tsx         |       0 |        0 |       0 |       0 | 6-71                    
+  PhotoFeedScreen.tsx     |       0 |        0 |       0 |       0 | 34-511                  
+  ProfileScreen.tsx       |       0 |        0 |       0 |       0 | 8-138                   
+  UploadInterface.tsx     |       0 |        0 |       0 |       0 | 28-273                  
+  index.ts                |       0 |        0 |       0 |       0 |                         
+ services                 |   93.22 |    81.52 |   93.33 |   93.13 |                         
+  commentService.ts       |      96 |    83.33 |    92.3 |      96 | 94,141                  
+  eventService.ts         |     100 |      100 |     100 |     100 |                         
+  firebase.ts             |   94.82 |    69.44 |     100 |   94.73 | 76,88-89                
+  index.ts                |       0 |        0 |       0 |       0 |                         
+  likeService.ts          |   88.46 |    83.33 |   85.71 |   88.46 | 45,71,143-144,166-167   
+  offlineQueue.ts         |   90.69 |    71.42 |     100 |   90.36 | 48-49,83-84,177-179,203 
+  participantService.ts   |   96.55 |    83.33 |     100 |   96.42 | 75                      
+  photoService.ts         |   93.02 |    94.44 |    87.5 |   93.02 | 75,109-110,139-140,299  
+ types                    |       0 |        0 |       0 |       0 |                         
+  index.ts                |       0 |        0 |       0 |       0 |                         
+ utils                    |    97.7 |    94.11 |     100 |   97.64 |                         
+  codeGenerator.ts        |     100 |      100 |     100 |     100 |                         
+  imagePicker.ts          |   96.61 |     92.3 |     100 |   96.61 | 125,162                 
+  index.ts                |       0 |        0 |       0 |       0 |                         
+--------------------------|---------|----------|---------|---------|-------------------------
+
+Test Suites: 9 passed, 9 total
+Tests:       141 passed, 141 total
+Snapshots:   0 total
+Time:        8.008 s
+Ran all test suites.
+[0m
