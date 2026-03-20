@@ -138,7 +138,6 @@ export function subscribeToCommentCount(
       }
     },
     (error) => {
-      console.error('Error in comment count subscription:', error);
       onCommentCountUpdate(0);
     }
   );
@@ -172,7 +171,6 @@ export function subscribeToComments(
       onCommentsUpdate(comments);
     },
     (error) => {
-      console.error('Error in comments subscription:', error);
       onCommentsUpdate([]);
     }
   );

@@ -239,3 +239,137 @@ Ran all test suites matching /commentService.test.ts/i.
 [0m
 [0m→ [0mRead package.json
 [0m✱ [0mGrep "subscribeToComments"[90m in __tests__ · 4 matches[0m
+[0m
+[0m← [0mEdit src/services/commentService.ts
+Index: /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/services/commentService.ts
+===================================================================
+--- /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/services/commentService.ts
++++ /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/services/commentService.ts
+@@ -137,9 +137,8 @@
+         onCommentCountUpdate(0);
+       }
+     },
+     (error) => {
+-      console.error('Error in comment count subscription:', error);
+       onCommentCountUpdate(0);
+     }
+   );
+ }
+
+[0m
+[0m← [0mEdit src/services/commentService.ts
+Index: /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/services/commentService.ts
+===================================================================
+--- /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/services/commentService.ts
++++ /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/services/commentService.ts
+@@ -170,9 +170,8 @@
+       });
+       onCommentsUpdate(comments);
+     },
+     (error) => {
+-      console.error('Error in comments subscription:', error);
+       onCommentsUpdate([]);
+     }
+   );
+ }
+
+[0m
+Let me check the LSP error at line 132:
+[0m→ [0mRead src/services/commentService.ts[90m [limit=20, offset=125][0m
+Let me read the entire file to understand the LSP error:
+[0m→ [0mRead src/services/commentService.ts
+[0m
+[0m$ [0mnpm test -- commentService.test.ts --verbose 2>&1 | head -150
+> pictureshare@1.0.0 test
+> jest commentService.test.ts --verbose
+
+PASS __tests__/commentService.test.ts
+  commentService
+    generateCommentId
+      ✓ should generate a unique comment ID (3 ms)
+    addComment
+      ✓ should create comment document and increment photo commentCount (3 ms)
+      ✓ should throw error if photo does not exist (10 ms)
+    deleteComment
+      ✓ should delete comment and decrement photo commentCount (1 ms)
+      ✓ should throw error if comment does not exist (1 ms)
+      ✓ should throw error if user is not comment owner (1 ms)
+      ✓ should not decrement below zero
+    getCommentCount
+      ✓ should return commentCount from photo document
+      ✓ should return 0 if photo does not exist (1 ms)
+      ✓ should return 0 if commentCount not set
+    subscribeToCommentCount
+      ✓ should subscribe to photo document and call callback with commentCount (1 ms)
+      ✓ should call callback with 0 if photo does not exist
+    subscribeToComments
+      ✓ should subscribe to comments collection and call callback with comments array
+      ✓ should call callback with empty array on error (1 ms)
+
+Test Suites: 1 passed, 1 total
+Tests:       14 passed, 14 total
+Snapshots:   0 total
+Time:        0.996 s, estimated 1 s
+Ran all test suites matching /commentService.test.ts/i.
+[0m
+Fixed: Removed console.error from error handlers in src/services/commentService.ts. Tests pass cleanly. Committed.
+```
+
+## TASKS.md After Iteration
+
+```markdown
+# pictureshare
+
+**Mission:** App for event photo sharing
+All participants scan a written code and pictures they sent will be accessible to all in da group n vice versa
+
+## Phase 1: Planning & Setup
+
+- [x] Choose tech stack: React Native (Expo), Firebase (Auth/Firestore/Storage), react-native-camera, qrcode library; document in ADR
+- [x] Initialize Expo project with TypeScript, configure ESLint/Prettier, and set up folder structure: components/, screens/, services/, utils/
+- [x] Create low-fidelity wireframes for: Event Join (QR scanner), Photo Feed, Upload Interface, Profile Screen
+- [x] Set up Firebase project with security rules baseline, initialize local emulators for development
+
+## Phase 2: Authentication & Event Code System
+
+- [x] Implement Firebase Anonymous Auth + Google Sign-In as fallback; store user mapping locally
+- [x] Build event creation screen: generates 6-digit alphanumeric code, optional time/visibility settings
+- [x] Integrate `react-native-qrcode-svg` to display event QR code for sharing; encode deep link with event ID
+- [x] Develop QR scanner screen using `expo-camera`; validate code against Firestore and join user to event document's participants array
+
+## Phase 3: Photo Capture, Compression & Upload
+
+- [x] Build camera/gallery picker with `expo-image-picker`; request permissions and handle denials with explanatory UI
+- [x] Add image compression pipeline: use `expo-image-manipulator` to resize to ≤1920px, compress to 80% quality
+- [x] Implement upload service: upload compressed image to Firebase Storage path `/events/{eventId}/photos/{photoId}.jpg`
+- [x] Save photo metadata to Firestore collection `photos` with fields: eventId, uploaderId, storagePath, createdAt, thumbnailPath
+
+## Phase 4: Real-Time Feed & Sync
+
+- [x] Subscribe to Firestore `photos` collection query `where eventId == current` with real-time listener; render in FlatList
+- [x] Implement optimistic UI: add photo to feed immediately after upload, mark pending, finalize on server confirmation
+- [x] Build infinite scroll pagination using Firestore cursor; load 20 initial photos, fetch more on scroll
+- [x] Add offline-first behavior: cache photos locally with `expo-file-system`; retry failed uploads when back online
+
+## Phase 5: Group Permissions & Interactions
+
+- [x] Enable deletion: only photo owner or event creator can delete; remove from Storage and Firestore
+- [x] Add likes: create `likes` subcollection under each photo; toggle like on press; update aggregated like count
+- [x] Create lightweight comments: allow short text on photos; store in `comments` subcollection; real-time updates
+- [x] Show participant list per event with avatars (from Google Auth) and photo count; differentiate current user
+
+## Phase 6: Testing, Polish & Launch
+
+- [ ] Write unit tests for utilities (code generation, image compression) and service wrappers using Jest
+- [ ] Create integration tests with Firebase Emulators: test event join flow, upload, and real-time feed
+- [ ] Perform closed beta: distribute via Expo Go, collect feedback on UX and performance
+- [ ] Deploy to app stores: configure EAS build, submit to Apple TestFlight and Google Play Internal; monitor Firebase Crashlytics
+      </parameter>
+      <parameter=filePath>
+      /home/julien/Desktop/Free-Wiggum-opencode/pictureshare_TASKS.md
+      </parameter>
+      </function>
+      </tool_call>
+```
+
+**Completed at:** Thu Mar 19 09:28:17 PM EDT 2026
