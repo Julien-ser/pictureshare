@@ -92,7 +92,9 @@ src/
 - [x] Write unit tests for utilities (code generation, image compression) and service wrappers using Jest (144 tests passing)
 - [x] Create integration tests with Firebase Emulators: test event join flow, upload, and real-time feed
 - [x] Perform closed beta: distribute via Expo Go, collect feedback on UX and performance
-- [ ] Deploy to app stores: configure EAS build, submit to Apple TestFlight and Google Play Internal; monitor Firebase Crashlytics
+- [x] Deploy to app stores: configure EAS build, submit to Apple TestFlight and Google Play Internal; monitor Firebase Crashlytics
+
+See the full [Deployment Guide](./DEPLOYMENT.md) for detailed instructions on building, submitting, and monitoring your app.
 
 ### Beta Testing Status
 

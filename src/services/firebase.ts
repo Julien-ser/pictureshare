@@ -10,6 +10,8 @@ import {
 } from 'firebase/auth';
 import { getFirestore, connectFirestoreEmulator, doc, setDoc, Timestamp } from 'firebase/firestore';
 import { getStorage, connectStorageEmulator, ref, type FirebaseStorage } from 'firebase/storage';
+import { getAnalytics, isSupported as isAnalyticsSupported } from 'firebase/analytics';
+import { getCrashlytics, isSupported as isCrashlyticsSupported, recordError } from 'firebase/crashlytics';
 import { connectAuthEmulator } from 'firebase/auth';
 import * as WebBrowser from 'expo-web-browser';
 import { makeRedirectUri, AuthRequest } from 'expo-auth-session';
@@ -35,6 +37,46 @@ const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0
 export const auth: Auth = getAuth(app);
 export const db = getFirestore(app);
 export const storage: FirebaseStorage = getStorage(app);
+
+// Initialize Analytics and Crashlytics (production only, non-Emulator)
+// Use 'any' type to avoid type errors with modular SDK packages
+let analytics: any = null;
+let crashlytics: any = null;
+
+// Only initialize in production (not in development or test environments)
+if (process.env.NODE_ENV === 'production' || process.env.EXPO_PUBLIC_ENV === 'production') {
+  try {
+    // Initialize Analytics (web only, but safe to call)
+    isAnalyticsSupported().then((supported: any) => {
+      if (supported) {
+        analytics = getAnalytics(app);
+      }
+    }).catch(() => {
+      // Analytics not supported, continue without it
+    });
+
+    // Initialize Crashlytics
+    isCrashlyticsSupported().then((supported: any) => {
+      if (supported) {
+        crashlytics = getCrashlytics(app);
+      }
+    }).catch(() => {
+      // Crashlytics not supported, continue without it
+    });
+  } catch (error) {
+    console.warn('Failed to initialize Analytics/Crashlytics:', error);
+  }
+}
+
+// Helper function to record non-fatal errors to Crashlytics
+export function recordCrashlyticsError(error: Error, context?: Record<string, any>): void {
+  if (crashlytics && typeof recordError === 'function') {
+    try {
+      recordError(crashlytics, error, context);
+    } catch (e) {
+      console.warn('Failed to record error to Crashlytics:', e);
+    }
+}
 
 // Use emulators in development (Expo app) or when running integration tests
 // Avoid connecting during Jest unit tests by checking NODE_ENV !== 'test'

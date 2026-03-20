@@ -6,11 +6,10 @@ node_modules/
 dist/
 web-build/
 
-# Native
-*.orig.*
-*.rej.*
-*~
-.DS_Store
+# Native credentials
+*.p8
+google-play-service-account.json
+apple-auth-key.p8
 
 # Environment
 .env
