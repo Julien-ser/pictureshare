@@ -81,16 +81,14 @@ export async function getEventByCode(code: string): Promise<Event | null> {
  */
 export async function joinEvent(eventId: string, userId: string): Promise<void> {
   const eventRef = doc(db, EVENTS_COLLECTION, eventId);
-  // Use arrayUnion to add userId without duplicates
-  // Note: In a real app, you'd use Firestore's arrayUnion but it's not available in the client SDK directly
-  // For simplicity, we'll get the doc, update locally and save
   const eventDoc = await getDoc(eventRef);
   const data = eventDoc.data();
-  if (data) {
-    const event = data as Event;
-    if (!event.participants.includes(userId)) {
-      event.participants.push(userId);
-      await setDoc(eventRef, event);
-    }
+  if (!data) {
+    throw new Error('Event not found');
+  }
+  const event = data as Event;
+  if (!event.participants.includes(userId)) {
+    event.participants.push(userId);
+    await setDoc(eventRef, event);
   }
 }

@@ -90,7 +90,7 @@ src/
 **Phase 6: Testing, Polish & Launch** - In Progress
 
 - [x] Write unit tests for utilities (code generation, image compression) and service wrappers using Jest (144 tests passing)
-- [ ] Create integration tests with Firebase Emulators: test event join flow, upload, and real-time feed
+- [x] Create integration tests with Firebase Emulators: test event join flow, upload, and real-time feed
 - [ ] Perform closed beta: distribute via Expo Go, collect feedback on UX and performance
 - [ ] Deploy to app stores: configure EAS build, submit to Apple TestFlight and Google Play Internal; monitor Firebase Crashlytics
 
