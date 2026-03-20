@@ -70,7 +70,11 @@ export async function unlikePhoto(photoId: string, userId: string): Promise<void
     if (!photoDoc.exists) {
       throw new Error('Photo not found');
     }
-    const currentCount = photoDoc.data().likeCount || 0;
+    const data = photoDoc.data();
+    if (!data) {
+      throw new Error('Photo data missing');
+    }
+    const currentCount = data.likeCount || 0;
     const newCount = Math.max(0, currentCount - 1); // Prevent negative
     transaction.update(photoRef, {
       likeCount: newCount,
@@ -106,7 +110,7 @@ export async function getLikeCount(photoId: string): Promise<number> {
   }
 
   const data = photoDoc.data();
-  return data.likeCount || 0;
+  return (data?.likeCount as number | undefined) ?? 0;
 }
 
 /**
