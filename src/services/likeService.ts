@@ -93,7 +93,6 @@ export async function toggleLike(photoId: string, userId: string): Promise<boole
     return true;
   }
 }
-}
 
 /**
  * Gets the current like count for a photo
