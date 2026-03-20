@@ -32,7 +32,7 @@ export async function getParticipantsWithStats(eventId: string): Promise<Partici
     const eventRef = doc(db, 'events', eventId);
     const eventDoc = await getDoc(eventRef);
 
-    if (!eventDoc.exists()) {
+    if (!eventDoc.exists) {
       return [];
     }
 

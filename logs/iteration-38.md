@@ -480,3 +480,200 @@ Snapshots:   0 total
 Time:        17.992 s
 Ran all test suites matching /__tests__\/imagePicker.test.ts|__tests__\/participantService.test.ts|__tests__\/photoService.test.ts|__tests__\/eventService.test.ts/i.
 [0m
+There are mocking issues. Let me fix the photoService tests - `canDeletePhoto` is a function in the same module, so I need to use `jest.spyOn` instead of trying to mock it directly. Also, the mocks need adjustment:
+[0m← [0mEdit __tests__/photoService.test.ts
+Index: /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/__tests__/photoService.test.ts
+===================================================================
+--- /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/__tests__/photoService.test.ts
++++ /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/__tests__/photoService.test.ts
+@@ -427,18 +427,123 @@
+       exists: true,
+       data: () => ({ uploaderId: mockUserId }),
+     };
+ 
+-    (doc as jest.Mock).mockReturnValueOnce({}).mockReturnValueOnce({ path: 'events/event' });
++    (doc as jest.Mock)
++      .mockReturnValueOnce({}) // photoRef
++      .mockReturnValueOnce({ path: 'events/event' }); // eventRef (won't be called)
++
++    (getDoc as jest.Mock).mockResolvedValue(mockPhotoDoc);
++
++    const result = await canDeletePhoto(mockPhotoId, mockUserId, mockEventId);
++
++    expect(result).toBe(true);
++  });
++
++  it('should return true if user is the event creator', async () => {
++    const mockPhotoDoc = {
++      exists: true,
++      data: () => ({ uploaderId: 'other-user' }),
++    };
++    const mockEventDoc = {
++      exists: true,
++      data: () => ({ createdBy: mockUserId }),
++    };
++
++    (doc as jest.Mock)
++      .mockReturnValueOnce({}) // photoRef
++      .mockReturnValueOnce({ path: 'events/event' }); // eventRef
++
+     (getDoc as jest.Mock)
+-      .mockResolvedValueOnce(mockPhotoDoc)
+-      .mockResolvedValueOnce({ exists: false });
++      .mockResolvedValueOnce(mockPhotoDoc) // first getDoc for photo
++      .mockResolvedValueOnce(mockEventDoc); // second getDoc for event
+ 
+     const result = await canDeletePhoto(mockPhotoId, mockUserId, mockEventId);
+ 
+     expect(result).toBe(true);
+   });
+ 
++  it('should return false if user is neither uploader nor creator', async () => {
++    const mockPhotoDoc = {
++      exists: true,
++      data: () => ({ uploaderId: 'other-user' }),
++    };
++    const mockEventDoc = {
++      exists: true,
++      data: () => ({ createdBy: 'other-creator' }),
++    };
++
++    (doc as jest.Mock)
++      .mockReturnValueOnce({})
++      .mockReturnValueOnce({ path: 'events/event' });
++
++    (getDoc as jest.Mock)
++      .mockResolvedValueOnce(mockPhotoDoc)
++      .mockResolvedValueOnce(mockEventDoc);
++
++    const result = await canDeletePhoto(mockPhotoId, mockUserId, mockEventId);
++
++    expect(result).toBe(false);
++  });
++
++  it('should return false if photo does not exist', async () => {
++    (doc as jest.Mock).mockReturnValue({});
++    (getDoc as jest.Mock).mockResolvedValue({ exists: false });
++
++    const result = await canDeletePhoto(mockPhotoId, mockUserId, mockEventId);
++
++    expect(result).toBe(false);
++  });
++
++  it('should return false on error', async () => {
++    (doc as jest.Mock).mockReturnValue({});
++    (getDoc as jest.Mock).mockRejectedValue(new Error('Database error'));
++
++    const result = await canDeletePhoto(mockPhotoId, mockUserId, mockEventId);
++
++    expect(result).toBe(false);
++  });
++});
++
++describe('deletePhotoWithPermission', () => {
++  it('should delete photo if user has permission', async () => {
++    jest.spyOn(require('../src/services/photoService'), 'canDeletePhoto').mockResolvedValue(true);
++    (doc as jest.Mock).mockReturnValue({ path: 'photos/photo' });
++    (getDoc as jest.Mock).mockResolvedValue({
++      exists: true,
++      data: () => ({ storagePath: 'events/test/photos/photo.jpg' }),
++    });
++    (ref as jest.Mock).mockReturnValue({});
++    (deleteObject as jest.Mock).mockResolvedValue(undefined);
++    (deleteDoc as jest.Mock).mockResolvedValue(undefined);
++
++    await deletePhotoWithPermission(mockPhotoId, mockEventId, mockUserId);
++
++    expect(deletePhoto).toHaveBeenCalledWith(mockEventId, mockPhotoId, 'events/test/photos/photo.jpg');
++    jest.restoreAllMocks();
++  });
++
++  it('should throw error if user lacks permission', async () => {
++    jest.spyOn(require('../src/services/photoService'), 'canDeletePhoto').mockResolvedValue(false);
++
++    await expect(
++      deletePhotoWithPermission(mockPhotoId, mockEventId, mockUserId)
++    ).rejects.toThrow('Unauthorized: You do not have permission to delete this photo');
++    jest.restoreAllMocks();
++  });
++
++  it('should throw error if photo not found during deletion', async () => {
++    jest.spyOn(require('../src/services/photoService'), 'canDeletePhoto').mockResolvedValue(true);
++    (doc as jest.Mock).mockReturnValue({ path: 'photos/photo' });
++    (getDoc as jest.Mock).mockResolvedValue({ exists: false });
++
++    await expect(
++      deletePhotoWithPermission(mockPhotoId, mockEventId, mockUserId)
++    ).rejects.toThrow('Photo not found');
++    jest.restoreAllMocks();
++  });
++});
++
+   it('should return true if user is the event creator', async () => {
+     const mockPhotoDoc = {
+       exists: true,
+       data: () => ({ uploaderId: 'other-user' }),
+
+[0m
+[0m→ [0mRead __tests__/photoService.test.ts[90m [offset=600][0m
+There's an extra closing brace causing issues. Let me read the file to see the structure:
+There's an issue with mocking canDeletePhoto since it's in the same module. Let me rewrite those tests properly using jest.spyOn:
+[0m
+[0m← [0mEdit __tests__/photoService.test.ts
+Index: /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/__tests__/photoService.test.ts
+===================================================================
+--- /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/__tests__/photoService.test.ts
++++ /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/__tests__/photoService.test.ts
+@@ -601,9 +601,9 @@
+   });
+ 
+   describe('deletePhotoWithPermission', () => {
+     it('should delete photo if user has permission', async () => {
+-      (canDeletePhoto as jest.Mock).mockResolvedValue(true);
++      jest.spyOn(require('../src/services/photoService'), 'canDeletePhoto').mockResolvedValue(true);
+       (doc as jest.Mock).mockReturnValue({ path: 'photos/photo' });
+       (getDoc as jest.Mock).mockResolvedValue({
+         exists: true,
+         data: () => ({ storagePath: 'events/test/photos/photo.jpg' }),
+@@ -613,8 +613,39 @@
+       (deleteDoc as jest.Mock).mockResolvedValue(undefined);
+ 
+       await deletePhotoWithPermission(mockPhotoId, mockEventId, mockUserId);
+ 
++      expect(deletePhoto).toHaveBeenCalledWith(mockEventId, mockPhotoId, 'events/test/photos/photo.jpg');
++      jest.restoreAllMocks();
++    });
++
++    it('should throw error if user lacks permission', async () => {
++      jest.spyOn(require('../src/services/photoService'), 'canDeletePhoto').mockResolvedValue(false);
++
++      await expect(
++        deletePhotoWithPermission(mockPhotoId, mockEventId, mockUserId)
++      ).rejects.toThrow('Unauthorized: You do not have permission to delete this photo');
++      jest.restoreAllMocks();
++    });
++
++    it('should throw error if photo not found during deletion', async () => {
++      jest.spyOn(require('../src/services/photoService'), 'canDeletePhoto').mockResolvedValue(true);
++      (doc as jest.Mock).mockReturnValue({ path: 'photos/photo' });
++      (getDoc as jest.Mock).mockResolvedValue({ exists: false });
++
++      await expect(
++        deletePhotoWithPermission(mockPhotoId, mockEventId, mockUserId)
++      ).rejects.toThrow('Photo not found');
++      jest.restoreAllMocks();
++    });
++  });
++});
++      (ref as jest.Mock).mockReturnValue({});
++      (deleteObject as jest.Mock).mockResolvedValue(undefined);
++      (deleteDoc as jest.Mock).mockResolvedValue(undefined);
++
++      await deletePhotoWithPermission(mockPhotoId, mockEventId, mockUserId);
++
+       expect(deletePhoto).toHaveBeenCalledWith(
+         mockEventId,
+         mockPhotoId,
+         'events/test/photos/photo.jpg'
+
+[0m
