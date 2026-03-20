@@ -70,6 +70,11 @@ global.fetch = jest.fn(() =>
   })
 ) as any;
 
+// Suppress console.error to prevent test failures from expected error logging
+beforeAll(() => {
+  jest.spyOn(console, 'error').mockImplementation(() => {});
+});
+
 describe('photoService', () => {
   const mockEventId = 'test-event';
   const mockUserId = 'test-user';
