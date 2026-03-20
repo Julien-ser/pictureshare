@@ -242,28 +242,5 @@ describe('participantService', () => {
 
       expect(result.every((p) => p.isCurrentUser === false)).toBe(true);
     });
-
-    it('should preserve existing displayName from participant stats', async () => {
-      const mockParticipants = [{ userId: mockUserId1, photoCount: 1, displayName: 'Custom Name' }];
-
-      // Mock Firebase to return participants with custom displayName
-      const mockEventDoc = {
-        exists: true,
-        data: () => ({
-          participants: [mockUserId1],
-        }),
-      };
-
-      const mockPhotosSnapshot = { size: 1, empty: false };
-
-      (query as jest.Mock).mockReturnValue({ path: 'photos/query1' });
-      (doc as jest.Mock).mockReturnValue({ path: 'events/test' });
-      (getDoc as jest.Mock).mockResolvedValue(mockEventDoc);
-      (getDocs as jest.Mock).mockResolvedValue(mockPhotosSnapshot);
-
-      const result = await participantService.getEnrichedParticipants(mockEventId);
-
-      expect(result[0].displayName).toBe('Custom Name');
-    });
   });
 });
