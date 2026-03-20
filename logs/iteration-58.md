@@ -121,3 +121,8 @@ I need to understand the current state and write unit tests for utilities (code 
 [0m→ [0mRead package.json
 [0m✱ [0mGlob "**/*.{ts,js}"[90m 26 matches[0m
 [0m✱ [0mGlob "src/**/*"[90m 33 matches[0m
+Let me check the existing test coverage and what utilities need testing:
+[0m→ [0mRead __tests__/codeGenerator.test.ts
+[0m→ [0mRead src/utils/index.ts
+[0m→ [0mRead src/utils/imagePicker.ts
+[0m→ [0mRead src/utils/codeGenerator.ts
