@@ -117,3 +117,8 @@ I'll analyze the failing test output and fix the code. Let me first read the fai
 [0m
 > build · stepfun/step-3.5-flash:free
 [0m
+I'll continue by checking which service wrappers exist and need tests, then write comprehensive unit tests for them.
+[0m✱ [0mGlob "src/services/*.ts"[90m 8 matches[0m
+[0m✱ [0mGlob "__tests__/*.test.ts"[90m 9 matches[0m
+Let me check the offlineQueue service to understand the error at line 230:
+[0m→ [0mRead src/services/offlineQueue.ts
