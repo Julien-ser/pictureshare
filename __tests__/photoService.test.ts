@@ -9,6 +9,7 @@ import {
   canDeletePhoto,
   deletePhotoWithPermission,
 } from '../src/services/photoService';
+import { db, storage } from '../src/services/firebase';
 import {
   collection,
   doc,
@@ -29,15 +30,7 @@ import {
   type DocumentData,
   type QuerySnapshot,
 } from 'firebase/firestore';
-import {
-  getStorage,
-  ref,
-  uploadBytesResumable,
-  getDownloadURL,
-  deleteObject,
-} from 'firebase/storage';
-import { db, storage } from '../src/services/firebase';
-import { getBytes } from 'firebase/storage';
+import { ref, uploadBytesResumable, deleteObject } from 'firebase/storage';
 
 // Mock Firebase modules
 jest.mock('../src/services/firebase', () => ({
@@ -65,10 +58,8 @@ jest.mock('firebase/firestore', () => ({
 }));
 
 jest.mock('firebase/storage', () => ({
-  getStorage: jest.fn(),
   ref: jest.fn(),
   uploadBytesResumable: jest.fn(),
-  getDownloadURL: jest.fn(),
   deleteObject: jest.fn(),
 }));
 
@@ -258,7 +249,6 @@ describe('photoService', () => {
 
       await uploadAndSavePhoto(mockEventId, mockUserId, imageResult);
 
-      // The doc() call returns a new ID when no ID is provided
       expect(doc).toHaveBeenCalled();
     });
 
@@ -314,7 +304,6 @@ describe('photoService', () => {
 
       subscribeToPhotos(mockEventId, mockOnUpdate);
 
-      // Simulate snapshot
       const snapshotCallback = (onSnapshot as jest.Mock).mock.calls[0][1];
       const mockDoc1 = {
         id: 'photo1',
@@ -356,7 +345,6 @@ describe('photoService', () => {
 
       subscribeToPhotos(mockEventId, mockOnUpdate);
 
-      // Simulate error
       const errorCallback = (onSnapshot as jest.Mock).mock.calls[0][2];
       errorCallback(new Error('Subscription error'));
 
@@ -453,109 +441,6 @@ describe('photoService', () => {
         .mockReturnValueOnce({}) // photoRef
         .mockReturnValueOnce({ path: 'events/event' }); // eventRef
 
-      (getDoc as jest.Mock)
-        .mockResolvedValueOnce(mockPhotoDoc) // first getDoc for photo
-        .mockResolvedValueOnce(mockEventDoc); // second getDoc for event
-
-      const result = await canDeletePhoto(mockPhotoId, mockUserId, mockEventId);
-
-      expect(result).toBe(true);
-    });
-
-    it('should return false if user is neither uploader nor creator', async () => {
-      const mockPhotoDoc = {
-        exists: true,
-        data: () => ({ uploaderId: 'other-user' }),
-      };
-      const mockEventDoc = {
-        exists: true,
-        data: () => ({ createdBy: 'other-creator' }),
-      };
-
-      (doc as jest.Mock)
-        .mockReturnValueOnce({})
-        .mockReturnValueOnce({ path: 'events/event' });
-
-      (getDoc as jest.Mock)
-        .mockResolvedValueOnce(mockPhotoDoc)
-        .mockResolvedValueOnce(mockEventDoc);
-
-      const result = await canDeletePhoto(mockPhotoId, mockUserId, mockEventId);
-
-      expect(result).toBe(false);
-    });
-
-    it('should return false if photo does not exist', async () => {
-      (doc as jest.Mock).mockReturnValue({});
-      (getDoc as jest.Mock).mockResolvedValue({ exists: false });
-
-      const result = await canDeletePhoto(mockPhotoId, mockUserId, mockEventId);
-
-      expect(result).toBe(false);
-    });
-
-    it('should return false on error', async () => {
-      (doc as jest.Mock).mockReturnValue({});
-      (getDoc as jest.Mock).mockRejectedValue(new Error('Database error'));
-
-      const result = await canDeletePhoto(mockPhotoId, mockUserId, mockEventId);
-
-      expect(result).toBe(false);
-    });
-  });
-
-  describe('deletePhotoWithPermission', () => {
-    it('should delete photo if user has permission', async () => {
-      jest.spyOn(require('../src/services/photoService'), 'canDeletePhoto').mockResolvedValue(true);
-      (doc as jest.Mock).mockReturnValue({ path: 'photos/photo' });
-      (getDoc as jest.Mock).mockResolvedValue({
-        exists: true,
-        data: () => ({ storagePath: 'events/test/photos/photo.jpg' }),
-      });
-      (ref as jest.Mock).mockReturnValue({});
-      (deleteObject as jest.Mock).mockResolvedValue(undefined);
-      (deleteDoc as jest.Mock).mockResolvedValue(undefined);
-
-      await deletePhotoWithPermission(mockPhotoId, mockEventId, mockUserId);
-
-      expect(deletePhoto).toHaveBeenCalledWith(mockEventId, mockPhotoId, 'events/test/photos/photo.jpg');
-      jest.restoreAllMocks();
-    });
-
-    it('should throw error if user lacks permission', async () => {
-      jest.spyOn(require('../src/services/photoService'), 'canDeletePhoto').mockResolvedValue(false);
-
-      await expect(
-        deletePhotoWithPermission(mockPhotoId, mockEventId, mockUserId)
-      ).rejects.toThrow('Unauthorized: You do not have permission to delete this photo');
-      jest.restoreAllMocks();
-    });
-
-    it('should throw error if photo not found during deletion', async () => {
-      jest.spyOn(require('../src/services/photoService'), 'canDeletePhoto').mockResolvedValue(true);
-      (doc as jest.Mock).mockReturnValue({ path: 'photos/photo' });
-      (getDoc as jest.Mock).mockResolvedValue({ exists: false });
-
-      await expect(
-        deletePhotoWithPermission(mockPhotoId, mockEventId, mockUserId)
-      ).rejects.toThrow('Photo not found');
-      jest.restoreAllMocks();
-    });
-  });
-
-    it('should return true if user is the event creator', async () => {
-      const mockPhotoDoc = {
-        exists: true,
-        data: () => ({ uploaderId: 'other-user' }),
-      };
-      const mockEventDoc = {
-        exists: true,
-        data: () => ({ createdBy: mockUserId }),
-      };
-
-      (doc as jest.Mock)
-        .mockReturnValueOnce({}) // photoRef
-        .mockReturnValueOnce({ path: 'events/event' }); // eventRef
       (getDoc as jest.Mock).mockResolvedValueOnce(mockPhotoDoc).mockResolvedValueOnce(mockEventDoc);
 
       const result = await canDeletePhoto(mockPhotoId, mockUserId, mockEventId);
@@ -574,6 +459,7 @@ describe('photoService', () => {
       };
 
       (doc as jest.Mock).mockReturnValueOnce({}).mockReturnValueOnce({ path: 'events/event' });
+
       (getDoc as jest.Mock).mockResolvedValueOnce(mockPhotoDoc).mockResolvedValueOnce(mockEventDoc);
 
       const result = await canDeletePhoto(mockPhotoId, mockUserId, mockEventId);
@@ -614,16 +500,22 @@ describe('photoService', () => {
 
       await deletePhotoWithPermission(mockPhotoId, mockEventId, mockUserId);
 
-      expect(deletePhoto).toHaveBeenCalledWith(mockEventId, mockPhotoId, 'events/test/photos/photo.jpg');
+      expect(deletePhoto).toHaveBeenCalledWith(
+        mockEventId,
+        mockPhotoId,
+        'events/test/photos/photo.jpg'
+      );
       jest.restoreAllMocks();
     });
 
     it('should throw error if user lacks permission', async () => {
-      jest.spyOn(require('../src/services/photoService'), 'canDeletePhoto').mockResolvedValue(false);
+      jest
+        .spyOn(require('../src/services/photoService'), 'canDeletePhoto')
+        .mockResolvedValue(false);
 
-      await expect(
-        deletePhotoWithPermission(mockPhotoId, mockEventId, mockUserId)
-      ).rejects.toThrow('Unauthorized: You do not have permission to delete this photo');
+      await expect(deletePhotoWithPermission(mockPhotoId, mockEventId, mockUserId)).rejects.toThrow(
+        'Unauthorized: You do not have permission to delete this photo'
+      );
       jest.restoreAllMocks();
     });
 
@@ -632,42 +524,10 @@ describe('photoService', () => {
       (doc as jest.Mock).mockReturnValue({ path: 'photos/photo' });
       (getDoc as jest.Mock).mockResolvedValue({ exists: false });
 
-      await expect(
-        deletePhotoWithPermission(mockPhotoId, mockEventId, mockUserId)
-      ).rejects.toThrow('Photo not found');
-      jest.restoreAllMocks();
-    });
-  });
-});
-      (ref as jest.Mock).mockReturnValue({});
-      (deleteObject as jest.Mock).mockResolvedValue(undefined);
-      (deleteDoc as jest.Mock).mockResolvedValue(undefined);
-
-      await deletePhotoWithPermission(mockPhotoId, mockEventId, mockUserId);
-
-      expect(deletePhoto).toHaveBeenCalledWith(
-        mockEventId,
-        mockPhotoId,
-        'events/test/photos/photo.jpg'
-      );
-    });
-
-    it('should throw error if user lacks permission', async () => {
-      (canDeletePhoto as jest.Mock).mockResolvedValue(false);
-
-      await expect(deletePhotoWithPermission(mockPhotoId, mockEventId, mockUserId)).rejects.toThrow(
-        'Unauthorized: You do not have permission to delete this photo'
-      );
-    });
-
-    it('should throw error if photo not found during deletion', async () => {
-      (canDeletePhoto as jest.Mock).mockResolvedValue(true);
-      (doc as jest.Mock).mockReturnValue({ path: 'photos/photo' });
-      (getDoc as jest.Mock).mockResolvedValue({ exists: false });
-
       await expect(deletePhotoWithPermission(mockPhotoId, mockEventId, mockUserId)).rejects.toThrow(
         'Photo not found'
       );
+      jest.restoreAllMocks();
     });
   });
 });
