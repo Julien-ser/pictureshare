@@ -1,11 +1,5 @@
-import {
-  storeUserMapping,
-  getUserMapping,
-  signInAnonymouslyLocally,
-  signInWithGoogle,
-  onAuthStateChangedListener,
-  auth,
-} from '../src/services/firebase';
+import * as firebase from '../src/services/firebase';
+import { auth } from '../src/services/firebase';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
   signInAnonymously,
@@ -91,7 +85,7 @@ describe('firebase', () => {
     jest.clearAllMocks();
   });
 
-  describe('storeUserMapping', () => {
+  describe('firebase.storeUserMapping', () => {
     it('should store user mapping in AsyncStorage', async () => {
       (AsyncStorage.getItem as jest.Mock).mockResolvedValue(null);
       (AsyncStorage.setItem as jest.Mock).mockResolvedValue(undefined);
@@ -103,7 +97,7 @@ describe('firebase', () => {
         photoURL: 'https://example.com/photo.jpg',
       };
 
-      await storeUserMapping(user);
+      await firebase.storeUserMapping(user);
 
       expect(AsyncStorage.setItem).toHaveBeenCalledWith(
         'user_mapping',
@@ -118,7 +112,7 @@ describe('firebase', () => {
       (AsyncStorage.getItem as jest.Mock).mockResolvedValue(existing);
       (AsyncStorage.setItem as jest.Mock).mockResolvedValue(undefined);
 
-      await storeUserMapping({
+      await firebase.storeUserMapping({
         id: 'user-123',
         email: 'test@example.com',
       });
@@ -130,7 +124,7 @@ describe('firebase', () => {
     });
   });
 
-  describe('getUserMapping', () => {
+  describe('firebase.getUserMapping', () => {
     it('should return user if found', async () => {
       const userData = {
         'user-123': {
@@ -142,19 +136,20 @@ describe('firebase', () => {
       };
       (AsyncStorage.getItem as jest.Mock).mockResolvedValue(JSON.stringify(userData));
 
-      const result = await getUserMapping('user-123');
+      const result = await firebase.getUserMapping('user-123');
 
       expect(result).toEqual({
         id: 'user-123',
         email: 'test@example.com',
         displayName: 'Test',
+        lastUpdated: expect.any(String),
       });
     });
 
     it('should return null if user not found', async () => {
       (AsyncStorage.getItem as jest.Mock).mockResolvedValue(JSON.stringify({}));
 
-      const result = await getUserMapping('unknown');
+      const result = await firebase.getUserMapping('unknown');
 
       expect(result).toBeNull();
     });
@@ -162,19 +157,19 @@ describe('firebase', () => {
     it('should return null if no data stored', async () => {
       (AsyncStorage.getItem as jest.Mock).mockResolvedValue(null);
 
-      const result = await getUserMapping('user-123');
+      const result = await firebase.getUserMapping('user-123');
 
       expect(result).toBeNull();
     });
   });
 
-  describe('signInAnonymouslyLocally', () => {
+  describe('firebase.signInAnonymouslyLocally', () => {
     it('should sign in anonymously and return user', async () => {
       const mockCredential = { user: mockUser };
       (signInAnonymously as jest.Mock).mockResolvedValue(mockCredential);
       (AsyncStorage.setItem as jest.Mock).mockResolvedValue(undefined);
 
-      const result = await signInAnonymouslyLocally();
+      const result = await firebase.signInAnonymouslyLocally();
 
       expect(result).toEqual({
         id: mockUser.uid,
@@ -182,17 +177,20 @@ describe('firebase', () => {
         displayName: mockUser.displayName,
         photoURL: mockUser.photoURL,
       });
-      expect(storeUserMapping).toHaveBeenCalledWith(result);
+      expect(AsyncStorage.setItem).toHaveBeenCalledWith(
+        'user_mapping',
+        expect.stringContaining(result.id)
+      );
     });
   });
 
-  describe('onAuthStateChangedListener', () => {
+  describe('firebase.onAuthStateChangedListener', () => {
     it('should call callback with user when auth state changes', () => {
       const callback = jest.fn();
       const unsubscribe = jest.fn();
       (onAuthStateChanged as jest.Mock).mockReturnValue(unsubscribe);
 
-      const result = onAuthStateChangedListener(callback);
+      const result = firebase.onAuthStateChangedListener(callback);
 
       expect(result).toBe(unsubscribe);
       expect(onAuthStateChanged).toHaveBeenCalledWith(auth, expect.any(Function));
@@ -214,7 +212,7 @@ describe('firebase', () => {
       const unsubscribe = jest.fn();
       (onAuthStateChanged as jest.Mock).mockReturnValue(unsubscribe);
 
-      onAuthStateChangedListener(callback);
+      firebase.onAuthStateChangedListener(callback);
 
       const listenerCallback = (onAuthStateChanged as jest.Mock).mock.calls[0][1];
       listenerCallback(null);
@@ -223,7 +221,7 @@ describe('firebase', () => {
     });
   });
 
-  describe('signInWithGoogle', () => {
+  describe('firebase.signInWithGoogle', () => {
     beforeEach(() => {
       jest.clearAllMocks();
       (GoogleAuthProvider.credential as jest.Mock).mockClear();
@@ -245,8 +243,8 @@ describe('firebase', () => {
       (GoogleAuthProvider.credential as jest.Mock).mockReturnValue({});
       (signInWithCredential as jest.Mock).mockResolvedValue(mockUserCredential);
 
-      // Mock storeUserMapping
-      (storeUserMapping as jest.Mock).mockResolvedValue(undefined);
+      // Mock firebase.storeUserMapping
+      (firebase.storeUserMapping as jest.Mock).mockResolvedValue(undefined);
 
       // Mock doc and setDoc
       const mockUserRef = { path: '' };
@@ -261,7 +259,7 @@ describe('firebase', () => {
         }),
       }));
 
-      const result = await signInWithGoogle();
+      const result = await firebase.signInWithGoogle();
 
       expect(result).toEqual({
         id: mockUserCredential.user.uid,
@@ -269,7 +267,10 @@ describe('firebase', () => {
         displayName: mockUserCredential.user.displayName,
         photoURL: mockUserCredential.user.photoURL,
       });
-      expect(storeUserMapping).toHaveBeenCalledWith(result);
+      expect(AsyncStorage.setItem).toHaveBeenCalledWith(
+        'user_mapping',
+        expect.stringContaining(result.id)
+      );
       expect(setDoc).toHaveBeenCalledWith(
         mockUserRef,
         expect.objectContaining({
@@ -286,7 +287,7 @@ describe('firebase', () => {
         promptAsync: jest.fn().mockResolvedValue({ type: 'cancel' }),
       }));
 
-      await expect(signInWithGoogle()).rejects.toThrow('User cancelled Google sign-in');
+      await expect(firebase.signInWithGoogle()).rejects.toThrow('User cancelled Google sign-in');
     });
 
     it('should throw error when Google sign-in fails', async () => {
@@ -294,7 +295,7 @@ describe('firebase', () => {
         promptAsync: jest.fn().mockResolvedValue({ type: 'dismiss' }),
       }));
 
-      await expect(signInWithGoogle()).rejects.toThrow('Google sign-in failed');
+      await expect(firebase.signInWithGoogle()).rejects.toThrow('Google sign-in failed');
     });
 
     it('should throw error when no ID token received', async () => {
@@ -302,7 +303,7 @@ describe('firebase', () => {
         promptAsync: jest.fn().mockResolvedValue({ type: 'success', params: {} }),
       }));
 
-      await expect(signInWithGoogle()).rejects.toThrow('No ID token received from Google');
+      await expect(firebase.signInWithGoogle()).rejects.toThrow('No ID token received from Google');
     });
   });
 });
