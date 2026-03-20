@@ -131,7 +131,7 @@ describe('likeService', () => {
 
     it('should not throw if like does not exist', async () => {
       (doc as jest.Mock).mockReturnValueOnce({});
-      (getDoc as jest.Mock).mockResolvedValue({ exists: false });
+      (getDoc as jest.Mock).mockResolvedValue({ exists: false, data: () => null });
 
       await expect(likeService.unlikePhoto(mockPhotoId, mockUserId)).resolves.not.toThrow();
 
