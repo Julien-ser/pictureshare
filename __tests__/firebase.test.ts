@@ -79,7 +79,7 @@ jest.mock('@react-native-async-storage/async-storage', () => ({
   setItem: jest.fn(),
 }));
 
-describe.skip('firebase', () => {
+describe('firebase', () => {
   const mockUser = {
     uid: 'user-123',
     email: 'test@example.com',
