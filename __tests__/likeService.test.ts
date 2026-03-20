@@ -81,7 +81,7 @@ describe('likeService', () => {
       const mockLikeRef = { path: '' };
       const mockPhotoRef = { path: '' };
       const mockTransaction = {
-        get: jest.fn().mockResolvedValue({ exists: false }),
+        get: jest.fn().mockResolvedValue({ exists: false, data: () => null }),
         update: jest.fn(),
       };
 
@@ -115,7 +115,7 @@ describe('likeService', () => {
       (collection as jest.Mock).mockReturnValueOnce({});
       (doc as jest.Mock).mockReturnValueOnce(mockLikeRef).mockReturnValueOnce(mockPhotoRef);
 
-      (getDoc as jest.Mock).mockResolvedValue({ exists: true });
+      (getDoc as jest.Mock).mockResolvedValue({ exists: true, data: () => ({}) });
 
       (runTransaction as jest.Mock).mockImplementation(async (db, operation) => {
         await operation(mockTransaction);
@@ -153,7 +153,7 @@ describe('likeService', () => {
       (collection as jest.Mock).mockReturnValueOnce({});
       (doc as jest.Mock).mockReturnValueOnce(mockLikeRef).mockReturnValueOnce(mockPhotoRef);
 
-      (getDoc as jest.Mock).mockResolvedValue({ exists: true });
+      (getDoc as jest.Mock).mockResolvedValue({ exists: true, data: () => ({}) });
 
       (runTransaction as jest.Mock).mockImplementation(async (db, operation) => {
         await operation(mockTransaction);
@@ -230,7 +230,7 @@ describe('likeService', () => {
   describe('hasUserLiked', () => {
     it('should return true if like document exists', async () => {
       (doc as jest.Mock).mockReturnValueOnce({});
-      (getDoc as jest.Mock).mockResolvedValue({ exists: true });
+      (getDoc as jest.Mock).mockResolvedValue({ exists: true, data: () => ({}) });
 
       const result = await likeService.hasUserLiked(mockPhotoId, mockUserId);
 

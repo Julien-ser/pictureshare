@@ -202,7 +202,7 @@ describe('eventService', () => {
     it('should not add if event does not exist', async () => {
       const mockEventId = 'event-123';
       (doc as jest.Mock).mockReturnValue({});
-      (getDoc as jest.Mock).mockResolvedValue({ exists: false });
+      (getDoc as jest.Mock).mockResolvedValue({ data: () => null });
 
       await joinEvent(mockEventId, mockUserId);
 

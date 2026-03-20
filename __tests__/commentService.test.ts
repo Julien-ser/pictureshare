@@ -294,7 +294,7 @@ describe('commentService', () => {
       subscribeToCommentCount(mockPhotoId, mockOnUpdate);
 
       const callback = (onSnapshot as jest.Mock).mock.calls[0][1];
-      callback({ exists: false });
+      callback({ data: () => null });
 
       expect(mockOnUpdate).toHaveBeenCalledWith(0);
     });
