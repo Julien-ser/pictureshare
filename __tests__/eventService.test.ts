@@ -209,43 +209,34 @@ describe('eventService', () => {
       expect(setDoc).not.toHaveBeenCalled();
     });
 
-  });
+    describe('isCodeUnique', () => {
+      it('should return true when code does not exist', async () => {
+        (query as jest.Mock).mockReturnValue({});
+        (getDocs as jest.Mock).mockResolvedValue({
+          empty: true,
+          docs: [],
+        });
 
-  describe('isCodeUnique', () => {
-    it('should return true when code does not exist', async () => {
-      (query as jest.Mock).mockReturnValue({});
-      (getDocs as jest.Mock).mockResolvedValue({
-        empty: true,
-        docs: [],
+        const result = await isCodeUnique('UNIQUE123');
+
+        expect(result).toBe(true);
+        expect(query).toHaveBeenCalledWith(expect.anything(), where('code', '==', 'UNIQUE123'));
+        expect(getDocs).toHaveBeenCalledWith(expect.anything());
       });
 
-      const result = await isCodeUnique('UNIQUE123');
+      it('should return false when code already exists', async () => {
+        (query as jest.Mock).mockReturnValue({});
+        (getDocs as jest.Mock).mockResolvedValue({
+          empty: false,
+          docs: [{ id: 'existing-event' }],
+        });
 
-      expect(result).toBe(true);
-      expect(query).toHaveBeenCalledWith(
-        expect.anything(),
-        where('code', '==', 'UNIQUE123')
-      );
-      expect(getDocs).toHaveBeenCalledWith(expect.anything());
-    });
+        const result = await isCodeUnique('EXISTS123');
 
-    it('should return false when code already exists', async () => {
-      (query as jest.Mock).mockReturnValue({});
-      (getDocs as jest.Mock).mockResolvedValue({
-        empty: false,
-        docs: [{ id: 'existing-event' }],
+        expect(result).toBe(false);
+        expect(query).toHaveBeenCalledWith(expect.anything(), where('code', '==', 'EXISTS123'));
+        expect(getDocs).toHaveBeenCalledWith(expect.anything());
       });
-
-      const result = await isCodeUnique('EXISTS123');
-
-      expect(result).toBe(false);
-      expect(query).toHaveBeenCalledWith(
-        expect.anything(),
-        where('code', '==', 'EXISTS123')
-      );
-      expect(getDocs).toHaveBeenCalledWith(expect.anything());
     });
   });
-
-});
 });
