@@ -93,20 +93,6 @@ describe('imagePicker', () => {
       });
     });
 
-      const result = await imagePicker.compressImage(mockImageUri, 800, 2500);
-
-      expect(ImageManipulator.manipulateAsync).toHaveBeenCalledWith(
-        mockImageUri,
-        [{ resize: { width: 960, height: 1920 } }],
-        expect.any(Object)
-      );
-      expect(result).toEqual({
-        uri: 'compressed.jpg',
-        width: 960,
-        height: 1920,
-      });
-    });
-
     it('should maintain aspect ratio when resizing landscape image', () => {
       const width = 4000;
       const height = 2000;
