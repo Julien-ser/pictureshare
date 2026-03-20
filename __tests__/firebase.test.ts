@@ -304,5 +304,21 @@ describe('firebase', () => {
 
       await expect(firebase.signInWithGoogle()).rejects.toThrow('No ID token received from Google');
     });
+
+    it('should throw error when Google sign-in fails', async () => {
+      (AuthRequest as jest.Mock).mockImplementation(() => ({
+        promptAsync: jest.fn().mockResolvedValue({ type: 'dismiss' }),
+      }));
+
+      await expect(firebase.signInWithGoogle()).rejects.toThrow('Google sign-in failed');
+    });
+
+    it('should throw error when no ID token received', async () => {
+      (AuthRequest as jest.Mock).mockImplementation(() => ({
+        promptAsync: jest.fn().mockResolvedValue({ type: 'success', params: {} }),
+      }));
+
+      await expect(firebase.signInWithGoogle()).rejects.toThrow('No ID token received from Google');
+    });
   });
 });
