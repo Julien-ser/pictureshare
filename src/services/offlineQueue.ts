@@ -34,9 +34,14 @@ export interface OfflineQueueItem {
  * Initialize offline uploads directory
  */
 async function ensureOfflineDir(): Promise<void> {
-  const dirInfo = await FileSystem.getInfoAsync(OFFLINE_UPLOADS_DIR);
-  if (!dirInfo.exists) {
-    await FileSystem.makeDirectoryAsync(OFFLINE_UPLOADS_DIR, { intermediates: true });
+  try {
+    const dirInfo = await FileSystem.getInfoAsync(OFFLINE_UPLOADS_DIR);
+    if (!dirInfo.exists) {
+      await FileSystem.makeDirectoryAsync(OFFLINE_UPLOADS_DIR, { intermediates: true });
+    }
+  } catch (error) {
+    safeConsoleError('Failed to ensure offline directory:', error);
+    // Continue anyway - the app can function without offline caching
   }
 }
 
