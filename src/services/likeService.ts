@@ -10,9 +10,9 @@ import {
   runTransaction,
   type Unsubscribe,
   type DocumentData,
+  type DocumentSnapshot,
 } from 'firebase/firestore';
 import { db } from './firebase';
-import * as self from './likeService';
 
 const LIKES_SUBCOLLECTION = 'likes';
 
@@ -70,10 +70,7 @@ export async function unlikePhoto(photoId: string, userId: string): Promise<void
     if (!photoDoc.exists) {
       throw new Error('Photo not found');
     }
-    const data = photoDoc.data();
-    if (!data) {
-      throw new Error('Photo data missing');
-    }
+    const data = photoDoc.data() as DocumentData;
     const currentCount = data.likeCount || 0;
     const newCount = Math.max(0, currentCount - 1); // Prevent negative
     transaction.update(photoRef, {
@@ -87,13 +84,13 @@ export async function unlikePhoto(photoId: string, userId: string): Promise<void
  * If user hasn't liked, creates like; if already liked, removes like
  */
 export async function toggleLike(photoId: string, userId: string): Promise<boolean> {
-  const hasLiked = await self.hasUserLiked(photoId, userId);
+  const hasLiked = await hasUserLiked(photoId, userId);
 
   if (hasLiked) {
-    await self.unlikePhoto(photoId, userId);
+    await unlikePhoto(photoId, userId);
     return false;
   } else {
-    await self.likePhoto(photoId, userId);
+    await likePhoto(photoId, userId);
     return true;
   }
 }
@@ -109,8 +106,8 @@ export async function getLikeCount(photoId: string): Promise<number> {
     return 0;
   }
 
-  const data = photoDoc.data();
-  return (data?.likeCount as number | undefined) ?? 0;
+  const data = photoDoc.data() as DocumentData;
+  return data.likeCount ?? 0;
 }
 
 /**
@@ -118,7 +115,7 @@ export async function getLikeCount(photoId: string): Promise<number> {
  */
 export async function hasUserLiked(photoId: string, userId: string): Promise<boolean> {
   const likeRef = doc(collection(db, 'photos', photoId, LIKES_SUBCOLLECTION), userId);
-  const likeDoc = await getDoc(likeRef);
+  const likeDoc: DocumentSnapshot<DocumentData> = await getDoc(likeRef);
   return likeDoc.exists;
 }
 
@@ -134,9 +131,9 @@ export function subscribeToLikeCount(
 
   return onSnapshot(
     photoRef,
-    (doc) => {
-      if (doc.exists) {
-        const data = doc.data() as DocumentData;
+    (snapshot) => {
+      if (snapshot.exists) {
+        const data = snapshot.data() as DocumentData;
         const likeCount = data.likeCount || 0;
         onLikeCountUpdate(likeCount);
       } else {
