@@ -1498,3 +1498,13 @@ index c1cc041..5572b2f 100644
 [0m
 Let's check staged changes:
 [0m$ [0mgit diff --cached
+[0m
+[0m$ [0mgit add -u __tests__/firebase.test.ts && git status
+On branch main
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+	logs/iteration-57.md
+
+nothing added to commit but untracked files present (use "git add" to track)
+[0m
+Let's force-stage the file:
