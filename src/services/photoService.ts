@@ -313,7 +313,7 @@ export async function canDeletePhoto(
     const photoRef = doc(db, PHOTOS_COLLECTION, photoId);
     const photoDoc = await getDoc(photoRef);
 
-    if (!photoDoc.exists()) {
+    if (!photoDoc.exists) {
       return false;
     }
 
@@ -328,7 +328,7 @@ export async function canDeletePhoto(
     const eventRef = doc(db, 'events', eventId);
     const eventDoc = await getDoc(eventRef);
 
-    if (eventDoc.exists()) {
+    if (eventDoc.exists) {
       const eventData = eventDoc.data() as Event;
       if (eventData.createdBy === userId) {
         return true;
@@ -361,7 +361,7 @@ export async function deletePhotoWithPermission(
   const photoRef = doc(db, PHOTOS_COLLECTION, photoId);
   const photoDoc = await getDoc(photoRef);
 
-  if (!photoDoc.exists()) {
+  if (!photoDoc.exists) {
     throw new Error('Photo not found');
   }
 

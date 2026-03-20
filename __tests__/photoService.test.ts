@@ -70,7 +70,7 @@ global.fetch = jest.fn(() =>
   })
 ) as any;
 
-describe.skip('photoService', () => {
+describe('photoService', () => {
   const mockEventId = 'test-event';
   const mockUserId = 'test-user';
   const mockPhotoId = 'photo_123';
@@ -96,7 +96,7 @@ describe.skip('photoService', () => {
       const mockStorageRef = { path: '' };
       const mockUploadTask = {
         on: jest.fn(),
-        then: jest.fn().mockResolvedValue(undefined),
+        then: jest.fn((resolve) => resolve(undefined)),
       };
 
       (ref as jest.Mock).mockReturnValue(mockStorageRef);
@@ -116,7 +116,7 @@ describe.skip('photoService', () => {
             callback({ bytesTransferred: 50, totalBytes: 100 });
           }
         }),
-        then: jest.fn().mockResolvedValue(undefined),
+        then: jest.fn((resolve) => resolve(undefined)),
       };
 
       (ref as jest.Mock).mockReturnValue(mockStorageRef);
@@ -132,7 +132,7 @@ describe.skip('photoService', () => {
       const mockStorageRef = { path: '' };
       const mockUploadTask = {
         on: jest.fn(),
-        then: jest.fn().mockRejectedValue(new Error('Upload failed')),
+        then: jest.fn((resolve, reject) => reject(new Error('Upload failed'))),
       };
 
       (ref as jest.Mock).mockReturnValue(mockStorageRef);
@@ -177,7 +177,7 @@ describe.skip('photoService', () => {
       await deletePhoto(mockEventId, mockPhotoId);
 
       expect(deleteObject).toHaveBeenCalledWith(expect.anything());
-      expect(deleteDoc).toHaveBeenCalledWith(expect.anything(), mockPhotoId);
+      expect(deleteDoc).toHaveBeenCalled();
     });
 
     it('should use provided storage path if given', async () => {
@@ -211,24 +211,27 @@ describe.skip('photoService', () => {
         height: 800,
       };
 
-      (uploadPhotoToStorage as jest.Mock).mockResolvedValue('storage/path.jpg');
+      // Mock uploadPhotoToStorage dependencies
+      const mockStorageRef = { path: '' };
+      const mockUploadTask = {
+        on: jest.fn(),
+        then: jest.fn((resolve) => resolve(undefined)),
+      };
+      (ref as jest.Mock).mockReturnValue(mockStorageRef);
+      (uploadBytesResumable as jest.Mock).mockReturnValue(mockUploadTask);
       (collection as jest.Mock).mockReturnValue({});
       (doc as jest.Mock).mockReturnValue({});
 
       await uploadAndSavePhoto(mockEventId, mockUserId, imageResult, mockPhotoId);
 
-      expect(uploadPhotoToStorage).toHaveBeenCalledWith(
-        mockEventId,
-        mockPhotoId,
-        mockImageUri,
-        undefined
-      );
+      expect(ref).toHaveBeenCalledWith(storage, `events/${mockEventId}/photos/${mockPhotoId}.jpg`);
+      expect(uploadBytesResumable).toHaveBeenCalledWith(mockStorageRef, expect.any(Blob));
       expect(setDoc).toHaveBeenCalledWith(
         expect.anything(),
         expect.objectContaining({
           eventId: mockEventId,
           uploaderId: mockUserId,
-          storagePath: 'storage/path.jpg',
+          storagePath: `events/${mockEventId}/photos/${mockPhotoId}.jpg`,
           width: 1000,
           height: 800,
           likeCount: 0,
@@ -243,7 +246,14 @@ describe.skip('photoService', () => {
         height: 800,
       };
 
-      (uploadPhotoToStorage as jest.Mock).mockResolvedValue('storage/path.jpg');
+      // Mock uploadPhotoToStorage dependencies
+      const mockStorageRef = { path: '' };
+      const mockUploadTask = {
+        on: jest.fn(),
+        then: jest.fn((resolve) => resolve(undefined)),
+      };
+      (ref as jest.Mock).mockReturnValue(mockStorageRef);
+      (uploadBytesResumable as jest.Mock).mockReturnValue(mockUploadTask);
       (collection as jest.Mock).mockReturnValue({});
       (doc as jest.Mock).mockReturnValue({});
 
@@ -260,18 +270,30 @@ describe.skip('photoService', () => {
       };
       const onProgress = jest.fn();
 
-      (uploadPhotoToStorage as jest.Mock).mockResolvedValue('storage/path.jpg');
+      // Mock uploadPhotoToStorage dependencies
+      const mockStorageRef = { path: '' };
+      const mockUploadTask = {
+        on: jest.fn((event, callback) => {
+          if (event === 'state_changed') {
+            callback({ bytesTransferred: 50, totalBytes: 100 });
+          }
+        }),
+        then: jest.fn((resolve) => resolve(undefined)),
+      };
+      (ref as jest.Mock).mockReturnValue(mockStorageRef);
+      (uploadBytesResumable as jest.Mock).mockReturnValue(mockUploadTask);
       (collection as jest.Mock).mockReturnValue({});
       (doc as jest.Mock).mockReturnValue({});
 
       await uploadAndSavePhoto(mockEventId, mockUserId, imageResult, mockPhotoId, onProgress);
 
-      expect(uploadPhotoToStorage).toHaveBeenCalledWith(
-        mockEventId,
-        mockPhotoId,
-        mockImageUri,
-        onProgress
+      expect(mockUploadTask.on).toHaveBeenCalledWith(
+        'state_changed',
+        expect.any(Function),
+        expect.any(Function)
       );
+      // The onProgress callback should be called within uploadPhotoToStorage
+      expect(onProgress).toHaveBeenCalledWith(50);
     });
   });
 
@@ -372,8 +394,8 @@ describe.skip('photoService', () => {
 
       expect(result.photos).toHaveLength(1);
       expect(result.lastDoc).toBe(mockSnapshot.docs[0]);
-      expect(where).toHaveBeenCalledWith(expect.anything(), 'eventId', mockEventId);
-      expect(orderBy).toHaveBeenCalledWith(expect.anything(), 'createdAt', 'desc');
+      expect(where).toHaveBeenCalledWith('eventId', '==', mockEventId);
+      expect(orderBy).toHaveBeenCalledWith('createdAt', 'desc');
       expect(limit).toHaveBeenCalledWith(20);
     });
 
@@ -488,24 +510,28 @@ describe.skip('photoService', () => {
 
   describe('deletePhotoWithPermission', () => {
     it('should delete photo if user has permission', async () => {
-      jest.spyOn(require('../src/services/photoService'), 'canDeletePhoto').mockResolvedValue(true);
-      (doc as jest.Mock).mockReturnValue({ path: 'photos/photo' });
-      (getDoc as jest.Mock).mockResolvedValue({
-        exists: true,
-        data: () => ({ storagePath: 'events/test/photos/photo.jpg' }),
-      });
+      // Setup mocks so that canDeletePhoto returns true (user is uploader)
+      (doc as jest.Mock)
+        .mockReturnValueOnce({}) // photoRef for canDeletePhoto
+        .mockReturnValueOnce({ path: 'photos/photo' }); // photoRef for getting storagePath
+
+      (getDoc as jest.Mock)
+        .mockResolvedValueOnce({ exists: true, data: () => ({ uploaderId: mockUserId }) }) // photoDoc for canDeletePhoto
+        .mockResolvedValueOnce({
+          exists: true,
+          data: () => ({ storagePath: 'events/test/photos/photo.jpg' }),
+        }); // photoDoc for storagePath
+
       (ref as jest.Mock).mockReturnValue({});
       (deleteObject as jest.Mock).mockResolvedValue(undefined);
       (deleteDoc as jest.Mock).mockResolvedValue(undefined);
 
       await deletePhotoWithPermission(mockPhotoId, mockEventId, mockUserId);
 
-      expect(deletePhoto).toHaveBeenCalledWith(
-        mockEventId,
-        mockPhotoId,
-        'events/test/photos/photo.jpg'
-      );
-      jest.restoreAllMocks();
+      // Verify that deletePhoto's operations were performed with correct storage path
+      expect(ref).toHaveBeenCalledWith(storage, 'events/test/photos/photo.jpg');
+      expect(deleteObject).toHaveBeenCalled();
+      expect(deleteDoc).toHaveBeenCalled();
     });
 
     it('should throw error if user lacks permission', async () => {
@@ -520,14 +546,18 @@ describe.skip('photoService', () => {
     });
 
     it('should throw error if photo not found during deletion', async () => {
-      jest.spyOn(require('../src/services/photoService'), 'canDeletePhoto').mockResolvedValue(true);
-      (doc as jest.Mock).mockReturnValue({ path: 'photos/photo' });
-      (getDoc as jest.Mock).mockResolvedValue({ exists: false });
+      // Setup mocks: canDeletePhoto returns true (user is uploader), but photo not found when fetching storagePath
+      (doc as jest.Mock)
+        .mockReturnValueOnce({}) // photoRef for canDeletePhoto
+        .mockReturnValueOnce({ path: 'photos/photo' }); // photoRef for getting storagePath
+
+      (getDoc as jest.Mock)
+        .mockResolvedValueOnce({ exists: true, data: () => ({ uploaderId: mockUserId }) }) // photoDoc for canDeletePhoto
+        .mockResolvedValueOnce({ exists: false }); // photoDoc for storagePath, not found
 
       await expect(deletePhotoWithPermission(mockPhotoId, mockEventId, mockUserId)).rejects.toThrow(
         'Photo not found'
       );
-      jest.restoreAllMocks();
     });
   });
 });

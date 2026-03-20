@@ -43,7 +43,7 @@ jest.mock('firebase/firestore', () => ({
   orderBy: jest.fn(),
 }));
 
-describe.skip('commentService', () => {
+describe('commentService', () => {
   const mockPhotoId = 'test-photo-123';
   const mockUserId = 'user-123';
   const mockCommentId = 'comment_123';
@@ -54,6 +54,10 @@ describe.skip('commentService', () => {
 
   describe('generateCommentId', () => {
     it('should generate a unique comment ID', () => {
+      // Mock collection and doc
+      (collection as jest.Mock).mockReturnValue({});
+      (doc as jest.Mock).mockReturnValueOnce({ id: 'id1' }).mockReturnValueOnce({ id: 'id2' });
+
       const id1 = generateCommentId();
       const id2 = generateCommentId();
 
@@ -73,24 +77,43 @@ describe.skip('commentService', () => {
         update: jest.fn(),
       };
 
+      // Mock collection for both generateCommentId and addComment's collection call
+      (collection as jest.Mock)
+        .mockReturnValueOnce({}) // generateCommentId collection
+        .mockReturnValueOnce({}); // addComment collection
+
+      // Mock doc calls: generateCommentId's doc -> id, commentRef, photoRef
       (doc as jest.Mock)
+        .mockReturnValueOnce({ id: 'generated_123' }) // generateCommentId returns this id
         .mockReturnValueOnce(mockCommentRef) // commentRef
-        .mockReturnValueOnce(mockPhotoRef); // photoRef
+        .mockReturnValueOnce(mockPhotoRef); // photoRef in transaction
 
-      (collection as jest.Mock).mockReturnValueOnce({});
+      (runTransaction as jest.Mock).mockImplementation(async (db, operation) => {
+        await operation(mockTransaction);
+      });
 
-      (runTransaction as jest.Mock).mockResolvedValue(undefined);
+      // Setup transaction.get to return a photo document with exists: true
+      mockTransaction.get.mockResolvedValue({
+        exists: true,
+        data: () => ({ commentCount: 0 }),
+      });
 
       const result = await addComment(mockPhotoId, mockUserId, 'Test comment');
 
       expect(setDoc).toHaveBeenCalledWith(mockCommentRef, {
+        id: 'generated_123',
+        photoId: mockPhotoId,
         userId: mockUserId,
         text: 'Test comment',
         createdAt: expect.any(Object),
       });
 
+      expect(mockTransaction.get).toHaveBeenCalledWith(mockPhotoRef);
+      expect(mockTransaction.update).toHaveBeenCalledWith(mockPhotoRef, {
+        commentCount: expect.any(Object), // increment(1) returns an object with { value: 1 }
+      });
       expect(runTransaction).toHaveBeenCalledWith(expect.anything(), expect.any(Function));
-      expect(result).toBeDefined();
+      expect(result).toBe('generated_123');
     });
 
     it('should throw error if photo does not exist', async () => {
@@ -130,7 +153,6 @@ describe.skip('commentService', () => {
 
       (doc as jest.Mock)
         .mockReturnValueOnce(mockCommentRef) // commentRef
-        .mockReturnValueOnce({}) // collection for query (not used but might be called)
         .mockReturnValueOnce(mockPhotoRef); // photoRef
 
       (getDoc as jest.Mock)
@@ -189,10 +211,7 @@ describe.skip('commentService', () => {
         update: jest.fn(),
       };
 
-      (doc as jest.Mock)
-        .mockReturnValueOnce(mockCommentRef)
-        .mockReturnValueOnce({})
-        .mockReturnValueOnce(mockPhotoRef);
+      (doc as jest.Mock).mockReturnValueOnce(mockCommentRef).mockReturnValueOnce(mockPhotoRef);
 
       (getDoc as jest.Mock)
         .mockResolvedValueOnce(mockCommentDoc)
@@ -264,7 +283,7 @@ describe.skip('commentService', () => {
       // Simulate snapshot callback
       const callback = (onSnapshot as jest.Mock).mock.calls[0][1];
       callback({
-        exists: () => true,
+        exists: true,
         data: () => ({ commentCount: 10 }),
       });
 
@@ -279,7 +298,7 @@ describe.skip('commentService', () => {
       subscribeToCommentCount(mockPhotoId, mockOnUpdate);
 
       const callback = (onSnapshot as jest.Mock).mock.calls[0][1];
-      callback({ exists: () => false });
+      callback({ exists: false });
 
       expect(mockOnUpdate).toHaveBeenCalledWith(0);
     });

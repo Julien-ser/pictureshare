@@ -13,6 +13,7 @@ import {
   type Unsubscribe,
   type DocumentData,
   type QuerySnapshot,
+  type DocumentSnapshot,
 } from 'firebase/firestore';
 import { db } from './firebase';
 import type { Comment } from '../types';
@@ -92,7 +93,7 @@ export async function deleteComment(
     if (!photoDoc.exists) {
       throw new Error('Photo not found');
     }
-    const currentCount = photoDoc.data().commentCount || 0;
+    const currentCount = photoDoc.data()?.commentCount ?? 0;
     const newCount = Math.max(0, currentCount - 1); // Prevent negative
     transaction.update(photoRef, {
       commentCount: newCount,
@@ -112,7 +113,7 @@ export async function getCommentCount(photoId: string): Promise<number> {
   }
 
   const data = photoDoc.data();
-  return data.commentCount || 0;
+  return data?.commentCount ?? 0;
 }
 
 /**
@@ -127,9 +128,9 @@ export function subscribeToCommentCount(
 
   return onSnapshot(
     photoRef,
-    (doc) => {
-      if (doc.exists) {
-        const data = doc.data() as DocumentData;
+    (snap: DocumentSnapshot) => {
+      if (snap.exists) {
+        const data = snap.data() as DocumentData;
         const commentCount = data.commentCount || 0;
         onCommentCountUpdate(commentCount);
       } else {
@@ -165,7 +166,7 @@ export function subscribeToComments(
           photoId,
           userId: data.userId,
           text: data.text,
-          createdAt: data.createdAt,
+          createdAt: data.createdAt.toDate(),
         };
       });
       onCommentsUpdate(comments);
