@@ -268,4 +268,87 @@ describe('firebase', () => {
       expect(callback).toHaveBeenCalledWith(null);
     });
   });
+
+  describe('signInWithGoogle', () => {
+    beforeEach(() => {
+      jest.clearAllMocks();
+      (GoogleAuthProvider.credential as jest.Mock).mockClear();
+      (signInWithCredential as jest.Mock).mockClear();
+    });
+
+    it('should successfully sign in with Google and return user', async () => {
+      const mockIdToken = 'mock-id-token';
+      const mockUserCredential = {
+        user: {
+          uid: 'google-user-123',
+          email: 'google@example.com',
+          displayName: 'Google User',
+          photoURL: 'https://example.com/photo.jpg',
+        },
+      };
+
+      // Set up mocks for this test
+      (GoogleAuthProvider.credential as jest.Mock).mockReturnValue({});
+      (signInWithCredential as jest.Mock).mockResolvedValue(mockUserCredential);
+
+      // Mock storeUserMapping
+      (storeUserMapping as jest.Mock).mockResolvedValue(undefined);
+
+      // Mock doc and setDoc
+      const mockUserRef = { path: '' };
+      (doc as jest.Mock).mockReturnValue(mockUserRef);
+      (setDoc as jest.Mock).mockResolvedValue(undefined);
+
+      // Set up AuthRequest mock
+      (AuthRequest as jest.Mock).mockImplementation(() => ({
+        promptAsync: jest.fn().mockResolvedValue({
+          type: 'success',
+          params: { id_token: mockIdToken },
+        }),
+      }));
+
+      const result = await signInWithGoogle();
+
+      expect(result).toEqual({
+        id: mockUserCredential.user.uid,
+        email: mockUserCredential.user.email,
+        displayName: mockUserCredential.user.displayName,
+        photoURL: mockUserCredential.user.photoURL,
+      });
+      expect(storeUserMapping).toHaveBeenCalledWith(result);
+      expect(setDoc).toHaveBeenCalledWith(
+        mockUserRef,
+        expect.objectContaining({
+          id: result.id,
+          email: result.email,
+          displayName: result.displayName,
+          photoURL: result.photoURL,
+        })
+      );
+    });
+
+    it('should throw error when user cancels Google sign-in', async () => {
+      (AuthRequest as jest.Mock).mockImplementation(() => ({
+        promptAsync: jest.fn().mockResolvedValue({ type: 'cancel' }),
+      }));
+
+      await expect(signInWithGoogle()).rejects.toThrow('User cancelled Google sign-in');
+    });
+
+    it('should throw error when Google sign-in fails', async () => {
+      (AuthRequest as jest.Mock).mockImplementation(() => ({
+        promptAsync: jest.fn().mockResolvedValue({ type: 'dismiss' }),
+      }));
+
+      await expect(signInWithGoogle()).rejects.toThrow('Google sign-in failed');
+    });
+
+    it('should throw error when no ID token received', async () => {
+      (AuthRequest as jest.Mock).mockImplementation(() => ({
+        promptAsync: jest.fn().mockResolvedValue({ type: 'success', params: {} }),
+      }));
+
+      await expect(signInWithGoogle()).rejects.toThrow('No ID token received from Google');
+    });
+  });
 });

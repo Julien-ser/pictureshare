@@ -353,3 +353,123 @@ Index: /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/__tests__
 [0m
 Now I need to add the signInWithGoogle tests. Let me check the end of the file and insert them:
 [0m→ [0mRead __tests__/firebase.test.ts[90m [offset=150][0m
+Now let me add the signInWithGoogle test suite. I'll insert it after the onAuthStateChangedListener describe and before the outer closing brace:
+[0m
+[0m← [0mEdit __tests__/firebase.test.ts
+Index: /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/__tests__/firebase.test.ts
+===================================================================
+--- /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/__tests__/firebase.test.ts
++++ /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/__tests__/firebase.test.ts
+@@ -267,5 +267,88 @@
+ 
+       expect(callback).toHaveBeenCalledWith(null);
+     });
+   });
++
++  describe('signInWithGoogle', () => {
++    beforeEach(() => {
++      jest.clearAllMocks();
++      (GoogleAuthProvider.credential as jest.Mock).mockClear();
++      (signInWithCredential as jest.Mock).mockClear();
++    });
++
++    it('should successfully sign in with Google and return user', async () => {
++      const mockIdToken = 'mock-id-token';
++      const mockUserCredential = {
++        user: {
++          uid: 'google-user-123',
++          email: 'google@example.com',
++          displayName: 'Google User',
++          photoURL: 'https://example.com/photo.jpg',
++        },
++      };
++
++      // Set up mocks for this test
++      (GoogleAuthProvider.credential as jest.Mock).mockReturnValue({});
++      (signInWithCredential as jest.Mock).mockResolvedValue(mockUserCredential);
++
++      // Mock storeUserMapping
++      (storeUserMapping as jest.Mock).mockResolvedValue(undefined);
++
++      // Mock doc and setDoc
++      const mockUserRef = { path: '' };
++      (doc as jest.Mock).mockReturnValue(mockUserRef);
++      (setDoc as jest.Mock).mockResolvedValue(undefined);
++
++      // Set up AuthRequest mock
++      (AuthRequest as jest.Mock).mockImplementation(() => ({
++        promptAsync: jest.fn().mockResolvedValue({
++          type: 'success',
++          params: { id_token: mockIdToken },
++        }),
++      }));
++
++      const result = await signInWithGoogle();
++
++      expect(result).toEqual({
++        id: mockUserCredential.user.uid,
++        email: mockUserCredential.user.email,
++        displayName: mockUserCredential.user.displayName,
++        photoURL: mockUserCredential.user.photoURL,
++      });
++      expect(storeUserMapping).toHaveBeenCalledWith(result);
++      expect(setDoc).toHaveBeenCalledWith(
++        mockUserRef,
++        expect.objectContaining({
++          id: result.id,
++          email: result.email,
++          displayName: result.displayName,
++          photoURL: result.photoURL,
++        })
++      );
++    });
++
++    it('should throw error when user cancels Google sign-in', async () => {
++      (AuthRequest as jest.Mock).mockImplementation(() => ({
++        promptAsync: jest.fn().mockResolvedValue({ type: 'cancel' }),
++      }));
++
++      await expect(signInWithGoogle()).rejects.toThrow('User cancelled Google sign-in');
++    });
++
++    it('should throw error when Google sign-in fails', async () => {
++      (AuthRequest as jest.Mock).mockImplementation(() => ({
++        promptAsync: jest.fn().mockResolvedValue({ type: 'dismiss' }),
++      }));
++
++      await expect(signInWithGoogle()).rejects.toThrow('Google sign-in failed');
++    });
++
++    it('should throw error when no ID token received', async () => {
++      (AuthRequest as jest.Mock).mockImplementation(() => ({
++        promptAsync: jest.fn().mockResolvedValue({ type: 'success', params: {} }),
++      }));
++
++      await expect(signInWithGoogle()).rejects.toThrow('No ID token received from Google');
++    });
++  });
+ });
+
+[0m
+Let me verify the changes are correct by reading the modified sections:
+[0m→ [0mRead __tests__/firebase.test.ts[90m [limit=40][0m
+Let me check the current git status to see what changes need to be committed:
+[0m
+[0m$ [0mgit status
+On branch main
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+	modified:   __tests__/firebase.test.ts
+	modified:   logs/iteration-35.md
+	modified:   logs/iteration-39.md
+
+no changes added to commit (use "git add" and/or "git commit -a")
+[0m
+Let me check if likeService.test.ts was actually modified:
+[0m$ [0mgit diff __tests__/likeService.test.ts
+[0m→ [0mRead __tests__/likeService.test.ts[90m [limit=35][0m
+Let me read likeService.test.ts to confirm its current state:
+Good, likeService.test.ts already has the correct path. Now let's check if codeGenerator.test.ts was modified in the previous attempt and whether it's staged or not:
+[0m
+[0m$ [0mgit diff __tests__/codeGenerator.test.ts
