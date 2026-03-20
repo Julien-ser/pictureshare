@@ -17,7 +17,7 @@ const EVENTS_COLLECTION = 'events';
 /**
  * Checks if an event code already exists in Firestore
  */
-async function isCodeUnique(code: string): Promise<boolean> {
+export async function isCodeUnique(code: string): Promise<boolean> {
   const q = query(collection(db, EVENTS_COLLECTION), where('code', '==', code));
   const snapshot = await getDocs(q);
   return snapshot.empty;

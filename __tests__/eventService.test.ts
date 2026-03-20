@@ -1,4 +1,4 @@
-import { createEvent, getEventByCode, joinEvent } from '../src/services/eventService';
+import { createEvent, getEventByCode, joinEvent, isCodeUnique } from '../src/services/eventService';
 import { db } from '../src/services/firebase';
 import { generateEventCode } from '../src/utils/codeGenerator';
 import {
@@ -208,5 +208,44 @@ describe('eventService', () => {
 
       expect(setDoc).not.toHaveBeenCalled();
     });
+
   });
+
+  describe('isCodeUnique', () => {
+    it('should return true when code does not exist', async () => {
+      (query as jest.Mock).mockReturnValue({});
+      (getDocs as jest.Mock).mockResolvedValue({
+        empty: true,
+        docs: [],
+      });
+
+      const result = await isCodeUnique('UNIQUE123');
+
+      expect(result).toBe(true);
+      expect(query).toHaveBeenCalledWith(
+        expect.anything(),
+        where('code', '==', 'UNIQUE123')
+      );
+      expect(getDocs).toHaveBeenCalledWith(expect.anything());
+    });
+
+    it('should return false when code already exists', async () => {
+      (query as jest.Mock).mockReturnValue({});
+      (getDocs as jest.Mock).mockResolvedValue({
+        empty: false,
+        docs: [{ id: 'existing-event' }],
+      });
+
+      const result = await isCodeUnique('EXISTS123');
+
+      expect(result).toBe(false);
+      expect(query).toHaveBeenCalledWith(
+        expect.anything(),
+        where('code', '==', 'EXISTS123')
+      );
+      expect(getDocs).toHaveBeenCalledWith(expect.anything());
+    });
+  });
+
+});
 });
