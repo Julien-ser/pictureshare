@@ -87,20 +87,26 @@ src/
 
 ## Current Phase
 
-**Phase 5: Group Permissions & Interactions** - In Progress
+**Phase 6: Testing, Polish & Launch** - In Progress
 
+- [x] Write unit tests for utilities (code generation, image compression) and service wrappers using Jest (144 tests passing)
+- [ ] Create integration tests with Firebase Emulators: test event join flow, upload, and real-time feed
+- [ ] Perform closed beta: distribute via Expo Go, collect feedback on UX and performance
+- [ ] Deploy to app stores: configure EAS build, submit to Apple TestFlight and Google Play Internal; monitor Firebase Crashlytics
+
+**Phase 5: Group Permissions & Interactions** - Completed
+
+- [x] Enable deletion: only photo owner or event creator can delete; remove from Storage and Firestore
 - [x] Add likes: create `likes` subcollection under each photo; toggle like on press; update aggregated like count
 - [x] Create lightweight comments: allow short text on photos; store in `comments` subcollection; real-time updates
 - [x] Show participant list per event with avatars (from Google Auth) and photo count; differentiate current user
 
 **Phase 4: Real-Time Feed & Sync** - Completed
 
-- [x] Real-time subscription to Firestore photos with onSnapshot listener
-- [x] FlatList rendering with download URL fetching
-- [x] Event context for managing current event state
-- [x] Optimistic UI updates after upload
-- [x] Infinite scroll pagination
-- [x] Offline-first behavior with local caching
+- [x] Subscribe to Firestore `photos` collection query `where eventId == current` with real-time listener; render in FlatList
+- [x] Implement optimistic UI: add photo to feed immediately after upload, mark pending, finalize on server confirmation
+- [x] Build infinite scroll pagination using Firestore cursor; load 20 initial photos, fetch more on scroll
+- [x] Add offline-first behavior: cache photos locally with `expo-file-system`; retry failed uploads when back online
 
 See [TASKS.md](./TASKS.md) for full roadmap.
 
