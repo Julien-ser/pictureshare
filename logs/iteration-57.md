@@ -312,3 +312,5 @@ All participants scan a written code and pictures they sent will be accessible t
 ```
 
 **Completed at:** Thu Mar 19 10:32:14 PM EDT 2026
+Let's check current git status to see which files are modified:
+[0m$ [0mgit status --short
