@@ -33,6 +33,13 @@ jest.mock('../src/services/photoService', () => ({
   uploadAndSavePhoto: jest.fn(),
 }));
 
+// Mock console.error to prevent errors in tests
+const mockConsoleError = jest.fn();
+global.console = {
+  ...console,
+  error: mockConsoleError,
+};
+
 describe('offlineQueue', () => {
   const mockQueueItem: OfflineQueueItem = {
     id: 'item-123',
