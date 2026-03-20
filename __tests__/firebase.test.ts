@@ -269,10 +269,7 @@ describe('firebase', () => {
         displayName: mockUserCredential.user.displayName,
         photoURL: mockUserCredential.user.photoURL,
       });
-      expect(AsyncStorage.setItem).toHaveBeenCalledWith(
-        'user_mapping',
-        expect.stringContaining(result.id)
-      );
+      expect(storeUserMappingSpy).toHaveBeenCalledWith(result);
       expect(setDoc).toHaveBeenCalledWith(
         mockUserRef,
         expect.objectContaining({
