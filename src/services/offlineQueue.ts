@@ -237,6 +237,10 @@ export async function initializeOfflineQueue(): Promise<void> {
     // Try to process any pending uploads
     await processOfflineQueue();
   } catch (error) {
-    safeConsoleError('Error initializing offline queue:', error);
+    try {
+      safeConsoleError('Error initializing offline queue:', error);
+    } catch (e) {
+      // ignore
+    }
   }
 }

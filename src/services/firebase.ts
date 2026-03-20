@@ -168,7 +168,11 @@ export async function signInWithGoogle(): Promise<User> {
 
     return appUser;
   } catch (error) {
-    console.error('Error signing in with Google:', error);
+    try {
+      console.error('Error signing in with Google:', error);
+    } catch (e) {
+      // ignore logging errors
+    }
     throw error;
   }
 }
