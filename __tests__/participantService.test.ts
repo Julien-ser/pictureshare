@@ -43,7 +43,7 @@ describe('participantService', () => {
       (doc as jest.Mock).mockReturnValue({ path: 'events/test' });
       (getDoc as jest.Mock).mockResolvedValue(mockEventDoc);
 
-      const result = await getParticipantsWithStats(mockEventId);
+      const result = await participantService.getParticipantsWithStats(mockEventId);
 
       expect(result).toEqual([]);
     });
@@ -57,7 +57,7 @@ describe('participantService', () => {
       (doc as jest.Mock).mockReturnValue({ path: 'events/test' });
       (getDoc as jest.Mock).mockResolvedValue(mockEventDoc);
 
-      const result = await getParticipantsWithStats(mockEventId);
+      const result = await participantService.getParticipantsWithStats(mockEventId);
 
       expect(result).toEqual([]);
     });
@@ -95,7 +95,7 @@ describe('participantService', () => {
         return mockPhotosSnapshot2;
       });
 
-      const result = await getParticipantsWithStats(mockEventId);
+      const result = await participantService.getParticipantsWithStats(mockEventId);
 
       expect(result).toHaveLength(2);
       expect(result.find((p) => p.userId === mockUserId1)?.photoCount).toBe(3);
@@ -127,7 +127,7 @@ describe('participantService', () => {
         return snapshot;
       });
 
-      const result = await getParticipantsWithStats(mockEventId);
+      const result = await participantService.getParticipantsWithStats(mockEventId);
 
       // Should be sorted: user-2 (3), user-3 (2), user-1 (1)
       expect(result[0].userId).toBe(mockUserId2);
@@ -139,7 +139,7 @@ describe('participantService', () => {
       (doc as jest.Mock).mockReturnValue({ path: 'events/test' });
       (getDoc as jest.Mock).mockRejectedValue(new Error('Database error'));
 
-      const result = await getParticipantsWithStats(mockEventId);
+      const result = await participantService.getParticipantsWithStats(mockEventId);
 
       expect(result).toEqual([]);
     });
@@ -148,7 +148,7 @@ describe('participantService', () => {
   describe('getUserProfiles', () => {
     it('should return map of user profiles with placeholder display names', async () => {
       const userIds = [mockUserId1, mockUserId2];
-      const result = await getUserProfiles(userIds);
+      const result = await participantService.getUserProfiles(userIds);
 
       expect(result.size).toBe(2);
       expect(result.get(mockUserId1)?.displayName).toBe(`User ${mockUserId1.substring(0, 6)}`);
@@ -157,13 +157,13 @@ describe('participantService', () => {
     });
 
     it('should handle empty user list', async () => {
-      const result = await getUserProfiles([]);
+      const result = await participantService.getUserProfiles([]);
       expect(result.size).toBe(0);
     });
 
     it('should handle long user IDs in display name truncation', async () => {
       const longUserId = 'user-with-very-long-id-12345';
-      const result = await getUserProfiles([longUserId]);
+      const result = await participantService.getUserProfiles([longUserId]);
 
       expect(result.get(longUserId)?.displayName).toBe(`User user-w`); // first 6 chars
     });
@@ -176,10 +176,31 @@ describe('participantService', () => {
         { userId: mockUserId2, photoCount: 1 },
       ];
 
-      // Mock getParticipantsWithStats
-      (getParticipantsWithStats as jest.Mock).mockResolvedValue(mockParticipants);
+      // Mock Firebase to return the mock participants from getParticipantsWithStats
+      const mockEventDoc = {
+        exists: true,
+        data: () => ({
+          participants: [mockUserId1, mockUserId2],
+        }),
+      };
 
-      const result = await getEnrichedParticipants(mockEventId, mockUserId1);
+      const mockPhotosSnapshot1 = { size: 2, empty: false };
+      const mockPhotosSnapshot2 = { size: 1, empty: false };
+
+      let queryCallCount = 0;
+      (query as jest.Mock).mockImplementation(() => {
+        queryCallCount++;
+        return { path: `photos/query${queryCallCount}` };
+      });
+
+      (doc as jest.Mock).mockReturnValue({ path: 'events/test' });
+      (getDoc as jest.Mock).mockResolvedValue(mockEventDoc);
+      (getDocs as jest.Mock).mockImplementation(async () => {
+        if (queryCallCount === 1) return mockPhotosSnapshot1;
+        return mockPhotosSnapshot2;
+      });
+
+      const result = await participantService.getEnrichedParticipants(mockEventId, mockUserId1);
 
       expect(result).toHaveLength(2);
       expect(result[0].isCurrentUser).toBe(true); // user1 is current user
@@ -193,9 +214,31 @@ describe('participantService', () => {
         { userId: mockUserId2, photoCount: 2 },
       ];
 
-      (getParticipantsWithStats as jest.Mock).mockResolvedValue(mockParticipants);
+      // Mock Firebase to return the mock participants
+      const mockEventDoc = {
+        exists: true,
+        data: () => ({
+          participants: [mockUserId1, mockUserId2],
+        }),
+      };
 
-      const result = await getEnrichedParticipants(mockEventId);
+      const mockPhotosSnapshot1 = { size: 1, empty: false };
+      const mockPhotosSnapshot2 = { size: 2, empty: false };
+
+      let queryCallCount = 0;
+      (query as jest.Mock).mockImplementation(() => {
+        queryCallCount++;
+        return { path: `photos/query${queryCallCount}` };
+      });
+
+      (doc as jest.Mock).mockReturnValue({ path: 'events/test' });
+      (getDoc as jest.Mock).mockResolvedValue(mockEventDoc);
+      (getDocs as jest.Mock).mockImplementation(async () => {
+        if (queryCallCount === 1) return mockPhotosSnapshot1;
+        return mockPhotosSnapshot2;
+      });
+
+      const result = await participantService.getEnrichedParticipants(mockEventId);
 
       expect(result.every((p) => p.isCurrentUser === false)).toBe(true);
     });
@@ -203,9 +246,22 @@ describe('participantService', () => {
     it('should preserve existing displayName from participant stats', async () => {
       const mockParticipants = [{ userId: mockUserId1, photoCount: 1, displayName: 'Custom Name' }];
 
-      (getParticipantsWithStats as jest.Mock).mockResolvedValue(mockParticipants);
+      // Mock Firebase to return participants with custom displayName
+      const mockEventDoc = {
+        exists: true,
+        data: () => ({
+          participants: [mockUserId1],
+        }),
+      };
 
-      const result = await getEnrichedParticipants(mockEventId);
+      const mockPhotosSnapshot = { size: 1, empty: false };
+
+      (query as jest.Mock).mockReturnValue({ path: 'photos/query1' });
+      (doc as jest.Mock).mockReturnValue({ path: 'events/test' });
+      (getDoc as jest.Mock).mockResolvedValue(mockEventDoc);
+      (getDocs as jest.Mock).mockResolvedValue(mockPhotosSnapshot);
+
+      const result = await participantService.getEnrichedParticipants(mockEventId);
 
       expect(result[0].displayName).toBe('Custom Name');
     });

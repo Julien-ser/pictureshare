@@ -1,10 +1,4 @@
-import {
-  compressImage,
-  requestMediaPermissions,
-  takePhoto,
-  pickFromGallery,
-  pickImage,
-} from '../src/utils/imagePicker';
+import * as imagePicker from '../src/utils/imagePicker';
 import * as ImagePicker from 'expo-image-picker';
 import * as ImageManipulator from 'expo-image-manipulator';
 import { Alert, Platform } from 'react-native';
@@ -43,7 +37,7 @@ describe('imagePicker', () => {
 
   describe('compressImage', () => {
     it('should return original image if within max dimensions', async () => {
-      const result = await compressImage(mockImageUri, 1000, 800);
+      const result = await imagePicker.compressImage(mockImageUri, 1000, 800);
 
       expect(result).toEqual({
         uri: mockImageUri,
@@ -60,7 +54,7 @@ describe('imagePicker', () => {
         height: 1440,
       });
 
-      const result = await compressImage(mockImageUri, mockWidth, mockHeight);
+      const result = await imagePicker.compressImage(mockImageUri, mockWidth, mockHeight);
 
       expect(ImageManipulator.manipulateAsync).toHaveBeenCalledWith(
         mockImageUri,
@@ -85,7 +79,7 @@ describe('imagePicker', () => {
         height: 1920,
       });
 
-      const result = await compressImage(mockImageUri, 800, 2500);
+      const result = await imagePicker.compressImage(mockImageUri, 800, 2500);
 
       expect(ImageManipulator.manipulateAsync).toHaveBeenCalledWith(
         mockImageUri,
@@ -122,7 +116,7 @@ describe('imagePicker', () => {
         new Error('Compression failed')
       );
 
-      const result = await compressImage(mockImageUri, mockWidth, mockHeight);
+      const result = await imagePicker.compressImage(mockImageUri, mockWidth, mockHeight);
 
       expect(result).toEqual({
         uri: mockImageUri,
@@ -139,7 +133,7 @@ describe('imagePicker', () => {
 
     it('should return true for web platform', async () => {
       (Platform as any).OS = 'web';
-      const result = await requestMediaPermissions();
+      const result = await imagePicker.requestMediaPermissions();
       expect(result).toBe(true);
       expect(ImagePicker.requestCameraPermissionsAsync).not.toHaveBeenCalled();
     });
@@ -152,7 +146,7 @@ describe('imagePicker', () => {
         status: 'granted',
       });
 
-      const result = await requestMediaPermissions();
+      const result = await imagePicker.requestMediaPermissions();
 
       expect(result).toBe(true);
       expect(Alert.alert).not.toHaveBeenCalled();
@@ -171,7 +165,7 @@ describe('imagePicker', () => {
         status: 'denied',
       });
 
-      const result = await requestMediaPermissions();
+      const result = await imagePicker.requestMediaPermissions();
 
       expect(result).toBe(false);
       expect(Alert.alert).toHaveBeenCalledWith('Camera Permission Required', expect.any(String), [
@@ -187,7 +181,7 @@ describe('imagePicker', () => {
         status: 'denied',
       });
 
-      const result = await requestMediaPermissions();
+      const result = await imagePicker.requestMediaPermissions();
 
       expect(result).toBe(false);
       expect(Alert.alert).toHaveBeenCalledWith(
@@ -205,7 +199,7 @@ describe('imagePicker', () => {
         status: 'denied',
       });
 
-      const result = await requestMediaPermissions();
+      const result = await imagePicker.requestMediaPermissions();
 
       expect(result).toBe(false);
       expect(Alert.alert).toHaveBeenCalledWith('Permissions Required', expect.any(String), [
@@ -223,17 +217,17 @@ describe('imagePicker', () => {
         status: 'denied',
       });
 
-      const result = await takePhoto();
+      const result = await imagePicker.takePhoto();
 
       expect(result).toBeNull();
       expect(ImagePicker.launchCameraAsync).not.toHaveBeenCalled();
     });
 
     it('should return null if camera cancelled', async () => {
-      (requestMediaPermissions as jest.Mock).mockResolvedValue(true);
+      jest.spyOn(imagePicker, 'requestMediaPermissions').mockResolvedValue(true);
       (ImagePicker.launchCameraAsync as jest.Mock).mockResolvedValue({ canceled: true });
 
-      const result = await takePhoto();
+      const result = await imagePicker.takePhoto();
 
       expect(result).toBeNull();
     });
@@ -255,7 +249,7 @@ describe('imagePicker', () => {
         height: 1440,
       });
 
-      const result = await takePhoto();
+      const result = await imagePicker.takePhoto();
 
       expect(result).toEqual({
         uri: 'compressed.jpg',
@@ -273,10 +267,10 @@ describe('imagePicker', () => {
     });
 
     it('should show alert and return null on error', async () => {
-      (requestMediaPermissions as jest.Mock).mockResolvedValue(true);
+      jest.spyOn(imagePicker, 'requestMediaPermissions').mockResolvedValue(true);
       (ImagePicker.launchCameraAsync as jest.Mock).mockRejectedValue(new Error('Camera error'));
 
-      const result = await takePhoto();
+      const result = await imagePicker.takePhoto();
 
       expect(result).toBeNull();
       expect(Alert.alert).toHaveBeenCalledWith(
@@ -295,17 +289,17 @@ describe('imagePicker', () => {
         status: 'denied',
       });
 
-      const result = await pickFromGallery();
+      const result = await imagePicker.pickFromGallery();
 
       expect(result).toBeNull();
       expect(ImagePicker.launchImageLibraryAsync).not.toHaveBeenCalled();
     });
 
     it('should return null if gallery cancelled', async () => {
-      (requestMediaPermissions as jest.Mock).mockResolvedValue(true);
+      jest.spyOn(imagePicker, 'requestMediaPermissions').mockResolvedValue(true);
       (ImagePicker.launchImageLibraryAsync as jest.Mock).mockResolvedValue({ canceled: true });
 
-      const result = await pickFromGallery();
+      const result = await imagePicker.pickFromGallery();
 
       expect(result).toBeNull();
     });
@@ -327,7 +321,7 @@ describe('imagePicker', () => {
         height: 1440,
       });
 
-      const result = await pickFromGallery();
+      const result = await imagePicker.pickFromGallery();
 
       expect(result).toEqual({
         uri: 'compressed.jpg',
@@ -337,12 +331,12 @@ describe('imagePicker', () => {
     });
 
     it('should show alert and return null on error', async () => {
-      (requestMediaPermissions as jest.Mock).mockResolvedValue(true);
+      jest.spyOn(imagePicker, 'requestMediaPermissions').mockResolvedValue(true);
       (ImagePicker.launchImageLibraryAsync as jest.Mock).mockRejectedValue(
         new Error('Gallery error')
       );
 
-      const result = await pickFromGallery();
+      const result = await imagePicker.pickFromGallery();
 
       expect(result).toBeNull();
       expect(Alert.alert).toHaveBeenCalledWith(
@@ -360,7 +354,7 @@ describe('imagePicker', () => {
       (ImagePicker.requestMediaLibraryPermissionsAsync as jest.Mock).mockResolvedValue({
         status: 'denied',
       });
-      await pickImage('camera');
+      await imagePicker.pickImage('camera');
       expect(ImagePicker.launchCameraAsync).not.toHaveBeenCalled();
       expect(ImagePicker.launchImageLibraryAsync).not.toHaveBeenCalled();
 
@@ -380,7 +374,7 @@ describe('imagePicker', () => {
         height: 800,
       });
 
-      const result = await pickImage('camera');
+      const result = await imagePicker.pickImage('camera');
       expect(result).not.toBeNull();
       expect(ImagePicker.launchCameraAsync).toHaveBeenCalled();
     });
@@ -402,7 +396,7 @@ describe('imagePicker', () => {
         height: 800,
       });
 
-      const result = await pickImage('gallery');
+      const result = await imagePicker.pickImage('gallery');
       expect(result).not.toBeNull();
       expect(ImagePicker.launchImageLibraryAsync).toHaveBeenCalled();
     });

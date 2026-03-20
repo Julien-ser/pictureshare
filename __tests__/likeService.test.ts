@@ -1,13 +1,4 @@
-import {
-  likePhoto,
-  unlikePhoto,
-  toggleLike,
-  getLikeCount,
-  hasUserLiked,
-  subscribeToLikeCount,
-  subscribeToUserLike,
-  generateLikeId,
-} from '../src/services/likeService';
+import * as likeService from '../src/services/likeService';
 import { db } from '../src/services/firebase';
 import {
   collection,
@@ -43,15 +34,19 @@ jest.mock('firebase/firestore', () => ({
 describe('likeService', () => {
   const mockPhotoId = 'test-photo-123';
   const mockUserId = 'user-123';
-  const mockLikeId = generateLikeId(mockUserId);
+  const mockLikeId = likeService.generateLikeId(mockUserId);
 
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
   describe('generateLikeId', () => {
     it('should return userId as like ID', () => {
-      expect(generateLikeId(mockUserId)).toBe(mockUserId);
+      expect(likeService.generateLikeId(mockUserId)).toBe(mockUserId);
     });
   });
 
@@ -72,7 +67,7 @@ describe('likeService', () => {
 
       (runTransaction as jest.Mock).mockResolvedValue(undefined);
 
-      await likePhoto(mockPhotoId, mockUserId);
+      await likeService.likePhoto(mockPhotoId, mockUserId);
 
       expect(setDoc).toHaveBeenCalledWith(mockLikeRef, {
         userId: mockUserId,
@@ -98,7 +93,9 @@ describe('likeService', () => {
         await operation(mockTransaction);
       });
 
-      await expect(likePhoto(mockPhotoId, mockUserId)).rejects.toThrow('Photo not found');
+      await expect(likeService.likePhoto(mockPhotoId, mockUserId)).rejects.toThrow(
+        'Photo not found'
+      );
     });
   });
 
@@ -126,7 +123,7 @@ describe('likeService', () => {
         await operation(mockTransaction);
       });
 
-      await unlikePhoto(mockPhotoId, mockUserId);
+      await likeService.unlikePhoto(mockPhotoId, mockUserId);
 
       expect(deleteDoc).toHaveBeenCalledWith(mockLikeRef);
       expect(mockTransaction.update).toHaveBeenCalledWith(mockPhotoRef, {
@@ -138,7 +135,7 @@ describe('likeService', () => {
       (doc as jest.Mock).mockReturnValueOnce({});
       (getDoc as jest.Mock).mockResolvedValue({ exists: false });
 
-      await expect(unlikePhoto(mockPhotoId, mockUserId)).resolves.not.toThrow();
+      await expect(likeService.unlikePhoto(mockPhotoId, mockUserId)).resolves.not.toThrow();
 
       expect(deleteDoc).not.toHaveBeenCalled();
     });
@@ -166,7 +163,7 @@ describe('likeService', () => {
         await operation(mockTransaction);
       });
 
-      await unlikePhoto(mockPhotoId, mockUserId);
+      await likeService.unlikePhoto(mockPhotoId, mockUserId);
 
       expect(mockTransaction.update).toHaveBeenCalledWith(mockPhotoRef, {
         likeCount: 0,
@@ -176,23 +173,23 @@ describe('likeService', () => {
 
   describe('toggleLike', () => {
     it('should unlike if already liked', async () => {
-      (hasUserLiked as jest.Mock).mockResolvedValue(true);
-      (unlikePhoto as jest.Mock).mockResolvedValue(undefined);
+      jest.spyOn(likeService, 'hasUserLiked').mockResolvedValue(true);
+      jest.spyOn(likeService, 'unlikePhoto').mockResolvedValue(undefined);
 
-      const result = await toggleLike(mockPhotoId, mockUserId);
+      const result = await likeService.toggleLike(mockPhotoId, mockUserId);
 
       expect(result).toBe(false);
-      expect(unlikePhoto).toHaveBeenCalledWith(mockPhotoId, mockUserId);
+      expect(likeService.unlikePhoto).toHaveBeenCalledWith(mockPhotoId, mockUserId);
     });
 
     it('should like if not already liked', async () => {
-      (hasUserLiked as jest.Mock).mockResolvedValue(false);
-      (likePhoto as jest.Mock).mockResolvedValue(undefined);
+      jest.spyOn(likeService, 'hasUserLiked').mockResolvedValue(false);
+      jest.spyOn(likeService, 'likePhoto').mockResolvedValue(undefined);
 
-      const result = await toggleLike(mockPhotoId, mockUserId);
+      const result = await likeService.toggleLike(mockPhotoId, mockUserId);
 
       expect(result).toBe(true);
-      expect(likePhoto).toHaveBeenCalledWith(mockPhotoId, mockUserId);
+      expect(likeService.likePhoto).toHaveBeenCalledWith(mockPhotoId, mockUserId);
     });
   });
 
@@ -207,7 +204,7 @@ describe('likeService', () => {
       (doc as jest.Mock).mockReturnValueOnce(mockPhotoRef);
       (getDoc as jest.Mock).mockResolvedValue(mockPhotoDoc);
 
-      const count = await getLikeCount(mockPhotoId);
+      const count = await likeService.getLikeCount(mockPhotoId);
 
       expect(count).toBe(42);
     });
@@ -216,7 +213,7 @@ describe('likeService', () => {
       (doc as jest.Mock).mockReturnValueOnce({});
       (getDoc as jest.Mock).mockResolvedValue({ exists: false });
 
-      const count = await getLikeCount(mockPhotoId);
+      const count = await likeService.getLikeCount(mockPhotoId);
 
       expect(count).toBe(0);
     });
@@ -228,7 +225,7 @@ describe('likeService', () => {
         data: () => ({}),
       });
 
-      const count = await getLikeCount(mockPhotoId);
+      const count = await likeService.getLikeCount(mockPhotoId);
 
       expect(count).toBe(0);
     });
@@ -239,7 +236,7 @@ describe('likeService', () => {
       (doc as jest.Mock).mockReturnValueOnce({});
       (getDoc as jest.Mock).mockResolvedValue({ exists: true });
 
-      const result = await hasUserLiked(mockPhotoId, mockUserId);
+      const result = await likeService.hasUserLiked(mockPhotoId, mockUserId);
 
       expect(result).toBe(true);
     });
@@ -248,7 +245,7 @@ describe('likeService', () => {
       (doc as jest.Mock).mockReturnValueOnce({});
       (getDoc as jest.Mock).mockResolvedValue({ exists: false });
 
-      const result = await hasUserLiked(mockPhotoId, mockUserId);
+      const result = await likeService.hasUserLiked(mockPhotoId, mockUserId);
 
       expect(result).toBe(false);
     });
@@ -263,7 +260,7 @@ describe('likeService', () => {
       (doc as jest.Mock).mockReturnValueOnce(mockPhotoRef);
       (onSnapshot as jest.Mock).mockReturnValueOnce(mockUnsubscribe);
 
-      const unsubscribe = subscribeToLikeCount(mockPhotoId, mockOnUpdate);
+      const unsubscribe = likeService.subscribeToLikeCount(mockPhotoId, mockOnUpdate);
 
       expect(unsubscribe).toBe(mockUnsubscribe);
 
@@ -282,7 +279,7 @@ describe('likeService', () => {
       (doc as jest.Mock).mockReturnValueOnce({});
       (onSnapshot as jest.Mock).mockReturnValueOnce(jest.fn());
 
-      subscribeToLikeCount(mockPhotoId, mockOnUpdate);
+      likeService.subscribeToLikeCount(mockPhotoId, mockOnUpdate);
 
       const callback = (onSnapshot as jest.Mock).mock.calls[0][1];
       callback({ exists: () => false });
@@ -301,7 +298,7 @@ describe('likeService', () => {
       (doc as jest.Mock).mockReturnValueOnce(mockLikeRef);
       (onSnapshot as jest.Mock).mockReturnValueOnce(mockUnsubscribe);
 
-      const unsubscribe = subscribeToUserLike(mockPhotoId, mockUserId, mockOnUpdate);
+      const unsubscribe = likeService.subscribeToUserLike(mockPhotoId, mockUserId, mockOnUpdate);
 
       expect(unsubscribe).toBe(mockUnsubscribe);
 

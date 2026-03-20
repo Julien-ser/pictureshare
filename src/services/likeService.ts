@@ -38,7 +38,7 @@ export async function likePhoto(photoId: string, userId: string): Promise<void> 
   const photoRef = doc(db, 'photos', photoId);
   await runTransaction(db, async (transaction) => {
     const photoDoc = await transaction.get(photoRef);
-    if (!photoDoc.exists()) {
+    if (!photoDoc.exists) {
       throw new Error('Photo not found');
     }
     transaction.update(photoRef, {
@@ -56,7 +56,7 @@ export async function unlikePhoto(photoId: string, userId: string): Promise<void
 
   // Check if like exists before deleting
   const likeDoc = await getDoc(likeRef);
-  if (!likeDoc.exists()) {
+  if (!likeDoc.exists) {
     return; // Already unliked
   }
 
@@ -66,7 +66,7 @@ export async function unlikePhoto(photoId: string, userId: string): Promise<void
   const photoRef = doc(db, 'photos', photoId);
   await runTransaction(db, async (transaction) => {
     const photoDoc = await transaction.get(photoRef);
-    if (!photoDoc.exists()) {
+    if (!photoDoc.exists) {
       throw new Error('Photo not found');
     }
     const currentCount = photoDoc.data().likeCount || 0;
@@ -100,7 +100,7 @@ export async function getLikeCount(photoId: string): Promise<number> {
   const photoRef = doc(db, 'photos', photoId);
   const photoDoc = await getDoc(photoRef);
 
-  if (!photoDoc.exists()) {
+  if (!photoDoc.exists) {
     return 0;
   }
 
@@ -114,7 +114,7 @@ export async function getLikeCount(photoId: string): Promise<number> {
 export async function hasUserLiked(photoId: string, userId: string): Promise<boolean> {
   const likeRef = doc(collection(db, 'photos', photoId, LIKES_SUBCOLLECTION), userId);
   const likeDoc = await getDoc(likeRef);
-  return likeDoc.exists();
+  return likeDoc.exists;
 }
 
 /**
@@ -130,7 +130,7 @@ export function subscribeToLikeCount(
   return onSnapshot(
     photoRef,
     (doc) => {
-      if (doc.exists()) {
+      if (doc.exists) {
         const data = doc.data() as DocumentData;
         const likeCount = data.likeCount || 0;
         onLikeCountUpdate(likeCount);
@@ -159,7 +159,7 @@ export function subscribeToUserLike(
   return onSnapshot(
     likeRef,
     (doc) => {
-      onUserLikedUpdate(doc.exists());
+      onUserLikedUpdate(doc.exists);
     },
     (error) => {
       console.error('Error in user like subscription:', error);
