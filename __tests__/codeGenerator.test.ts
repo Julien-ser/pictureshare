@@ -90,9 +90,7 @@ describe('codeGenerator', () => {
     });
 
     it('should return false for null or undefined', () => {
-      // @ts-expect-error testing with invalid input
       expect(isValidEventCode(null)).toBe(false);
-      // @ts-expect-error testing with invalid input
       expect(isValidEventCode(undefined)).toBe(false);
     });
   });

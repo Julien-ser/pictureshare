@@ -49,7 +49,10 @@ export async function generateEventCode(
 /**
  * Validates that a code matches the required format (3 letters + 3 digits)
  */
-export function isValidEventCode(code: string): boolean {
+export function isValidEventCode(code: string | null | undefined): boolean {
+  if (typeof code !== 'string') {
+    return false;
+  }
   const regex = /^[A-Z]{3}\d{3}$/;
   return regex.test(code);
 }
