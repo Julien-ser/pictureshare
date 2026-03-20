@@ -3,6 +3,16 @@ import * as FileSystem from 'expo-file-system';
 import { uploadAndSavePhoto } from './photoService';
 import type { Photo } from '../types';
 
+function safeConsoleError(...args: any[]): void {
+  if (typeof console !== 'undefined' && typeof console.error === 'function') {
+    try {
+      console.error(...args);
+    } catch (e) {
+      // ignore errors from console.error itself
+    }
+  }
+}
+
 const OFFLINE_QUEUE_KEY = 'pictureshare_offline_queue';
 const OFFLINE_UPLOADS_DIR = `${FileSystem.cacheDirectory}pictureshare_offline/`;
 
@@ -45,7 +55,7 @@ async function cacheImageLocally(originalUri: string, itemId: string): Promise<s
     });
     return cachedUri;
   } catch (error) {
-    console.error('Error caching image:', error);
+    safeConsoleError('Error caching image:', error);
     throw error;
   }
 }
@@ -58,7 +68,7 @@ export async function getOfflineQueue(): Promise<OfflineQueueItem[]> {
     const queueJson = await AsyncStorage.getItem(OFFLINE_QUEUE_KEY);
     return queueJson ? JSON.parse(queueJson) : [];
   } catch (error) {
-    console.error('Error reading offline queue:', error);
+    safeConsoleError('Error reading offline queue:', error);
     return [];
   }
 }
@@ -80,7 +90,7 @@ export async function addToOfflineQueue(
     const cachedUri = await cacheImageLocally(item.localImageUri, item.id);
     fullItem.cachedImageUri = cachedUri;
   } catch (error) {
-    console.error('Failed to cache image for offline queue:', error);
+    safeConsoleError('Failed to cache image for offline queue:', error);
     throw error;
   }
 
@@ -174,7 +184,7 @@ export async function processOfflineQueue(): Promise<void> {
       // Use cached image if available, otherwise fall back to original
       const imageUri = item.cachedImageUri || item.localImageUri;
       if (!imageUri || !(await FileSystem.getInfoAsync(imageUri)).exists) {
-        console.error(`Image file missing for item ${item.id}, removing from queue`);
+        safeConsoleError(`Image file missing for item ${item.id}, removing from queue`);
         await removeFromOfflineQueue(item.id);
         continue;
       }
@@ -200,11 +210,11 @@ export async function processOfflineQueue(): Promise<void> {
         try {
           await FileSystem.deleteAsync(item.cachedImageUri);
         } catch (e) {
-          console.error('Error cleaning up cached file:', e);
+          safeConsoleError('Error cleaning up cached file:', e);
         }
       }
     } catch (error) {
-      console.error(`Failed to upload offline item ${item.id}:`, error);
+      safeConsoleError(`Failed to upload offline item ${item.id}:`, error);
       const errorMessage = error instanceof Error ? error.message : String(error);
       await updateItemRetry(item.id, errorMessage);
 
@@ -227,6 +237,6 @@ export async function initializeOfflineQueue(): Promise<void> {
     // Try to process any pending uploads
     await processOfflineQueue();
   } catch (error) {
-    console.error('Error initializing offline queue:', error);
+    safeConsoleError('Error initializing offline queue:', error);
   }
 }
