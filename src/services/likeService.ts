@@ -12,6 +12,7 @@ import {
   type DocumentData,
 } from 'firebase/firestore';
 import { db } from './firebase';
+import * as self from './likeService';
 
 const LIKES_SUBCOLLECTION = 'likes';
 
@@ -82,13 +83,13 @@ export async function unlikePhoto(photoId: string, userId: string): Promise<void
  * If user hasn't liked, creates like; if already liked, removes like
  */
 export async function toggleLike(photoId: string, userId: string): Promise<boolean> {
-  const hasLiked = await hasUserLiked(photoId, userId);
+  const hasLiked = await self.hasUserLiked(photoId, userId);
 
   if (hasLiked) {
-    await unlikePhoto(photoId, userId);
+    await self.unlikePhoto(photoId, userId);
     return false;
   } else {
-    await likePhoto(photoId, userId);
+    await self.likePhoto(photoId, userId);
     return true;
   }
 }
