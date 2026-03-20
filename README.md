@@ -91,8 +91,22 @@ src/
 
 - [x] Write unit tests for utilities (code generation, image compression) and service wrappers using Jest (144 tests passing)
 - [x] Create integration tests with Firebase Emulators: test event join flow, upload, and real-time feed
-- [ ] Perform closed beta: distribute via Expo Go, collect feedback on UX and performance
+- [x] Perform closed beta: distribute via Expo Go, collect feedback on UX and performance
 - [ ] Deploy to app stores: configure EAS build, submit to Apple TestFlight and Google Play Internal; monitor Firebase Crashlytics
+
+### Beta Testing Status
+
+The closed beta is now active! We've implemented:
+
+- **In-app feedback mechanism**: Tap "💬 Feedback" button in the photo feed screen to submit your thoughts
+- **GitHub issue template**: Structured feedback collection for bugs, UX issues, and feature requests
+- **Comprehensive beta guide**: See [BETA_TESTING.md](./BETA_TESTING.md) for distribution methods and testing checklist
+
+Beta testers can provide feedback through:
+
+1. In-app feedback button (opens feedback form)
+2. GitHub Issues using the [Beta Feedback template](../../issues/new?assignees=&labels=beta%2Cfeedback&template=beta-feedback.yml)
+3. Email: support@pictureshare.app (optional)
 
 ## Integration Tests
 

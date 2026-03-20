@@ -21,6 +21,7 @@ import { toggleLike, subscribeToLikeCount, subscribeToUserLike } from '../servic
 import { subscribeToCommentCount } from '../services/commentService';
 import CommentsModal from '../components/CommentsModal';
 import ParticipantsList from '../components/ParticipantsList';
+import { FeedbackScreen } from './FeedbackScreen';
 import type { Photo } from '../types';
 
 interface PhotoFeedScreenProps {
@@ -44,6 +45,7 @@ const PhotoFeedScreen: React.FC<PhotoFeedScreenProps> = ({ eventId: propEventId 
   } = usePhotos();
   const { isOnline, pendingUploads } = useNetwork();
   const effectiveEventId = propEventId || currentEvent?.id;
+  const [showFeedback, setShowFeedback] = useState(false);
 
   // Set of pending photo IDs for quick lookup
   const pendingIds = useMemo(() => new Set(pendingPhotos.map((p) => p.id)), [pendingPhotos]);
@@ -458,6 +460,12 @@ const PhotoFeedScreen: React.FC<PhotoFeedScreenProps> = ({ eventId: propEventId 
 
   return (
     <View style={styles.container}>
+      {showFeedback && (
+        <View style={StyleSheet.absoluteFill}>
+          <FeedbackScreen onClose={() => setShowFeedback(false)} />
+        </View>
+      )}
+
       <View style={styles.header}>
         <TouchableOpacity onPress={() => window.history.back()}>
           <Text style={styles.backButton}>← Back</Text>
@@ -476,6 +484,9 @@ const PhotoFeedScreen: React.FC<PhotoFeedScreenProps> = ({ eventId: propEventId 
               <Text style={styles.statusText}>{pendingUploads} pending</Text>
             </View>
           )}
+          <TouchableOpacity style={styles.feedbackButton} onPress={() => setShowFeedback(true)}>
+            <Text style={styles.feedbackButtonText}>💬 Feedback</Text>
+          </TouchableOpacity>
         </View>
       </View>
 
@@ -628,6 +639,19 @@ const styles = StyleSheet.create({
   activeTabText: {
     color: '#007AFF',
     fontWeight: '600',
+  },
+  feedbackButton: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    backgroundColor: '#F0F9FF',
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#007AFF',
+  },
+  feedbackButtonText: {
+    fontSize: 12,
+    fontWeight: '500',
+    color: '#007AFF',
   },
 });
 

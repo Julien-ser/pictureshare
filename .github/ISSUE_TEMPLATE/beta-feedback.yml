@@ -1,0 +1,135 @@
+name: Beta Feedback
+description: Provide feedback during closed beta testing
+title: '[Beta Feedback]: '
+labels: ['beta', 'feedback']
+assignees: ''
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for testing PictureShare! Your feedback helps us improve the app before the official launch.
+
+        **Note:** For bugs that cause crashes or data loss, please include as much detail as possible (device, OS version, steps to reproduce).
+
+  - type: input
+    id: category
+    attributes:
+      label: Feedback Category
+      description: What type of feedback are you providing?
+      options:
+        - 'User Experience (UX)'
+        - 'Performance'
+        - 'Bug Report'
+        - 'Feature Request'
+        - 'Other'
+      default: 'User Experience (UX)'
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Feedback Description
+      description: Describe your experience, the issue, or your suggestion in detail.
+      placeholder: |
+        Example: "The app is easy to use but uploading photos takes a long time on my Android device."
+
+        For bugs: "When I try to join an event by scanning QR code, the app crashes after granting camera permission."
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps_to_reproduce
+    attributes:
+      label: Steps to Reproduce (for bugs only)
+      description: If reporting a bug, list the steps to reproduce it.
+      placeholder: |
+        1. Open the app
+        2. Tap "Create Event"
+        3. ...
+      required: false
+
+  - type: input
+    id: device_info
+    attributes:
+      label: Device & OS
+      description: What device and OS version are you using?
+      placeholder: 'iPhone 14 Pro, iOS 17.5 / Samsung Galaxy S23, Android 14'
+    validations:
+      required: true
+
+  - type: input
+    id: app_version
+    attributes:
+      label: App Version
+      description: What version of PictureShare are you testing?
+      placeholder: '1.0.0-beta.1'
+    validations:
+      required: true
+
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: Screenshots or videos
+      description: If applicable, attach screenshots or screen recordings showing the issue.
+      placeholder: 'You can drag and drop images here or browse and upload them.'
+    validations:
+      required: false
+
+  - type: textarea
+    id: additional_info
+    attributes:
+      label: Additional Context
+      description: Any other information that might be helpful (network conditions, number of photos, event size, etc.)
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Beta Testing Checklist
+      description: Help us understand what you've tested
+      options:
+        - label: I have tested creating an event and generating a QR code
+          required: false
+        - label: I have tested scanning a QR code and joining an event
+          required: false
+        - label: I have tested uploading photos from camera
+          required: false
+        - label: I have tested uploading photos from gallery
+          required: false
+        - label: I have tested real-time photo feed updates
+          required: false
+        - label: I have tested liking/unliking photos
+          required: false
+        - label: I have tested adding comments to photos
+          required: false
+        - label: I have tested viewing participants list
+          required: false
+        - label: I have tested offline behavior (caching and retry)
+          required: false
+        - label: I have tested deleting photos (if I have permission)
+          required: false
+      required: false
+
+  - type: dropdown
+    id: severity
+    attributes:
+      label: Impact Severity (for bugs/UX issues)
+      description: How severely does this affect your ability to use the app?
+      options:
+        - 'Critical - App crashes or data loss'
+        - 'High - Major feature broken, cannot complete task'
+        - 'Medium - Minor issues, but app still usable'
+        - 'Low - Cosmetic or very minor inconvenience'
+      required: false
+
+  - type: input
+    id: contact
+    attributes:
+      label: Contact (Optional)
+      description: If you'd like to be contacted about your feedback, leave your email or other contact info.
+      placeholder: 'email@example.com'
+    validations:
+      required: false
