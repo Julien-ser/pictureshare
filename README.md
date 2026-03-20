@@ -94,6 +94,42 @@ src/
 - [ ] Perform closed beta: distribute via Expo Go, collect feedback on UX and performance
 - [ ] Deploy to app stores: configure EAS build, submit to Apple TestFlight and Google Play Internal; monitor Firebase Crashlytics
 
+## Integration Tests
+
+Integration tests use Firebase Emulators to test the full stack. To run them:
+
+1. **Start Firebase Emulators** (in a separate terminal):
+
+   ```bash
+   npx firebase-tools emulators:start
+   ```
+
+   Or if you have firebase-tools installed globally:
+
+   ```bash
+   firebase emulators:start
+   ```
+
+   This starts local emulators on ports:
+   - Auth: localhost:9099
+   - Firestore: localhost:8080
+   - Storage: localhost:9199
+
+2. **Run integration tests**:
+
+   ```bash
+   RUN_INTEGRATION_TESTS=true npm test
+   ```
+
+   The integration tests cover:
+   - Event join flow (creation, retrieval, joining)
+   - Photo upload and metadata persistence
+   - Real-time feed subscription and updates
+
+   Note: Keep the emulators running while tests execute.
+
+3. **Stop emulators**: Press `Ctrl+C` in the emulator terminal.
+
 **Phase 5: Group Permissions & Interactions** - Completed
 
 - [x] Enable deletion: only photo owner or event creator can delete; remove from Storage and Firestore

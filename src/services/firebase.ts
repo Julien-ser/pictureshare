@@ -36,8 +36,11 @@ export const auth: Auth = getAuth(app);
 export const db = getFirestore(app);
 export const storage: FirebaseStorage = getStorage(app);
 
-// Use emulators in development
-if (__DEV__) {
+// Use emulators in development (Expo app) or when running integration tests
+// Avoid connecting during Jest unit tests by checking NODE_ENV !== 'test'
+const isDevExpo = __DEV__ && process.env.NODE_ENV !== 'test';
+const isIntegrationTest = process.env.RUN_INTEGRATION_TESTS === 'true';
+if (isDevExpo || isIntegrationTest) {
   connectAuthEmulator(auth, 'http://localhost:9099');
   connectFirestoreEmulator(db, 'localhost', 8080);
   connectStorageEmulator(storage, 'localhost', 9199);
