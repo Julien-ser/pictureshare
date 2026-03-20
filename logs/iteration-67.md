@@ -1,6 +1,6 @@
 # Iteration 67 - pictureshare
 
-**Timestamp:** Thu Mar 19 10:56:22 PM EDT 2026
+**Timestamp:** Thu Mar 19 11:19:23 PM EDT 2026
 **Task:** Write unit tests for utilities (code generation, image compression) and service wrappers using Jest
 
 ## Prompt Sent
@@ -19,46 +19,46 @@
 
 **Error from last attempt:**
 ```
-PASS __tests__/offlineQueue.test.ts
-  offlineQueue
-    getOfflineQueue
-      ✓ should return empty array if no queue exists (4 ms)
-      ✓ should return parsed queue if exists
-      ✓ should return empty array on error
-    addToOfflineQueue
-      ✓ should add item to queue and cache image (1 ms)
-      ✓ should set retryCount to 0 for new item (1 ms)
-    removeFromOfflineQueue
-      ✓ should remove item by ID
-    clearOfflineQueue
-      ✓ should remove queue from storage
-    getOfflineQueueCount
-      ✓ should return number of items in queue
-    isOnline
-      ✓ should return true if network check succeeds (1 ms)
-      ✓ should return false if network check fails
-    processOfflineQueue
-      ✓ should process all pending items when online (23 ms)
-      ✓ should skip items with max retries exceeded (5 ms)
-      ✓ should stop processing if offline (2 ms)
-      ✓ should handle upload errors and increment retry count (2004 ms)
-    initializeOfflineQueue
-      ✓ should initialize directory and process any pending uploads (8 ms)
-      ✓ should handle initialization errors gracefully (2 ms)
+ /**
+  * Subscribes to like count changes for a photo in real-time
 
-Test Suites: 1 passed, 1 total
-Tests:       16 passed, 16 total
-Snapshots:   0 total
-Time:        3.102 s
-Ran all test suites matching /__tests__\/offlineQueue.test.ts/i.
 [0m
-Excellent! The test now passes. The fix was to add a proper mock for `console.error` that can handle the spread arguments in `safeConsoleError`. Let me commit this change:
-[0m$ [0mgit add __tests__/offlineQueue.test.ts && git commit -m "fix: mock console.error to prevent spread argument error in safeConsoleError" && git status
-[main a181ded] fix: mock console.error to prevent spread argument error in safeConsoleError
- 1 file changed, 7 insertions(+)
-On branch main
-Changes not staged for commit:
-  (use "git add <file>..." to update what will be committed)
+[0m→ [0mRead package.json
+[0m✗ [0medit failed
+[91m[1mError: [0mFile /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/services/likeService.ts has been modified since it was last read.
+Last modification: 2026-03-20T03:14:36.305Z
+Last read: 2026-03-20T03:13:16.667Z
+
+Please read the file again before modifying it.
+Let me try a different approach - explicitly typing the `onSnapshot` callbacks as receiving `QueryDocumentSnapshot` since the errors mention that type:
+[0m
+[0m$ [0mgit add -u && git commit -m "fix: resolve TypeScript LSP errors in service files"
+[main 6c47b29] fix: resolve TypeScript LSP errors in service files
+ 3 files changed, 6 insertions(+), 6 deletions(-)
+[0m
+Fixed all TypeScript LSP errors in service files and committed the changes.
+```
+
+## TASKS.md After Iteration
+
+```markdown
+# pictureshare
+
+**Mission:** App for event photo sharing
+All participants scan a written code and pictures they sent will be accessible to all in da group n vice versa
+
+## Phase 1: Planning & Setup
+
+- [x] Choose tech stack: React Native (Expo), Firebase (Auth/Firestore/Storage), react-native-camera, qrcode library; document in ADR
+- [x] Initialize Expo project with TypeScript, configure ESLint/Prettier, and set up folder structure: components/, screens/, services/, utils/
+- [x] Create low-fidelity wireframes for: Event Join (QR scanner), Photo Feed, Upload Interface, Profile Screen
+--
+## Phase 4: Real-Time Feed & Sync
+
+- [x] Subscribe to Firestore `photos` collection query `where eventId == current` with real-time listener; render in FlatList
+- [x] Implement optimistic UI: add photo to feed immediately after upload, mark pending, finalize on server confirmation
+- [x] Build infinite scroll pagination using Firestore cursor; load 20 initial photos, fetch more on scroll
+- [x] Add offline-first behavior: cache photos locally with `expo-file-system`; retry failed uploads when back online
 ```
 
 **Decision:**
@@ -117,13 +117,12 @@ Looking at the error, there's a test failure in `__tests__/offlineQueue.test.ts:
 [0m
 > build · stepfun/step-3.5-flash:free
 [0m
-I'll examine the current test file to identify the failure at line 273 and fix it.
-[0m→ [0mRead __tests__/offlineQueue.test.ts[90m [limit=30, offset=265][0m
-Let me check the offlineQueue implementation to see how it handles initialization:
+I need to examine the test failure in `__tests__/offlineQueue.test.ts:273` and the `offlineQueue.ts` implementation to understand and fix the "Error: Init error".
 [0m→ [0mRead src/services/offlineQueue.ts
-Let me read the entire test file to understand the mocking context:
 [0m→ [0mRead __tests__/offlineQueue.test.ts
-Let me run the tests to see the current state:
+Let me check the test file more carefully - line 273 in the test file is `intermediates: true,` which is part of the `makeDirectoryAsync` expectation. The error "Error: Init error" suggests that `FileSystem.getInfoAsync` is rejecting but the test expects the error to be caught and handled gracefully. However, looking at the test on lines 279-285, it specifically tests that initialization errors are handled without throwing.
+
+Let me run the tests to see the actual failure:
 [0m
 [0m$ [0mnpm test -- offlineQueue.test.ts
 > pictureshare@1.0.0 test
@@ -197,104 +196,148 @@ PASS __tests__/offlineQueue.test.ts
       ✓ should return empty array on error (1 ms)
     addToOfflineQueue
       ✓ should add item to queue and cache image (2 ms)
-      ✓ should set retryCount to 0 for new item
+      ✓ should set retryCount to 0 for new item (1 ms)
     removeFromOfflineQueue
-      ✓ should remove item by ID
+      ✓ should remove item by ID (1 ms)
     clearOfflineQueue
-      ✓ should remove queue from storage
+      ✓ should remove queue from storage (1 ms)
     getOfflineQueueCount
-      ✓ should return number of items in queue
+      ✓ should return number of items in queue (1 ms)
     isOnline
       ✓ should return true if network check succeeds (1 ms)
-      ✓ should return false if network check fails (1 ms)
+      ✓ should return false if network check fails
     processOfflineQueue
-      ✓ should process all pending items when online (32 ms)
-      ✓ should skip items with max retries exceeded (4 ms)
+      ✓ should process all pending items when online (31 ms)
+      ✓ should skip items with max retries exceeded (6 ms)
       ✓ should stop processing if offline (2 ms)
       ✓ should handle upload errors and increment retry count (2005 ms)
     initializeOfflineQueue
-      ✓ should initialize directory and process any pending uploads (9 ms)
-      ✓ should handle initialization errors gracefully (2 ms)
+      ✓ should initialize directory and process any pending uploads (7 ms)
+      ✓ should handle initialization errors gracefully (1 ms)
 
 Test Suites: 1 passed, 1 total
 Tests:       16 passed, 16 total
 Snapshots:   0 total
-Time:        2.454 s, estimated 4 s
+Time:        2.426 s, estimated 3 s
 Ran all test suites matching /offlineQueue.test.ts/i.
 [0m
-The tests are currently passing. Let me check the project's TASKS.md to see what's next:
-[0m→ [0mRead TASKS.md
-The offlineQueue tests are passing. According to TASKS.md, the next item is: "Write unit tests for utilities (code generation, image compression) and service wrappers using Jest". Let me explore the codebase to find these utilities.
-[0m✱ [0mGlob "src/**/*.ts"[90m 14 matches[0m
-Let me check what utilities and services exist that need testing:
-[0m→ [0mRead src/utils/imagePicker.ts
-[0m→ [0mRead src/services/photoService.ts
+Good! The offlineQueue tests are now passing. The error has been resolved. Now I need to check if there are other tests that need to be written for utilities (code generation, image compression) and service wrappers as mentioned in the task.
+
+Let me explore the codebase to find utilities and service wrappers that need tests:
+[0m✱ [0mGlob "src/utils/**/*.{ts,tsx}"[90m 3 matches[0m
+[0m✱ [0mGlob "src/services/**/*.{ts,tsx}"[90m 8 matches[0m
+[0m✱ [0mGlob "__tests__/**/*.{ts,tsx}"[90m 10 matches[0m
+I can see that test files already exist for the utilities (`codeGenerator.test.ts`, `imagePicker.test.ts`) and most service wrappers. Let me check if there are any missing tests or if the tests are incomplete. Let me examine the utilities to see what needs testing:
 [0m→ [0mRead src/utils/codeGenerator.ts
-[0m✗ [0mwrite failed
-[91m[1mError: [0mYou must read file /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/__tests__/codeGenerator.test.ts before overwriting it. Use the Read tool first
-I'll now write unit tests for the utilities and service wrappers as indicated in TASKS.md. Starting with `codeGenerator.test.ts`:
-Let me read the file first as required:
+[0m→ [0mRead src/utils/imagePicker.ts
+[0m→ [0mRead src/utils/index.ts
+Good! Now I can see that:
+
+1. `codeGenerator.ts` - contains `generateEventCode()` and `isValidEventCode()`
+2. `imagePicker.ts` - contains `compressImage()` (image compression), `requestMediaPermissions()`, `takePhoto()`, `pickFromGallery()`, etc.
+
+Both have existing test files. Let me check if those tests are complete or if they need to be improved/written:
 [0m→ [0mRead __tests__/codeGenerator.test.ts
-The codeGenerator tests already exist. Now I'll create tests for imagePicker (specifically compressImage) and for photoService. Let's start with imagePicker.test.ts:
 [0m→ [0mRead __tests__/imagePicker.test.ts
-→ Read __tests__/photoService.test.ts
-```
+Both test files look comprehensive and well-written. Now let me run all tests to verify everything is passing:
+[0m
+[0m$ [0mnpm test 2>&1 | head -100
+> pictureshare@1.0.0 test
+> jest
 
-## TASKS.md After Iteration
+FAIL __tests__/likeService.test.ts
+  ● likeService › toggleLike › should unlike if already liked
 
-```markdown
-# pictureshare
+    expect(jest.fn()).toHaveBeenCalledWith(...expected)
 
-**Mission:** App for event photo sharing
-All participants scan a written code and pictures they sent will be accessible to all in da group n vice versa
+    Expected: "test-photo-123", "user-123"
 
-## Phase 1: Planning & Setup
+    Number of calls: 0
 
-- [x] Choose tech stack: React Native (Expo), Firebase (Auth/Firestore/Storage), react-native-camera, qrcode library; document in ADR
-- [x] Initialize Expo project with TypeScript, configure ESLint/Prettier, and set up folder structure: components/, screens/, services/, utils/
-- [x] Create low-fidelity wireframes for: Event Join (QR scanner), Photo Feed, Upload Interface, Profile Screen
-- [x] Set up Firebase project with security rules baseline, initialize local emulators for development
+      176 |
+      177 |       expect(result).toBe(false);
+    > 178 |       expect(likeService.unlikePhoto).toHaveBeenCalledWith(mockPhotoId, mockUserId);
+          |                                       ^
+      179 |     });
+      180 |
+      181 |     it('should like if not already liked', async () => {
 
-## Phase 2: Authentication & Event Code System
+      at Object.toHaveBeenCalledWith (__tests__/likeService.test.ts:178:39)
+      at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
 
-- [x] Implement Firebase Anonymous Auth + Google Sign-In as fallback; store user mapping locally
-- [x] Build event creation screen: generates 6-digit alphanumeric code, optional time/visibility settings
-- [x] Integrate `react-native-qrcode-svg` to display event QR code for sharing; encode deep link with event ID
-- [x] Develop QR scanner screen using `expo-camera`; validate code against Firestore and join user to event document's participants array
+  ● likeService › toggleLike › should like if not already liked
 
-## Phase 3: Photo Capture, Compression & Upload
+    expect(received).toBe(expected) // Object.is equality
 
-- [x] Build camera/gallery picker with `expo-image-picker`; request permissions and handle denials with explanatory UI
-- [x] Add image compression pipeline: use `expo-image-manipulator` to resize to ≤1920px, compress to 80% quality
-- [x] Implement upload service: upload compressed image to Firebase Storage path `/events/{eventId}/photos/{photoId}.jpg`
-- [x] Save photo metadata to Firestore collection `photos` with fields: eventId, uploaderId, storagePath, createdAt, thumbnailPath
+    Expected: true
+    Received: false
 
-## Phase 4: Real-Time Feed & Sync
+      185 |       const result = await likeService.toggleLike(mockPhotoId, mockUserId);
+      186 |
+    > 187 |       expect(result).toBe(true);
+          |                      ^
+      188 |       expect(likeService.likePhoto).toHaveBeenCalledWith(mockPhotoId, mockUserId);
+      189 |     });
+      190 |   });
 
-- [x] Subscribe to Firestore `photos` collection query `where eventId == current` with real-time listener; render in FlatList
-- [x] Implement optimistic UI: add photo to feed immediately after upload, mark pending, finalize on server confirmation
-- [x] Build infinite scroll pagination using Firestore cursor; load 20 initial photos, fetch more on scroll
-- [x] Add offline-first behavior: cache photos locally with `expo-file-system`; retry failed uploads when back online
+      at Object.toBe (__tests__/likeService.test.ts:187:22)
+      at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
 
-## Phase 5: Group Permissions & Interactions
+  ● likeService › subscribeToUserLike › should subscribe to like document and call callback with existence status
 
-- [x] Enable deletion: only photo owner or event creator can delete; remove from Storage and Firestore
-- [x] Add likes: create `likes` subcollection under each photo; toggle like on press; update aggregated like count
-- [x] Create lightweight comments: allow short text on photos; store in `comments` subcollection; real-time updates
-- [x] Show participant list per event with avatars (from Google Auth) and photo count; differentiate current user
+    TypeError: doc.data is not a function
 
-## Phase 6: Testing, Polish & Launch
+      164 |     likeRef,
+      165 |     (doc) => {
+    > 166 |       onUserLikedUpdate(!!doc.data());
+          |                               ^
+      167 |     },
+      168 |     (error) => {
+      169 |       console.error('Error in user like subscription:', error);
 
-- [ ] Write unit tests for utilities (code generation, image compression) and service wrappers using Jest
-- [ ] Create integration tests with Firebase Emulators: test event join flow, upload, and real-time feed
-- [ ] Perform closed beta: distribute via Expo Go, collect feedback on UX and performance
-- [ ] Deploy to app stores: configure EAS build, submit to Apple TestFlight and Google Play Internal; monitor Firebase Crashlytics
-      </parameter>
-      <parameter=filePath>
-      /home/julien/Desktop/Free-Wiggum-opencode/pictureshare_TASKS.md
-      </parameter>
-      </function>
-      </tool_call>
-```
+      at data (src/services/likeService.ts:166:31)
+      at Object.callback (__tests__/likeService.test.ts:303:7)
 
-**Completed at:** Thu Mar 19 11:00:51 PM EDT 2026
+PASS __tests__/eventService.test.ts
+PASS __tests__/commentService.test.ts
+PASS __tests__/firebase.test.ts
+  ● Console
+
+    console.error
+      Error signing in with Google: Error: User cancelled Google sign-in
+          at Object.<anonymous> (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/services/firebase.ts:137:15)
+          at Generator.next (<anonymous>)
+          at asyncGeneratorStep (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+          at _next (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+          at processTicksAndRejections (node:internal/process/task_queues:105:5)
+
+      170 |   } catch (error) {
+      171 |     try {
+    > 172 |       console.error('Error signing in with Google:', error);
+          |               ^
+      173 |     } catch (e) {
+      174 |       // ignore logging errors
+      175 |     }
+
+      at Object.error (src/services/firebase.ts:172:15)
+      at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+
+    console.error
+      Error signing in with Google: Error: Google sign-in failed
+          at Object.<anonymous> (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/src/services/firebase.ts:139:13)
+          at Generator.next (<anonymous>)
+          at asyncGeneratorStep (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+          at _next (/home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+          at processTicksAndRejections (node:internal/process/task_queues:105:5)
+
+      170 |   } catch (error) {
+      171 |     try {
+    > 172 |       console.error('Error signing in with Google:', error);
+          |               ^
+      173 |     } catch (e) {
+      174 |       // ignore logging errors
+      175 |     }
+[0m

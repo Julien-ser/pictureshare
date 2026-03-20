@@ -207,7 +207,7 @@ describe('likeService', () => {
 
     it('should return 0 if photo does not exist', async () => {
       (doc as jest.Mock).mockReturnValueOnce({});
-      (getDoc as jest.Mock).mockResolvedValue({ exists: false });
+      (getDoc as jest.Mock).mockResolvedValue({ data: () => null });
 
       const count = await likeService.getLikeCount(mockPhotoId);
 
@@ -239,7 +239,7 @@ describe('likeService', () => {
 
     it('should return false if like document does not exist', async () => {
       (doc as jest.Mock).mockReturnValueOnce({});
-      (getDoc as jest.Mock).mockResolvedValue({ exists: false });
+      (getDoc as jest.Mock).mockResolvedValue({ data: () => null });
 
       const result = await likeService.hasUserLiked(mockPhotoId, mockUserId);
 
@@ -278,7 +278,7 @@ describe('likeService', () => {
       likeService.subscribeToLikeCount(mockPhotoId, mockOnUpdate);
 
       const callback = (onSnapshot as jest.Mock).mock.calls[0][1];
-      callback({ exists: false });
+      callback({ data: () => null });
 
       expect(mockOnUpdate).toHaveBeenCalledWith(0);
     });
