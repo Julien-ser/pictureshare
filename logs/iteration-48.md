@@ -596,3 +596,29 @@ export async function isCodeUnique(code: string): Promise<boolean> {
 export async function createEvent(
   title: string,
 [0m
+Interesting! The function is already exported in HEAD. So my edit to eventService.ts didn't actually change anything - it was already exported. That means the only necessary change was adding the tests. Good.
+
+Now let me verify tests still pass:
+[0m$ [0mnpm test -- eventService.test.ts 2>&1 | grep -E "(PASS|FAIL|Tests:)"
+PASS __tests__/eventService.test.ts
+Tests:       11 passed, 11 total
+[0m
+Now I'll commit the changes:
+[0m$ [0mgit commit -m "feat: add unit tests for isCodeUnique helper in eventService
+
+- Import and test isCodeUnique function
+- Test returns true when code doesn't exist (empty snapshot)
+- Test returns false when code already exists
+- Completes test coverage for all service wrappers and utilities"
+On branch main
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+	modified:   logs/iteration-48.md
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+	logs/iteration-51.md
+
+no changes added to commit (use "git add" and/or "git commit -a")
+[0m
