@@ -4,23 +4,77 @@ import {
   signInAnonymouslyLocally,
   signInWithGoogle,
   onAuthStateChangedListener,
+  auth,
 } from '../src/services/firebase';
-import { auth } from '../src/services/firebase';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
   signInAnonymously,
   onAuthStateChanged,
   GoogleAuthProvider,
   signInWithCredential,
+  connectAuthEmulator,
+  getAuth,
   type User as FirebaseUser,
 } from 'firebase/auth';
+import { getFirestore, doc, setDoc, Timestamp, connectFirestoreEmulator } from 'firebase/firestore';
+import { getStorage, connectStorageEmulator, ref } from 'firebase/storage';
+import * as WebBrowser from 'expo-web-browser';
+import { makeRedirectUri, AuthRequest } from 'expo-auth-session';
+import * as Google from 'expo-auth-session/providers/google';
 
-// Mock Firebase modules
-jest.mock('../src/services/firebase', () => ({
-  auth: {},
-  db: {},
-  storage: {},
-  googleProvider: {},
+// Mock all external dependencies before module under test executes
+jest.mock('firebase/app', () => ({
+  initializeApp: jest.fn(() => ({})),
+  getApps: jest.fn(() => []),
+}));
+
+jest.mock('firebase/auth', () => ({
+  getAuth: jest.fn(() => ({})),
+  signInAnonymously: jest.fn(),
+  onAuthStateChanged: jest.fn(),
+  GoogleAuthProvider: {
+    credential: jest.fn(),
+  },
+  signInWithCredential: jest.fn(),
+  connectAuthEmulator: jest.fn(),
+}));
+
+jest.mock('firebase/firestore', () => ({
+  getFirestore: jest.fn(() => ({})),
+  connectFirestoreEmulator: jest.fn(),
+  doc: jest.fn(() => ({})),
+  setDoc: jest.fn(() => Promise.resolve()),
+  Timestamp: {
+    now: jest.fn(() => ({ toDate: () => new Date() })),
+  },
+}));
+
+jest.mock('firebase/storage', () => ({
+  getStorage: jest.fn(() => ({})),
+  connectStorageEmulator: jest.fn(),
+  ref: jest.fn(() => ({})),
+}));
+
+jest.mock('expo-web-browser', () => ({
+  maybeCompleteAuthSession: jest.fn(),
+}));
+
+jest.mock('expo-auth-session', () => ({
+  makeRedirectUri: jest.fn(() => 'pictureshare://redirect'),
+  AuthRequest: jest.fn().mockImplementation(() => ({
+    promptAsync: jest.fn(),
+  })),
+}));
+
+jest.mock('expo-auth-session/providers/google', () => ({
+  Google: {
+    discovery: {},
+  },
+}));
+
+jest.mock('@react-native-async-storage/async-storage', () => ({
+  getItem: jest.fn(),
+  setItem: jest.fn(),
 }));
 
 jest.mock('firebase/auth', () => ({
@@ -30,6 +84,40 @@ jest.mock('firebase/auth', () => ({
     credential: jest.fn(),
   },
   signInWithCredential: jest.fn(),
+  connectAuthEmulator: jest.fn(),
+}));
+
+jest.mock('firebase/firestore', () => ({
+  getFirestore: jest.fn(() => ({})),
+  connectFirestoreEmulator: jest.fn(),
+  doc: jest.fn(() => ({})),
+  setDoc: jest.fn(() => Promise.resolve()),
+  Timestamp: {
+    now: jest.fn(() => ({ toDate: () => new Date() })),
+  },
+}));
+
+jest.mock('firebase/storage', () => ({
+  getStorage: jest.fn(() => ({})),
+  connectStorageEmulator: jest.fn(),
+  ref: jest.fn(() => ({})),
+}));
+
+jest.mock('expo-web-browser', () => ({
+  maybeCompleteAuthSession: jest.fn(),
+}));
+
+jest.mock('expo-auth-session', () => ({
+  makeRedirectUri: jest.fn(() => 'pictureshare://redirect'),
+  AuthRequest: jest.fn().mockImplementation(() => ({
+    promptAsync: jest.fn(),
+  })),
+}));
+
+jest.mock('expo-auth-session/providers/google', () => ({
+  Google: {
+    discovery: {},
+  },
 }));
 
 jest.mock('@react-native-async-storage/async-storage', () => ({

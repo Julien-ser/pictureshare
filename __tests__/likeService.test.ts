@@ -23,7 +23,7 @@ import {
 } from 'firebase/firestore';
 
 // Mock Firebase modules
-jest.mock('../firebase', () => ({
+jest.mock('../src/services/firebase', () => ({
   db: {},
 }));
 
