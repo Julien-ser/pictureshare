@@ -9,6 +9,7 @@ import {
   initializeOfflineQueue,
   OfflineQueueItem,
 } from '../src/services/offlineQueue';
+import * as offlineQueueModule from '../src/services/offlineQueue';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as FileSystem from 'expo-file-system';
 import { uploadAndSavePhoto } from '../src/services/photoService';
@@ -50,6 +51,10 @@ describe('offlineQueue', () => {
     (FileSystem.getInfoAsync as any).mockResolvedValue({ exists: false });
   });
 
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
   describe('getOfflineQueue', () => {
     it('should return empty array if no queue exists', async () => {
       (AsyncStorage.getItem as jest.Mock).mockResolvedValue(null);
@@ -79,7 +84,7 @@ describe('offlineQueue', () => {
 
   describe('addToOfflineQueue', () => {
     it('should add item to queue and cache image', async () => {
-      (getOfflineQueue as jest.Mock).mockResolvedValue([]);
+      (AsyncStorage.getItem as jest.Mock).mockResolvedValue(null);
       (FileSystem.copyAsync as jest.Mock).mockResolvedValue({});
       (AsyncStorage.setItem as jest.Mock).mockResolvedValue(undefined);
 
@@ -106,7 +111,7 @@ describe('offlineQueue', () => {
     });
 
     it('should set retryCount to 0 for new item', async () => {
-      (getOfflineQueue as jest.Mock).mockResolvedValue([]);
+      (AsyncStorage.getItem as jest.Mock).mockResolvedValue(null);
       (FileSystem.copyAsync as jest.Mock).mockResolvedValue({});
       (AsyncStorage.setItem as jest.Mock).mockResolvedValue(undefined);
 
@@ -128,7 +133,7 @@ describe('offlineQueue', () => {
   describe('removeFromOfflineQueue', () => {
     it('should remove item by ID', async () => {
       const queue = [mockQueueItem, { ...mockQueueItem, id: 'item-456' }];
-      (getOfflineQueue as jest.Mock).mockResolvedValue(queue);
+      (AsyncStorage.getItem as jest.Mock).mockResolvedValue(JSON.stringify(queue));
       (AsyncStorage.setItem as jest.Mock).mockResolvedValue(undefined);
 
       await removeFromOfflineQueue('item-123');
@@ -148,7 +153,9 @@ describe('offlineQueue', () => {
 
   describe('getOfflineQueueCount', () => {
     it('should return number of items in queue', async () => {
-      (getOfflineQueue as jest.Mock).mockResolvedValue([mockQueueItem, mockQueueItem]);
+      (AsyncStorage.getItem as jest.Mock).mockResolvedValue(
+        JSON.stringify([mockQueueItem, mockQueueItem])
+      );
 
       const count = await getOfflineQueueCount();
 
@@ -177,7 +184,7 @@ describe('offlineQueue', () => {
   describe('processOfflineQueue', () => {
     it('should process all pending items when online', async () => {
       const queue = [mockQueueItem];
-      (getOfflineQueue as jest.Mock).mockResolvedValue(queue);
+      (AsyncStorage.getItem as jest.Mock).mockResolvedValue(JSON.stringify(queue));
       (FileSystem.getInfoAsync as jest.Mock).mockResolvedValue({ exists: true });
       (uploadAndSavePhoto as jest.Mock).mockResolvedValue({
         id: 'photo-123',
@@ -189,7 +196,6 @@ describe('offlineQueue', () => {
         likeCount: 0,
         createdAt: new Date(),
       } as any);
-      (removeFromOfflineQueue as jest.Mock).mockResolvedValue(undefined);
       (FileSystem.deleteAsync as jest.Mock).mockResolvedValue(undefined);
 
       await processOfflineQueue();
@@ -204,12 +210,15 @@ describe('offlineQueue', () => {
         },
         mockQueueItem.id
       );
-      expect(removeFromOfflineQueue).toHaveBeenCalledWith(mockQueueItem.id);
+      // Verify that the queue was cleared (item removed)
+      const lastSetItemCall = (AsyncStorage.setItem as jest.Mock).mock.calls.slice(-1)[0];
+      const savedQueue = JSON.parse(lastSetItemCall[1]);
+      expect(savedQueue).toHaveLength(0);
     });
 
     it('should skip items with max retries exceeded', async () => {
       const itemWithMaxRetries = { ...mockQueueItem, retryCount: 5 };
-      (getOfflineQueue as jest.Mock).mockResolvedValue([itemWithMaxRetries]);
+      (AsyncStorage.getItem as jest.Mock).mockResolvedValue(JSON.stringify([itemWithMaxRetries]));
       (FileSystem.getInfoAsync as jest.Mock).mockResolvedValue({ exists: true });
 
       await processOfflineQueue();
@@ -219,7 +228,7 @@ describe('offlineQueue', () => {
 
     it('should stop processing if offline', async () => {
       const queue = [mockQueueItem];
-      (getOfflineQueue as jest.Mock).mockResolvedValue(queue);
+      (AsyncStorage.getItem as jest.Mock).mockResolvedValue(JSON.stringify(queue));
       (FileSystem.getInfoAsync as jest.Mock)
         .mockResolvedValueOnce({ exists: false }) // online check returns false
         .mockResolvedValueOnce({ exists: true }); // any subsequent calls
@@ -231,27 +240,33 @@ describe('offlineQueue', () => {
 
     it('should handle upload errors and increment retry count', async () => {
       const queue = [mockQueueItem];
-      (getOfflineQueue as jest.Mock).mockResolvedValue(queue);
+      (AsyncStorage.getItem as jest.Mock).mockResolvedValue(JSON.stringify(queue));
       (FileSystem.getInfoAsync as jest.Mock).mockResolvedValue({ exists: true });
       (uploadAndSavePhoto as jest.Mock).mockRejectedValue(new Error('Upload failed'));
 
       await processOfflineQueue();
 
-      expect(removeFromOfflineQueue).not.toHaveBeenCalled();
+      // Verify that the item's retryCount was incremented and the item remains in the queue
+      const lastSetItemCall = (AsyncStorage.setItem as jest.Mock).mock.calls.slice(-1)[0];
+      const savedQueue = JSON.parse(lastSetItemCall[1]);
+      expect(savedQueue).toHaveLength(1);
+      expect(savedQueue[0].retryCount).toBe(1);
+      expect(savedQueue[0].id).toBe(mockQueueItem.id);
     });
   });
 
   describe('initializeOfflineQueue', () => {
     it('should initialize directory and process any pending uploads', async () => {
       (FileSystem.getInfoAsync as jest.Mock).mockResolvedValue({ exists: false });
-      (processOfflineQueue as jest.Mock).mockResolvedValue(undefined);
+      (AsyncStorage.getItem as jest.Mock).mockResolvedValue(JSON.stringify([]));
 
       await initializeOfflineQueue();
 
       expect(FileSystem.makeDirectoryAsync).toHaveBeenCalledWith('/cache/pictureshare_offline/', {
         intermediates: true,
       });
-      expect(processOfflineQueue).toHaveBeenCalled();
+      // Verify that processOfflineQueue was called indirectly by checking getOfflineQueue was invoked
+      expect(AsyncStorage.getItem).toHaveBeenCalled();
     });
 
     it('should handle initialization errors gracefully', async () => {
