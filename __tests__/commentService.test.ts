@@ -155,9 +155,7 @@ describe('commentService', () => {
         .mockReturnValueOnce(mockCommentRef) // commentRef
         .mockReturnValueOnce(mockPhotoRef); // photoRef
 
-      (getDoc as jest.Mock)
-        .mockResolvedValueOnce(mockCommentDoc) // get comment
-        .mockResolvedValueOnce(mockPhotoDoc); // get photo in transaction
+      (getDoc as jest.Mock).mockResolvedValueOnce(mockCommentDoc); // get comment
 
       (runTransaction as jest.Mock).mockImplementation(async (db, operation) => {
         await operation(mockTransaction);
@@ -213,9 +211,7 @@ describe('commentService', () => {
 
       (doc as jest.Mock).mockReturnValueOnce(mockCommentRef).mockReturnValueOnce(mockPhotoRef);
 
-      (getDoc as jest.Mock)
-        .mockResolvedValueOnce(mockCommentDoc)
-        .mockResolvedValueOnce(mockPhotoDoc);
+      (getDoc as jest.Mock).mockResolvedValueOnce(mockCommentDoc);
 
       (runTransaction as jest.Mock).mockImplementation(async (db, operation) => {
         await operation(mockTransaction);
