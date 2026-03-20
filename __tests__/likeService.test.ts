@@ -169,23 +169,80 @@ describe('likeService', () => {
 
   describe('toggleLike', () => {
     it('should unlike if already liked', async () => {
-      jest.spyOn(likeService, 'hasUserLiked').mockResolvedValue(true);
-      jest.spyOn(likeService, 'unlikePhoto').mockResolvedValue(undefined);
+      const mockLikeRef = { path: 'photos/test-photo-123/likes/user-123' };
+      const mockPhotoRef = { path: 'photos/test-photo-123' };
+      const mockPhotoDoc = {
+        exists: true,
+        data: () => ({ likeCount: 5 }),
+      };
+      const mockTransaction = {
+        get: jest.fn().mockResolvedValue(mockPhotoDoc),
+        update: jest.fn(),
+      };
+
+      (collection as jest.Mock)
+        .mockReturnValueOnce({}) // hasUserLiked collection
+        .mockReturnValueOnce({}); // unlikePhoto collection
+
+      (doc as jest.Mock)
+        .mockReturnValueOnce(mockLikeRef) // hasUserLiked likeRef
+        .mockReturnValueOnce(mockLikeRef) // unlikePhoto likeRef
+        .mockReturnValueOnce(mockPhotoRef); // unlikePhoto photoRef
+
+      (getDoc as jest.Mock)
+        .mockResolvedValueOnce({ exists: true, data: () => ({}) }) // hasUserLiked getDoc
+        .mockResolvedValueOnce({ exists: true, data: () => ({}) }); // unlikePhoto existence check
+
+      (runTransaction as jest.Mock).mockImplementation(async (db, operation) => {
+        await operation(mockTransaction);
+      });
 
       const result = await likeService.toggleLike(mockPhotoId, mockUserId);
 
       expect(result).toBe(false);
-      expect(likeService.unlikePhoto).toHaveBeenCalledWith(mockPhotoId, mockUserId);
+      expect(deleteDoc).toHaveBeenCalledWith(mockLikeRef);
+      expect(mockTransaction.update).toHaveBeenCalledWith(mockPhotoRef, {
+        likeCount: 4,
+      });
     });
 
     it('should like if not already liked', async () => {
-      jest.spyOn(likeService, 'hasUserLiked').mockResolvedValue(false);
-      jest.spyOn(likeService, 'likePhoto').mockResolvedValue(undefined);
+      const mockLikeRef = { path: 'photos/test-photo-123/likes/user-123' };
+      const mockPhotoRef = { path: 'photos/test-photo-123' };
+      const mockPhotoDoc = {
+        exists: true,
+        data: () => ({ likeCount: 0 }),
+      };
+      const mockTransaction = {
+        get: jest.fn().mockResolvedValue(mockPhotoDoc),
+        update: jest.fn(),
+      };
+
+      (collection as jest.Mock)
+        .mockReturnValueOnce({}) // hasUserLiked collection
+        .mockReturnValueOnce({}); // likePhoto collection
+
+      (doc as jest.Mock)
+        .mockReturnValueOnce(mockLikeRef) // hasUserLiked likeRef
+        .mockReturnValueOnce(mockLikeRef) // likePhoto likeRef
+        .mockReturnValueOnce(mockPhotoRef); // likePhoto photoRef
+
+      (getDoc as jest.Mock).mockResolvedValueOnce({ exists: false, data: () => null }); // hasUserLiked getDoc
+
+      (runTransaction as jest.Mock).mockImplementation(async (db, operation) => {
+        await operation(mockTransaction);
+      });
 
       const result = await likeService.toggleLike(mockPhotoId, mockUserId);
 
       expect(result).toBe(true);
-      expect(likeService.likePhoto).toHaveBeenCalledWith(mockPhotoId, mockUserId);
+      expect(setDoc).toHaveBeenCalledWith(mockLikeRef, {
+        userId: mockUserId,
+        createdAt: expect.any(Object),
+      });
+      expect(mockTransaction.update).toHaveBeenCalledWith(mockPhotoRef, {
+        likeCount: { value: 1 },
+      });
     });
   });
 
@@ -300,7 +357,7 @@ describe('likeService', () => {
 
       // Simulate snapshot callback - like exists
       const callback = (onSnapshot as jest.Mock).mock.calls[0][1];
-      callback({ exists: true });
+      callback({ exists: true, data: () => ({ userId: mockUserId }) });
 
       expect(mockOnUpdate).toHaveBeenCalledWith(true);
     });

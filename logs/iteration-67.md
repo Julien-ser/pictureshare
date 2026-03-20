@@ -341,3 +341,259 @@ PASS __tests__/firebase.test.ts
       174 |       // ignore logging errors
       175 |     }
 [0m
+[0m→ [0mRead src/services/likeService.ts
+[0m→ [0mRead __tests__/likeService.test.ts
+I see there are failing tests in `likeService.test.ts`. Let me examine these failing tests and the service implementation to fix them:
+[0m
+[0m# [0mTodos
+[ ] Fix subscribeToUserLike test mock to include data() method
+[ ] Rewrite toggleLike tests to mock Firebase calls instead of spying on internal functions
+[ ] Run all tests to verify fixes
+[0m
+Now I see the issues causing test failures in `likeService.test.ts`:
+
+1. **`subscribeToUserLike`** test: The mock snapshot doesn't have a `data()` method, but the code calls `doc.data()`. Need to add a `data` method to the mock.
+
+2. **`toggleLike`** tests: The spies on internal functions (`hasUserLiked`, `unlikePhoto`, `likePhoto`) don't work because `toggleLike` uses the original module-scoped functions, not the spied versions. Need to rewrite these tests to mock the underlying Firebase calls instead of spying on internal functions.
+
+Let me create a todo and fix these:
+Now fix the `subscribeToUserLike` test by adding a proper `data()` method to the mock snapshot:
+[0m← [0mEdit __tests__/likeService.test.ts
+Index: /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/__tests__/likeService.test.ts
+===================================================================
+--- /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/__tests__/likeService.test.ts
++++ /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/__tests__/likeService.test.ts
+@@ -299,9 +299,9 @@
+     expect(unsubscribe).toBe(mockUnsubscribe);
+ 
+     // Simulate snapshot callback - like exists
+     const callback = (onSnapshot as jest.Mock).mock.calls[0][1];
+-    callback({ exists: true });
++    callback({ exists: true, data: () => ({ userId: mockUserId }) });
+ 
+     expect(mockOnUpdate).toHaveBeenCalledWith(true);
+   });
+ });
+
+[0m
+Now I'll rewrite the `toggleLike` tests to use proper Firebase mocking:
+[0m← [0mEdit __tests__/likeService.test.ts
+Index: /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/__tests__/likeService.test.ts
+===================================================================
+--- /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/__tests__/likeService.test.ts
++++ /home/julien/Desktop/Free-Wiggum-opencode/projects/pictureshare/__tests__/likeService.test.ts
+@@ -168,25 +168,82 @@
+ });
+ 
+ describe('toggleLike', () => {
+   it('should unlike if already liked', async () => {
+-    jest.spyOn(likeService, 'hasUserLiked').mockResolvedValue(true);
+-    jest.spyOn(likeService, 'unlikePhoto').mockResolvedValue(undefined);
++    const mockLikeRef = { path: 'photos/test-photo-123/likes/user-123' };
++    const mockPhotoRef = { path: 'photos/test-photo-123' };
++    const mockPhotoDoc = {
++      exists: true,
++      data: () => ({ likeCount: 5 }),
++    };
++    const mockTransaction = {
++      get: jest.fn().mockResolvedValue(mockPhotoDoc),
++      update: jest.fn(),
++    };
+ 
++    (collection as jest.Mock)
++      .mockReturnValueOnce({}) // hasUserLiked collection
++      .mockReturnValueOnce({}); // unlikePhoto collection
++
++    (doc as jest.Mock)
++      .mockReturnValueOnce(mockLikeRef) // hasUserLiked likeRef
++      .mockReturnValueOnce(mockLikeRef) // unlikePhoto likeRef
++      .mockReturnValueOnce(mockPhotoRef); // unlikePhoto photoRef
++
++    (getDoc as jest.Mock)
++      .mockResolvedValueOnce({ exists: true, data: () => ({}) }) // hasUserLiked getDoc
++      .mockResolvedValueOnce({ exists: true, data: () => ({}) }); // unlikePhoto existence check
++
++    (runTransaction as jest.Mock).mockImplementation(async (db, operation) => {
++      await operation(mockTransaction);
++    });
++
+     const result = await likeService.toggleLike(mockPhotoId, mockUserId);
+ 
+     expect(result).toBe(false);
+-    expect(likeService.unlikePhoto).toHaveBeenCalledWith(mockPhotoId, mockUserId);
++    expect(deleteDoc).toHaveBeenCalledWith(mockLikeRef);
++    expect(mockTransaction.update).toHaveBeenCalledWith(mockPhotoRef, {
++      likeCount: 4,
++    });
+   });
+ 
+   it('should like if not already liked', async () => {
+-    jest.spyOn(likeService, 'hasUserLiked').mockResolvedValue(false);
+-    jest.spyOn(likeService, 'likePhoto').mockResolvedValue(undefined);
++    const mockLikeRef = { path: 'photos/test-photo-123/likes/user-123' };
++    const mockPhotoRef = { path: 'photos/test-photo-123' };
++    const mockPhotoDoc = {
++      exists: true,
++      data: () => ({ likeCount: 0 }),
++    };
++    const mockTransaction = {
++      get: jest.fn().mockResolvedValue(mockPhotoDoc),
++      update: jest.fn(),
++    };
+ 
++    (collection as jest.Mock)
++      .mockReturnValueOnce({}) // hasUserLiked collection
++      .mockReturnValueOnce({}); // likePhoto collection
++
++    (doc as jest.Mock)
++      .mockReturnValueOnce(mockLikeRef) // hasUserLiked likeRef
++      .mockReturnValueOnce(mockLikeRef) // likePhoto likeRef
++      .mockReturnValueOnce(mockPhotoRef); // likePhoto photoRef
++
++    (getDoc as jest.Mock).mockResolvedValueOnce({ exists: false, data: () => null }); // hasUserLiked getDoc
++
++    (runTransaction as jest.Mock).mockImplementation(async (db, operation) => {
++      await operation(mockTransaction);
++    });
++
+     const result = await likeService.toggleLike(mockPhotoId, mockUserId);
+ 
+     expect(result).toBe(true);
+-    expect(likeService.likePhoto).toHaveBeenCalledWith(mockPhotoId, mockUserId);
++    expect(setDoc).toHaveBeenCalledWith(mockLikeRef, {
++      userId: mockUserId,
++      createdAt: expect.any(Object),
++    });
++    expect(mockTransaction.update).toHaveBeenCalledWith(mockPhotoRef, {
++      likeCount: { value: 1 },
++    });
+   });
+ });
+ 
+ describe('getLikeCount', () => {
+
+[0m
+[0m# [0mTodos
+[x] Fix subscribeToUserLike test mock to include data() method
+[x] Rewrite toggleLike tests to mock Firebase calls instead of spying on internal functions
+[ ] Run all tests to verify fixes
+[0m
+Now let's run all tests to verify the fixes:
+[0m$ [0mnpm test 2>&1 | tail -50
+console.warn
+      Skipping item item-123 - max retries (5) exceeded
+
+      171 |       // Check if we should retry based on retry count
+      172 |       if (item.retryCount >= maxRetries) {
+    > 173 |         console.warn(`Skipping item ${item.id} - max retries (${maxRetries}) exceeded`);
+          |                 ^
+      174 |         continue;
+      175 |       }
+      176 |
+
+      at warn (src/services/offlineQueue.ts:173:17)
+          at _loop.next (<anonymous>)
+      at _loop (src/services/offlineQueue.ts:169:27)
+      at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+
+    console.log
+      Processing 1 offline upload(s)
+
+      at log (src/services/offlineQueue.ts:164:11)
+
+    console.log
+      Still offline, stopping queue processing
+
+      at log (src/services/offlineQueue.ts:180:17)
+          at _loop.next (<anonymous>)
+
+    console.log
+      Processing 1 offline upload(s)
+
+      at log (src/services/offlineQueue.ts:164:11)
+
+    console.log
+      Will retry item-123 in 2000ms
+
+      at log (src/services/offlineQueue.ts:223:15)
+          at _loop.next (<anonymous>)
+
+    console.log
+      Offline queue initialized
+
+      at log (src/services/offlineQueue.ts:235:13)
+
+
+Test Suites: 10 passed, 10 total
+Tests:       144 passed, 144 total
+Snapshots:   0 total
+Time:        2.982 s, estimated 3 s
+Ran all test suites.
+[0m
+All tests now pass (144 passed). I've fixed the failing tests in `likeService.test.ts`:
+
+1. Fixed `subscribeToUserLike` test by adding `data()` method to the mock snapshot
+2. Rewrote `toggleLike` tests to mock Firebase calls directly instead of spying on internal functions
+
+The utilities (code generation, image compression) and service wrappers already have comprehensive test coverage. No further changes needed.
+```
+
+## TASKS.md After Iteration
+
+```markdown
+# pictureshare
+
+**Mission:** App for event photo sharing
+All participants scan a written code and pictures they sent will be accessible to all in da group n vice versa
+
+## Phase 1: Planning & Setup
+
+- [x] Choose tech stack: React Native (Expo), Firebase (Auth/Firestore/Storage), react-native-camera, qrcode library; document in ADR
+- [x] Initialize Expo project with TypeScript, configure ESLint/Prettier, and set up folder structure: components/, screens/, services/, utils/
+- [x] Create low-fidelity wireframes for: Event Join (QR scanner), Photo Feed, Upload Interface, Profile Screen
+- [x] Set up Firebase project with security rules baseline, initialize local emulators for development
+
+## Phase 2: Authentication & Event Code System
+
+- [x] Implement Firebase Anonymous Auth + Google Sign-In as fallback; store user mapping locally
+- [x] Build event creation screen: generates 6-digit alphanumeric code, optional time/visibility settings
+- [x] Integrate `react-native-qrcode-svg` to display event QR code for sharing; encode deep link with event ID
+- [x] Develop QR scanner screen using `expo-camera`; validate code against Firestore and join user to event document's participants array
+
+## Phase 3: Photo Capture, Compression & Upload
+
+- [x] Build camera/gallery picker with `expo-image-picker`; request permissions and handle denials with explanatory UI
+- [x] Add image compression pipeline: use `expo-image-manipulator` to resize to ≤1920px, compress to 80% quality
+- [x] Implement upload service: upload compressed image to Firebase Storage path `/events/{eventId}/photos/{photoId}.jpg`
+- [x] Save photo metadata to Firestore collection `photos` with fields: eventId, uploaderId, storagePath, createdAt, thumbnailPath
+
+## Phase 4: Real-Time Feed & Sync
+
+- [x] Subscribe to Firestore `photos` collection query `where eventId == current` with real-time listener; render in FlatList
+- [x] Implement optimistic UI: add photo to feed immediately after upload, mark pending, finalize on server confirmation
+- [x] Build infinite scroll pagination using Firestore cursor; load 20 initial photos, fetch more on scroll
+- [x] Add offline-first behavior: cache photos locally with `expo-file-system`; retry failed uploads when back online
+
+## Phase 5: Group Permissions & Interactions
+
+- [x] Enable deletion: only photo owner or event creator can delete; remove from Storage and Firestore
+- [x] Add likes: create `likes` subcollection under each photo; toggle like on press; update aggregated like count
+- [x] Create lightweight comments: allow short text on photos; store in `comments` subcollection; real-time updates
+- [x] Show participant list per event with avatars (from Google Auth) and photo count; differentiate current user
+
+## Phase 6: Testing, Polish & Launch
+
+- [ ] Write unit tests for utilities (code generation, image compression) and service wrappers using Jest
+- [ ] Create integration tests with Firebase Emulators: test event join flow, upload, and real-time feed
+- [ ] Perform closed beta: distribute via Expo Go, collect feedback on UX and performance
+- [ ] Deploy to app stores: configure EAS build, submit to Apple TestFlight and Google Play Internal; monitor Firebase Crashlytics
+      </parameter>
+      <parameter=filePath>
+      /home/julien/Desktop/Free-Wiggum-opencode/pictureshare_TASKS.md
+      </parameter>
+      </function>
+      </tool_call>
+```
+
+**Completed at:** Thu Mar 19 11:24:15 PM EDT 2026
